@@ -43,34 +43,15 @@ class XiuxianDateManage:
         self.conn.close()
         print("数据库关闭！")
 
-    # def _create_file(self) -> None:
+    # def _create_file(self):
     #     """创建数据库文件"""
     #     c = self.conn.cursor()
-    #     c.execute('''CREATE TABLE BREAD_DATA
-    #                        (NO            INTEGER PRIMARY KEY UNIQUE,
-    #                        USERID         TEXT     ,
-    #                        BREAD_NUM      INTEGER  ,
-    #                        BREAD_EATEN    INTEGER
-    #                        );''')
-    #     c.execute('''CREATE TABLE BREAD_LOG
-    #                        (USERID         TEXT     ,
-    #                        BUY_TIMES      INTEGER  ,
-    #                        EAT_TIMES      INTEGER  ,
-    #                        ROB_TIMES      INTEGER  ,
-    #                        GIVE_TIMES     INTEGER  ,
-    #                        BET_TIMES      INTEGER
-    #                        );''')
-    #     c.execute('''CREATE TABLE BREAD_CD
-    #                        (USERID        TEXT     ,
-    #                        BUY_CD         INTEGER  ,
-    #                        EAT_CD         INTEGER  ,
-    #                        ROB_CD         INTEGER  ,
-    #                        GIVE_CD        INTEGER  ,
-    #                        BET_CD         INTEGER
-    #                        );''')
+    #     c.execute('''''')
+    #     c.execute('''''')
+    #     c.execute('''''')
     #     self.conn.commit()
 
-    def _get_id(self) -> int:
+    def _get_id(self):
         """获取下一个id"""
         cur = self.conn.cursor()
         cur.execute('select id from user_xiuxian')
@@ -203,12 +184,12 @@ class XiuxianDateManage:
 
 
 if __name__ == '__main__':
-    # a=r'G:\yuzi_bot\yuzi_bot\data\xiuxian\xiuxian.db'
+    # a=r'G:\yuzi_bo'
     # print(a)
     # conn = sqlite3.connect(a)
     # cur = conn.cursor()
     # sql = f"SELECT user_id,stone FROM user_xiuxian  WHERE stone>0 ORDER BY stone DESC LIMIT 5"
-    # user_id = '5780430312'
+    # user_id = ''
     # cur.execute(sql,)
     # result = cur.fetchall()
     # print(result)
