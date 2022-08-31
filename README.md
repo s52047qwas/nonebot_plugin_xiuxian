@@ -45,10 +45,17 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 
 - 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录nonebot_plugin_xiuxian ——>xiuxian
 处下载文件，放置于bot目录，data -> xiuxian文件夹处
+
 ## 特别感谢
 
 - [NoneBot2](https://github.com/nonebot/nonebot2)：本插件实装的开发框架。
 - [go-cqhttp](https://github.com/Mrs4s/go-cqhttp)：稳定完善的 CQHTTP 实现。
+
+## 插件依赖
+
+- nonebot2
+- nonebot-adapter-onebot
+- go-cqhttp
 
 ## 支持
 
