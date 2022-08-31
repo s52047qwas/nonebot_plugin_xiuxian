@@ -39,7 +39,7 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 - 发送突破，当修为足够时，可突破境界。
 - 发送修仙签到，获取每日初始化的灵石及修为。
 
-![demo](/demo.jpg)
+![image](https://user-images.githubusercontent.com/44226600/187607785-3ea934f4-2b5c-418e-9b99-e8a8e5562125.png)
 
 ## 一些问题
 
