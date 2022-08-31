@@ -5,8 +5,7 @@ from nonebot import get_driver
 from nonebot import on_command,require,on_message
 from nonebot.params import CommandArg, RawCommand,Depends, Arg, ArgStr, RegexMatched
 from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OWNER, Message, MessageEvent, GroupMessageEvent,MessageSegment
-from .xiuxian_handle import linggen_get,BreadDataManage
-from .xiuxian2_handle import XiuxianDateManage
+from .xiuxian2_handle import XiuxianDateManage,linggen_get,XiuxianJsonDate,OtherSet
 from datetime import datetime
 import random
 from .xiuxian_opertion import gamebingo
@@ -24,6 +23,7 @@ __xiuxian_notes__ = f'''
 4、重入仙途：重置灵根数据，每次100灵石
 5、#金银阁：猜大小，赌灵石
 6、改名xx：修改你的道号，暂无用户，待排行榜使用
+7、突破：突破境界，增加战力
 7、其他功能to do中 
 '''.strip()
 
@@ -47,7 +47,7 @@ power_rank = on_command('修仙排行',priority=5)
 ls_rank = on_command('灵石排行',priority=5)
 time_mes = on_message(priority=100)
 remaname = on_command('改名',priority=5)
-pojing = on_command('突破',priority=5)
+level_up = on_command('突破',priority=5)
 biguan = on_command('闭关',priority=5)
 
 race = {}
@@ -74,11 +74,18 @@ async def _(event: GroupMessageEvent):
 
 
     mess = sql_message.get_user_message(user_id)
+    user_name = mess.user_name
+    if user_name:
+        pass
+    else:
+        user_name = '无名氏(发送改名+道号更新)'
     if mess:
-        msg = f'''你的灵根为：{mess[3]}
+        msg = f'''{user_name}道友的信息
+灵根为：{mess[3]}
 灵根类型为：{mess[4]}
 当前境界：{mess[5]}
 当前灵石：{mess[2]}
+当前修为：{mess.exp}
 你的战力为：{mess[6]}'''
     else:
         msg = '未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!'
@@ -149,7 +156,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message=CommandArg(), cmd:
     user_message = sql_message.get_user_message(user_id)
     if user_message:
         if user_message.stone==0:
-            await price.finish(f"道友的灵石太少，速速退去！", at_sender=True)
+            await price.finish(f"走开走开，没钱还来玩！", at_sender=True)
     else:
         await price.finish(f"本阁没有这位道友的信息！输入【我要修仙】加入吧！", at_sender=True)
 
@@ -277,4 +284,48 @@ async def get_group_id(session_id):
     res = re.findall("_(.*)_", session_id)
     group_id = res[0]
     return group_id
+
+@level_up.handle()
+async def update_level(event: GroupMessageEvent):
+    user_id = event.get_user_id()
+    group_id = await get_group_id(event.get_session_id())
+
+    user_mes = sql_message.get_user_message(user_id)
+
+    level_cd = user_mes.level_up_cd
+    if level_cd:
+        time_now = datetime.now()
+        cd = (time_now - datetime.strptime(level_cd, '%Y-%m-%d %H:%M:%S.%f')).seconds
+        if cd < 6000:
+            await level_up.finish('目前无法突破，还需要{}分钟'.format(100 - (cd//60)))
+    else:
+        pass
+
+    level_name = user_mes.level  #境界
+    exp = user_mes.exp   #修为
+
+    level_rate = XiuxianJsonDate().level_rate(level_name)  #对应境界突破的概率
+
+    le = OtherSet().get_type(exp, level_rate, level_name)
+
+    if le=='失败':
+        sql_message.updata_level_cd(user_id)
+        await level_up.finish('道友突破失败,过段时间再突破吧！')
+    elif type(le)==list:
+        sql_message.updata_level(user_id,le[0])
+        sql_message.update_power(user_id)
+        sql_message.updata_level_cd(user_id)
+        await level_up.finish('恭喜道友突破{}成功'.format(le[0]))
+    else:
+        await level_up.finish(le)
+
+
+
+
+
+
+
+
+
+
 

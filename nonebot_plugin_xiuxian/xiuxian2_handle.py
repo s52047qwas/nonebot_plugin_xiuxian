@@ -1,20 +1,16 @@
 import sqlite3
-import time
 
 from collections import namedtuple
-from enum import Enum
-from functools import wraps
-from inspect import signature
 from pathlib import Path
-from typing import List
 import json
 import random
+from datetime import datetime
 
 DATABASE =Path() / "data" / "xiuxian"
 
 xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
-UserDate = namedtuple("UserDate",["id","user_id","stone","root","root_type","level","power","create_time","is_sign","exp","user_name"])
+UserDate = namedtuple("UserDate", ["id", "user_id", "stone", "root","root_type","level","power","create_time","is_sign","exp","user_name","level_up_cd"])
 
 
 def linggen_get():
@@ -43,15 +39,20 @@ class XiuxianDateManage:
         self.conn.close()
         print("数据库关闭！")
 
-    # def _create_file(self):
+    # def _create_file(self) -> None:
     #     """创建数据库文件"""
     #     c = self.conn.cursor()
-    #     c.execute('''''')
+    #     c.execute('''CREATE TABLE user_xiuxian
+    #                        (NO            INTEGER PRIMARY KEY UNIQUE,
+    #                        USERID         TEXT     ,
+    #                        level          INTEGER  ,
+    #                        root           INTEGER
+    #                        );''')
     #     c.execute('''''')
     #     c.execute('''''')
     #     self.conn.commit()
 
-    def _get_id(self):
+    def _get_id(self) -> int:
         """获取下一个id"""
         cur = self.conn.cursor()
         cur.execute('select id from user_xiuxian')
@@ -61,7 +62,7 @@ class XiuxianDateManage:
 
     @classmethod
     def close_dbs(cls):
-        BreadDataManage().close()
+        XiuxianDateManage().close()
 
     def _create_user(self, user_id: str,root:str,type:str,power:str,create_time,user_name) -> None:
         """在数据库中创建用户并初始化"""
@@ -182,18 +183,71 @@ class XiuxianDateManage:
         self.conn.commit()
         return '道友的道号更新成功拉~'
 
+    def updata_level_cd(self,user_id):
+        sql = f"UPDATE user_xiuxian SET level_up_cd=? where user_id=?"
+        cur = self.conn.cursor()
+        now_time = datetime.now()
+        cur.execute(sql, (now_time, user_id))
+        self.conn.commit()
+
+    def updata_level(self,user_id,level_name):
+        """更新境界"""
+        sql = f"UPDATE user_xiuxian SET level=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (level_name, user_id))
+        self.conn.commit()
+
+class XiuxianJsonDate():
+    def __init__(self):
+        self.root_jsonpath = DATABASE / "灵根.json"
+        self.level_jsonpath = DATABASE / "突破概率.json"
+
+
+    def linggen_get(self):
+        with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
+            a = e.read()
+            data = json.loads(a)
+            lg = random.choice(data)
+            return lg['name'], lg['type']
+
+    def level_rate(self, level):
+        with open(self.level_jsonpath, 'r', encoding='utf-8') as e:
+            a = e.read()
+            data = json.loads(a)
+            return data[0][level]
+
+
+class OtherSet:
+
+    def __init__(self):
+        self.level = ['江湖好手', '练气境初期','练气境中期', '练气境圆满', '筑基境初期', '筑基境中期', '筑基境圆满']
+
+    def get_type(self,user_exp,rate,user_level):
+        list_all = len(self.level) - 1
+        now_index = self.level.index(user_level)
+        if list_all == now_index:
+            return "道友已是最高境界，无法突破！"
+
+        is_updata_level = self.level[now_index + 1]
+        need_exp = XiuxianDateManage().get_type_power(is_updata_level)
+
+        #判断修为是否足够突破
+        if user_exp >= need_exp:
+            pass
+        else:
+            return "道友的修为不足以突破！"
+
+        success_rate = True if random.randint(0, 100) < rate else False
+
+        if success_rate:
+
+            return [self.level[now_index + 1]]
+        else:
+            return '失败'
 
 if __name__ == '__main__':
-    # a=r'G:\yuzi_bo'
-    # print(a)
-    # conn = sqlite3.connect(a)
-    # cur = conn.cursor()
-    # sql = f"SELECT user_id,stone FROM user_xiuxian  WHERE stone>0 ORDER BY stone DESC LIMIT 5"
-    # user_id = ''
-    # cur.execute(sql,)
-    # result = cur.fetchall()
-    # print(result)
-
-    a = XiuxianDateManage()
-    print(a.database_path)
-    a.get_ls_rank()
+    paths = r"data\xiuxian\突破概率.json"
+    with open(paths, 'r', encoding='utf-8') as e:
+        a = e.read()
+        data = json.loads(a)
+        print(data[0]['练气境初期'])
