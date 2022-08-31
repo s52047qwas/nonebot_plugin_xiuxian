@@ -1,6 +1,3 @@
-
-
-#简介
 # nonebot_plugin_xiuxian
 
 _:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
