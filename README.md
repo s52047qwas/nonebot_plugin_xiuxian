@@ -59,6 +59,13 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 - 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录nonebot_plugin_xiuxian ——>xiuxian
 处下载文件，放置于bot目录，data -> xiuxian文件夹处
 
+## 更新
+# 2022/09/04
+突破：修为达到要求后，可突破境界<br>
+闭关，出关：挂机进行修炼，增加修为<br>
+送灵石：送灵石+数量+道号或者艾特某人即可<br>
+排行榜功能<br>
+
 ## 特别感谢
 
 - [NoneBot2](https://github.com/nonebot/nonebot2)：本插件实装的开发框架。
@@ -78,5 +85,5 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 或者联系我：578043031
 
 ## 许可证
-本项目使用 [MIT](https://choosealicense.com/licenses/mit/) 作为开源许可证。
+本项目使用 [MIT](https://choosealicense.com/licenses/mit/) 作为开源许可证
 
