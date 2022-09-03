@@ -26,6 +26,7 @@ __xiuxian_notes__ = f'''
 7、突破：修为足够后，可突破境界（一定几率失败）
 8、闭关、出关：修炼增加修为，挂机功能
 9、送灵石+数量+道号或者艾特对应人
+10、排行榜：修为排行榜，灵石排行榜
 10、其他功能to do中 
 '''.strip()
 
@@ -423,7 +424,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
                 sql_message.update_ls(give_qq, num, 1)   # 增加用户灵石
 
                 await give_stone.finish(
-                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num,give_qq, num))
+                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num,give_qq, int(give_stone_num2)))
             else:
                 await give_stone.finish("对方未踏入修仙界，不可赠送！")
 
@@ -438,7 +439,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
                 num = int(give_stone_num) - int(give_stone_num2)
                 sql_message.update_ls(give_message.user_id, num, 1)  # 增加用户灵石
                 await give_stone.finish(
-                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_message.user_name, num))
+                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_message.user_name, int(give_stone_num2)))
         else:
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
 
