@@ -231,11 +231,18 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
 
     def update_user_name(self,user_id,user_name):
         """更新用户道号"""
-        sql = f"UPDATE user_xiuxian SET user_name=? where user_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql,(user_name,user_id) )
-        self.conn.commit()
-        return '道友的道号更新成功拉~'
+        get_name = f"select user_name from user_xiuxian where user_name=?"
+        cur.execute(get_name, (user_name,))
+        result = cur.fetchone()
+        if result:
+            return "已存在该道号！"
+        else:
+            sql = f"UPDATE user_xiuxian SET user_name=? where user_id=?"
+
+            cur.execute(sql,(user_name, user_id))
+            self.conn.commit()
+            return '道友的道号更新成功拉~'
 
     def updata_level_cd(self,user_id):
         """更新破镜CD"""
@@ -320,19 +327,19 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
-        WHEN level = '元婴境圆满' THEN '1'
-        WHEN level = '元婴境中期' THEN '2'
-        WHEN level = '元婴境初期' THEN '3'
-        WHEN level = '结丹境圆满' THEN '4'
-        WHEN level = '结丹境中期' THEN '5'
-        WHEN level = '结丹境初期' THEN '6'
-        WHEN level = '筑基境圆满' THEN '7'
-        WHEN level = '筑基境中期' THEN '8'
-        WHEN level = '筑基境初期' THEN '9'
-        WHEN level = '练气境圆满' THEN '10'
-        WHEN level = '练气境中期' THEN '11'
-        WHEN level = '练气境初期' THEN '12'
-        WHEN level = '江湖好手' THEN '13'
+        WHEN level = '元婴境圆满' THEN '10'
+        WHEN level = '元婴境中期' THEN '11'
+        WHEN level = '元婴境初期' THEN '12'
+        WHEN level = '结丹境圆满' THEN '13'
+        WHEN level = '结丹境中期' THEN '14'
+        WHEN level = '结丹境初期' THEN '15'
+        WHEN level = '筑基境圆满' THEN '16'
+        WHEN level = '筑基境中期' THEN '17'
+        WHEN level = '筑基境初期' THEN '18'
+        WHEN level = '练气境圆满' THEN '19'
+        WHEN level = '练气境中期' THEN '20'
+        WHEN level = '练气境初期' THEN '21'
+        WHEN level = '江湖好手' THEN '22'
         ELSE level END ASC,exp DESC LIMIT 5"""
         cur = self.conn.cursor()
         cur.execute(sql, )
@@ -382,7 +389,18 @@ class XiuxianJsonDate:
 class OtherSet:
 
     def __init__(self):
-        self.level = ['江湖好手', '练气境初期','练气境中期', '练气境圆满', '筑基境初期', '筑基境中期', '筑基境圆满']
+        self.level = ['江湖好手', '练气境初期','练气境中期', '练气境圆满', '筑基境初期', '筑基境中期', '筑基境圆满',
+                      '结丹境初期', '结丹境中期', '结丹境圆满', '元婴境初期', '元婴境中期', '元婴境圆满']
+
+
+    def set_closing_type(self,user_level):
+        list_all = len(self.level) - 1
+        now_index = self.level.index(user_level)
+        if list_all == now_index:
+            return "道友已是最高境界，无法突破！"
+        is_updata_level = self.level[now_index + 1]
+        need_exp = XiuxianDateManage().get_type_power(is_updata_level)
+        return need_exp
 
     def get_type(self,user_exp,rate,user_level):
         list_all = len(self.level) - 1

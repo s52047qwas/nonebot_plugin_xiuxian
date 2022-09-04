@@ -26,7 +26,7 @@ __xiuxian_notes__ = f'''
 7、突破：修为足够后，可突破境界（一定几率失败）
 8、闭关、出关：修炼增加修为，挂机功能
 9、送灵石+数量+道号或者艾特对应人
-10、排行榜：修为排行榜，灵石排行榜
+10、排行榜：修仙排行榜，灵石排行榜
 10、其他功能to do中 
 '''.strip()
 
@@ -282,6 +282,9 @@ async def _(bot: Bot,event: GroupMessageEvent,args: Message = CommandArg()):
     user_id = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())
     user_name = args.extract_plain_text().strip()
+    if sql_message.get_user_message(user_id) is None:
+        await in_closing.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
+
     mes = sql_message.update_user_name(user_id,user_name)
     await remaname.finish(mes)
 
@@ -291,6 +294,8 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     user_type = 1
     user_id = event.get_user_id()
 
+    if sql_message.get_user_message(user_id) is None:
+        await in_closing.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
     user_cd_message = sql_message.get_user_cd(user_id)
 
     if user_cd_message is None:
@@ -313,7 +318,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     level = user_mes.level
     use_exp = user_mes.exp
 
-    max_exp = int(sql_message.get_type_power(level)) + 5000
+    max_exp = int(OtherSet().set_closing_type(level))
     user_get_exp_max = max_exp - use_exp
     now_time = datetime.now()
     user_cd_message = sql_message.get_user_cd(user_id)
