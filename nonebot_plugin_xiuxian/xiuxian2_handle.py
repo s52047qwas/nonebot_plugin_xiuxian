@@ -84,6 +84,7 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
 INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
 INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
 INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.3);
+INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
 INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.4);
 INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
 INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
