@@ -14,7 +14,7 @@ UserCd = namedtuple("UserCd", [ "user_id", "type", "create_time", "scheduled_tim
 
 
 def linggen_get():
-    path_lg = DATABASE / "灵根.json"
+    path_lg = DATABASE / "灵根_beifen.json"
     with open(path_lg,'r', encoding='utf-8') as e:
         a = e.read()
         data = json.loads(a)
@@ -372,7 +372,7 @@ class XiuxianJsonDate:
         self.level_jsonpath = DATABASE / "突破概率.json"
 
 
-    def linggen_get(self):
+    def beifen_linggen_get(self):
         with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
             a = e.read()
             data = json.loads(a)
@@ -384,6 +384,31 @@ class XiuxianJsonDate:
             a = e.read()
             data = json.loads(a)
             return data[0][level]
+
+
+    def linggen_get(self):
+        """获取灵根信息"""
+        with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            rate_dict = {}
+            for i, v in data.items():
+                rate_dict[i] = v["type_rate"]
+            lgen = OtherSet().calculated(rate_dict)
+            if data[lgen]["type_flag"]:
+                flag = random.choice(data[lgen]["type_flag"])
+                root = random.sample(data[lgen]["type_list"], flag)
+                msg = ""
+                for j in root:
+                    if j == root[-1]:
+                        msg += j
+                        break
+                    msg += (j + "、")
+
+                return msg + '属性灵根', lgen
+            else:
+                root = random.choice(data[lgen]["type_list"])
+                return root, lgen
 
 
 class OtherSet:
@@ -424,6 +449,33 @@ class OtherSet:
             return [self.level[now_index + 1]]
         else:
             return '失败'
+
+    def calculated(self,rate: dict) -> str:
+        """
+        根据概率计算，轮盘型
+        :rate:格式{"数据名"："获取几率"}
+        :return: 数据名
+        """
+
+        get_list = []  # 概率区间存放
+
+        n = 1
+        for name, value in rate.items():  # 生成数据区间
+            value_rate = int(value)
+            list_rate = [_i for _i in range(n, value_rate + n)]
+            get_list.append(list_rate)
+            n += value_rate
+
+        now_n = n - 1
+        get_random = random.randint(1, now_n)  # 抽取随机数
+
+        index_num = None
+        for list_r in get_list:
+            if get_random in list_r:  # 判断随机在那个区间
+                index_num = get_list.index(list_r)
+                break
+
+        return list(rate.keys())[index_num]
 
 if __name__ == '__main__':
     # paths = r"D:\yuzi_bot\yuzi_bot\data\xiuxian\突破概率.json"

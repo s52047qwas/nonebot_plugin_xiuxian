@@ -235,8 +235,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message=CommandArg(), cmd:
     user_id = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())
 
-    name, type = linggen_get()
-    result = sql_message.ramaker(name,type,user_id)
+    name, type = XiuxianJsonDate().linggen_get()
+    result = sql_message.ramaker(name, type ,user_id)
     await remaker.send(message=result,at_sender=True)
 
 
