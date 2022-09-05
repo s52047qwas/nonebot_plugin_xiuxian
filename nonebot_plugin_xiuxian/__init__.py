@@ -87,12 +87,14 @@ async def _(event: GroupMessageEvent):
     if mess:
         level_rate = sql_message.get_type_power(mess.root_type)  # 灵根倍率
         realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
+        print(level_rate)
+        print(realm_rate)
         msg = f'''{user_name}道友的信息
 灵根为：{mess[3]}
 灵根类型为：{mess[4]}
 当前境界：{mess[5]}
 当前灵石：{mess[2]}
-当前修为：{mess.exp}(修炼效率+{int(level_rate * realm_rate) * 100}%)
+当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
 你的战力为：{mess[6]}'''
     else:
         msg = '未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!'
