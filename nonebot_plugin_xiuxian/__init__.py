@@ -85,12 +85,14 @@ async def _(event: GroupMessageEvent):
     else:
         user_name = '无名氏(发送改名+道号更新)'
     if mess:
+        level_rate = sql_message.get_type_power(mess.root_type)  # 灵根倍率
+        realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
         msg = f'''{user_name}道友的信息
 灵根为：{mess[3]}
 灵根类型为：{mess[4]}
 当前境界：{mess[5]}
 当前灵石：{mess[2]}
-当前修为：{mess.exp}
+当前修为：{mess.exp}(修炼效率+{int(level_rate * realm_rate) * 100}%)
 你的战力为：{mess[6]}'''
     else:
         msg = '未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!'
@@ -318,8 +320,8 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     level = user_mes.level
     use_exp = user_mes.exp
 
-    max_exp = int(OtherSet().set_closing_type(level))
-    user_get_exp_max = max_exp - use_exp
+    max_exp = int(OtherSet().set_closing_type(level)) * 1.5
+    user_get_exp_max = int(max_exp) - use_exp
     now_time = datetime.now()
     user_cd_message = sql_message.get_user_cd(user_id)
 
@@ -329,8 +331,20 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         await out_closing.finish("道友现在什么都没干呢~", at_sender=True)
     elif user_cd_message.type == 1:
         in_closing_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
-        exp_time = (now_time - in_closing_time).seconds // 60
-        exp = exp_time * 10
+        exp_time = (now_time - in_closing_time).seconds // 60   # 闭关时长计算
+        level_rate = sql_message.get_type_power(user_mes.root_type)  # 灵根倍率
+        realm_rate = ((OtherSet().level.index(level)) * 0.2) + 1   # 境界倍率
+        exp = int(exp_time * 10 * level_rate * realm_rate)
+
+        print("max_exp",max_exp)
+        print("user_get_exp_max",user_get_exp_max)
+        print("level_rate", level_rate)
+        print("realm_rate", realm_rate)
+        print("exp", exp)
+        print("OtherSet().level.index(level)", OtherSet().level.index(level))
+        print("user_level", level)
+
+
         if exp >= user_get_exp_max:
             sql_message.in_closing(user_id,user_type)
             sql_message.update_exp(user_id,user_get_exp_max)

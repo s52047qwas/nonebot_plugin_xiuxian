@@ -397,7 +397,7 @@ class OtherSet:
         list_all = len(self.level) - 1
         now_index = self.level.index(user_level)
         if list_all == now_index:
-            return "道友已是最高境界，无法突破！"
+            return "道友已是最高境界，无法修炼了！"
         is_updata_level = self.level[now_index + 1]
         need_exp = XiuxianDateManage().get_type_power(is_updata_level)
         return need_exp
