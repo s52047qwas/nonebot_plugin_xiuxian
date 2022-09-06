@@ -1,9 +1,9 @@
+import datetime
+import json
+import random
 import sqlite3
 from collections import namedtuple
 from pathlib import Path
-import json
-import random
-import datetime
 
 DATABASE =Path() / "data" / "xiuxian"
 
@@ -66,7 +66,7 @@ class XiuxianDateManage:
                                     scheduled_time INTEGER);""")
 
         sql = "select * FROM level where name=?"
-        c.execute(sql, ("龙灵根",))
+        c.execute(sql, ("元婴境圆满",))
         result = c.fetchone()
         if result:
             pass
@@ -83,9 +83,8 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
 INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
 INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
 INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
-INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
-INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
-INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
+INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.3);
+INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.4);
 INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
 INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
 INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
@@ -531,28 +530,50 @@ class OtherSet:
 
         return list(rate.keys())[index_num]
 
+    def fight(self,player1=None,player2=None):
+        player1 = {'HP': 100,
+                   "ROOT_RATE": 1,
+                   "LEVEL_RATE": 1,
+                   "COMBO": 0,
+                   "ATK": 12,
+                   "AC": 20}
+
+        player2 = {'HP': 100,
+                   "ROOT_RATE": 1.2,
+                   "LEVEL_RATE": 1,
+                   "COMBO": 0,
+                   "ATK": 10,
+                   "AC": 19}
+
+        player1_gj = player1['ATK'] * player1["ROOT_RATE"] * player1["LEVEL_RATE"]
+        player2_gj = player2['ATK'] * player2["ROOT_RATE"] * player2["LEVEL_RATE"]
+        print(player1_gj)
+        print(player2_gj)
+
+
 if __name__ == '__main__':
-    paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
-    with open(paths, 'r', encoding='utf-8') as e:
-        a = e.read()
-        data = json.loads(a)
-        get_work_list = []
-        for i in data:
-            name = random.choice(list(data[i].keys()))
-            get_work_list.append([name,data[i][name]["rate"],data[i][name]["succeed_thank"]])
-        print(get_work_list)
-
-        work_event = None
-        for i, v in data.items():
-            for vk, vv in v.items():
-                if vk == get_work_list[0][0]:
-                    work_event = vv
-
-        print(work_event["rate"])
-        if random.randint(1, 100) <= work_event["rate"]:
-            print(random.choice( work_event["succeed"]), work_event["succeed_thank"])
-        else:
-            print (random.choice(work_event["fail"]), work_event["fail_thank"])
+    # paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
+    # with open(paths, 'r', encoding='utf-8') as e:
+    #     a = e.read()
+    #     data = json.loads(a)
+    #     get_work_list = []
+    #     for i in data:
+    #         name = random.choice(list(data[i].keys()))
+    #         get_work_list.append([name,data[i][name]["rate"],data[i][name]["succeed_thank"]])
+    #     print(get_work_list)
+    #
+    #     work_event = None
+    #     for i, v in data.items():
+    #         for vk, vv in v.items():
+    #             if vk == get_work_list[0][0]:
+    #                 work_event = vv
+    #
+    #     print(work_event["rate"])
+    #     if random.randint(1, 100) <= work_event["rate"]:
+    #         print(random.choice( work_event["succeed"]), work_event["succeed_thank"])
+    #     else:
+    #         print (random.choice(work_event["fail"]), work_event["fail_thank"])
+    OtherSet().fight()
 
 #     apath = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\xiuxian.db"
 #     conn = sqlite3.connect(apath)
