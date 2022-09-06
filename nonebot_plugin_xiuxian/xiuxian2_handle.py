@@ -297,6 +297,8 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
             now_time = datetime.datetime.now()
         elif the_type == 0:
             now_time = 0
+        elif the_type == 2:
+            now_time = datetime.datetime.now()
         # scheduled_time = datetime.datetime.now() + datetime.timedelta(minutes=int(the_time))
         sql = f"UPDATE user_cd SET type=?,create_time=? where user_id=?"
         cur = self.conn.cursor()
@@ -365,11 +367,35 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
 
         return mess
 
+    def do_work(self,user_id, the_type, sc_time):
+        """
+        更新用户操作CD
+        :param user_id: qq
+        :param the_type: 0:无状态  1：闭关中  2：历练中
+        :param the_time: 本次操作的时长
+        :return:
+        """
+        now_time = None
+        if the_type == 1:
+            now_time = datetime.datetime.now()
+        elif the_type == 0:
+            now_time = 0
+            scheduled_time = None
+        elif the_type == 2:
+            now_time = datetime.datetime.now()
+
+        sql = f"UPDATE user_cd SET type=?,create_time=?,scheduled_time=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (the_type, now_time, sc_time, user_id))
+        self.conn.commit()
+
+
 
 class XiuxianJsonDate:
     def __init__(self):
         self.root_jsonpath = DATABASE / "灵根.json"
         self.level_jsonpath = DATABASE / "突破概率.json"
+        self.do_work_jsonpath = DATABASE / "悬赏令.json"
 
 
     def beifen_linggen_get(self):
@@ -409,6 +435,33 @@ class XiuxianJsonDate:
             else:
                 root = random.choice(data[lgen]["type_list"])
                 return root, lgen
+
+
+    def do_work(self,key,work_list=None):
+        """悬赏令获取"""
+        with open(self.do_work_jsonpath, 'r', encoding='utf-8') as e:
+            a = e.read()
+            data = json.loads(a)
+
+            if key == 0:   # 如果没有获取过，则返回悬赏令
+                get_work_list = []
+                for i in data:
+                    name = random.choice(list(data[i].keys()))
+                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"]])
+                return get_work_list
+
+            elif key == 2:   # 如果是结算，则获取结果
+                work_event = None
+                for i, v in data.items():
+                    for vk, vv in v.items():
+                        if vk == work_list:
+                            work_event = vv
+
+
+                if random.randint(1, 100) <= work_event["rate"]:
+                    return random.choice(work_event["succeed"]), work_event["succeed_thank"]
+                else:
+                    return random.choice(work_event["fail"]), work_event["fail_thank"]
 
 
 class OtherSet:
@@ -478,32 +531,48 @@ class OtherSet:
         return list(rate.keys())[index_num]
 
 if __name__ == '__main__':
-    # paths = r"D:\yuzi_bot\yuzi_bot\data\xiuxian\突破概率.json"
-    # with open(paths, 'r', encoding='utf-8') as e:
-    #     a = e.read()
-    #     data = json.loads(a)
-    #     print(data[0]['练气境初期'])
+    paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
+    with open(paths, 'r', encoding='utf-8') as e:
+        a = e.read()
+        data = json.loads(a)
+        get_work_list = []
+        for i in data:
+            name = random.choice(list(data[i].keys()))
+            get_work_list.append([name,data[i][name]["rate"],data[i][name]["succeed_thank"]])
+        print(get_work_list)
 
-    apath = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\xiuxian.db"
-    conn = sqlite3.connect(apath)
-    sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
-WHERE user_name is NOT NULL
-ORDER BY CASE
-WHEN level = '筑基境圆满' THEN '1'
-WHEN level = '筑基境中期' THEN '2'
-WHEN level = '筑基境初期' THEN '3'
-WHEN level = '练气境圆满' THEN '4'
-WHEN level = '练气境中期' THEN '5'
-WHEN level = '练气境初期' THEN '6'
-WHEN level = '江湖好手' THEN '7'
-ELSE level END ASC,exp DESC LIMIT 5"""
-    cur = conn.cursor()
-    cur.execute(sql,)
-    result = cur.fetchall()
-    mess = f"位面境界排行榜TOP5\n"
-    num=0
-    for i in result:
-        num+=1
-        mess += F"TOP{num}:{i[0]},境界：{i[1]},修为：{i[2]}\n"
+        work_event = None
+        for i, v in data.items():
+            for vk, vv in v.items():
+                if vk == get_work_list[0][0]:
+                    work_event = vv
 
-    print(mess)
+        print(work_event["rate"])
+        if random.randint(1, 100) <= work_event["rate"]:
+            print(random.choice( work_event["succeed"]), work_event["succeed_thank"])
+        else:
+            print (random.choice(work_event["fail"]), work_event["fail_thank"])
+
+#     apath = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\xiuxian.db"
+#     conn = sqlite3.connect(apath)
+#     sql = f"""SELECT user_name,level,exp FROM user_xiuxian
+# WHERE user_name is NOT NULL
+# ORDER BY CASE
+# WHEN level = '筑基境圆满' THEN '1'
+# WHEN level = '筑基境中期' THEN '2'
+# WHEN level = '筑基境初期' THEN '3'
+# WHEN level = '练气境圆满' THEN '4'
+# WHEN level = '练气境中期' THEN '5'
+# WHEN level = '练气境初期' THEN '6'
+# WHEN level = '江湖好手' THEN '7'
+# ELSE level END ASC,exp DESC LIMIT 5"""
+#     cur = conn.cursor()
+#     cur.execute(sql,)
+#     result = cur.fetchall()
+#     mess = f"位面境界排行榜TOP5\n"
+#     num=0
+#     for i in result:
+#         num+=1
+#         mess += F"TOP{num}:{i[0]},境界：{i[1]},修为：{i[2]}\n"
+#
+#     print(mess)
