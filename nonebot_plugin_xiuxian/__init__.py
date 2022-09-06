@@ -5,10 +5,10 @@ from nonebot import get_driver
 from nonebot import on_command,require,on_message
 from nonebot.params import CommandArg, RawCommand,Depends, Arg, ArgStr, RegexMatched
 from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OWNER, Message, MessageEvent, GroupMessageEvent,MessageSegment
-from .xiuxian2_handle import XiuxianDateManage,linggen_get,XiuxianJsonDate,OtherSet
+from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from datetime import datetime
 import random
-from .xiuxian_opertion import gamebingo
+from .xiuxian_opertion import gamebingo,do_is_work
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -35,7 +35,6 @@ driver = get_driver()
 
 run_xiuxian = on_command('我要修仙',priority=5)
 xiuxian_message = on_command('我的修仙信息',aliases={'我的存档'},priority=5)
-rename = on_command('改名',priority=5)
 restart = on_command('再入仙途',aliases={'重新修仙'},priority=5)
 package = on_command('我的纳戒',aliases={'升级纳戒'},priority=5)
 sign_in = on_command('修仙签到',priority=5)
@@ -54,37 +53,40 @@ level_up = on_command('突破',priority=5)
 in_closing = on_command('闭关',priority=5)
 out_closing = on_command('出关',priority=5)
 give_stone = on_command('送灵石', priority=5)
+do_work = on_command("悬赏令", priority=5)
 
 race = {}
+work = {}
 sql_message = XiuxianDateManage()
 
 @run_xiuxian.handle()
-async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
+async def _(event: GroupMessageEvent):
     user_id = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
+    # group_id = await get_group_id(event.get_session_id())
     # text = args.extract_plain_text().strip()   获取命令后面的信息
-    user_name = event.sender.card if event.sender.card else event.sender.nickname
-    name, type = linggen_get()
-    rate  = sql_message.get_type_power(type)
+    user_name = event.sender.card if event.sender.card else event.sender.nickname  # 获取为用户名
+    root, root_type = XiuxianJsonDate().linggen_get()     # 获取灵根，灵根类型
+
+    rate = sql_message.get_type_power(root_type)
     power = 100 * float(rate)
     create_time = str(datetime.now())
 
-    msg = sql_message.create_user(user_id,name,type,int(power),create_time,user_name)
-    await run_xiuxian.finish(msg,at_sender=True)
+    msg = sql_message.create_user(user_id, root, root_type, int(power), create_time, user_name)
+    await run_xiuxian.finish(msg, at_sender=True)
 
 @xiuxian_message.handle()
 async def _(event: GroupMessageEvent):
     user_id = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
-
+    # group_id = await get_group_id(event.get_session_id())
 
     mess = sql_message.get_user_message(user_id)
-    user_name = mess.user_name
-    if user_name:
-        pass
-    else:
-        user_name = '无名氏(发送改名+道号更新)'
+
     if mess:
+        user_name = mess.user_name
+        if user_name:
+            pass
+        else:
+            user_name = '无名氏(发送改名+道号更新)'
         level_rate = sql_message.get_type_power(mess.root_type)  # 灵根倍率
         realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
         print(level_rate)
@@ -466,6 +468,98 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
 
     else:
         await give_stone.finish("未获取道号信息，请输入正确的道号！")
+
+
+@do_work.handle()
+async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
+    global work
+    user_type = 2
+    work_list = []
+    user_id = event.get_user_id()
+
+    text = args.extract_plain_text().strip()
+    print(text)
+    if text == "接取1" or text == "接取2" or text == "接取3":
+        try:
+            if work[user_id]:
+                work_num = re.findall("\d+", text)  ##任务序号
+                if work_num[0] == '1':
+                    print("接取任务1")
+                elif work_num[0] == '2':
+                    print("接取任务2")
+                elif work_num[0] == '3':
+                    print("接取任务3")
+                else:
+                    print("任务接取错误")
+        except KeyError:
+            await do_work.finish("pass")
+    elif text == "结算":
+        pass
+
+    if sql_message.get_user_message(user_id) is None:
+        await do_work.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
+    user_cd_message = sql_message.get_user_cd(user_id)
+
+    try:
+        if work[user_id]:
+            if (datetime.now() - work[user_id].time).seconds // 60 >= 60:
+                work_msg = XiuxianJsonDate().do_work(0)
+
+                n = 1
+                work_msg_f = f"""     ✨道友的个人悬赏令✨"""
+                for i in work_msg:
+                    work_list.append(i[0])
+                    work_msg_f += f"""
+{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+                    n += 1
+                work_msg_f += "\n(悬赏令每小时更新一次)"
+                work[user_id].msg = work_msg_f
+                work[user_id].world = work_list
+                await do_work.finish(work[user_id].msg)
+            else:
+                await do_work.finish(work[user_id].msg)
+    except KeyError:
+        pass
+
+    if user_cd_message is None:
+        work_msg = XiuxianJsonDate().do_work(0)
+        n = 1
+        work_msg_f = f"""     ✨道友的个人悬赏令✨"""
+        for i in work_msg:
+            work_list.append(i[0])
+            work_msg_f += f"""
+{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+            n += 1
+        work_msg_f +=f"\n(悬赏令每小时更新一次)"
+        work[user_id] = do_is_work(user_id)
+        work[user_id].time = datetime.now()
+        work[user_id].msg = work_msg_f
+        work[user_id].world = work_list
+        await do_work.finish(work_msg_f)
+
+    elif user_cd_message.type == 0:
+
+        work_msg = XiuxianJsonDate().do_work(0)
+        work_msg_f = f"""     ✨道友的个人悬赏令✨"""
+        n = 1
+        for i in work_msg:
+            work_list.append(i[0])
+            work_msg_f += f"""
+{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+            n+=1
+        work_msg_f +=f"\n(榜单每小时更新一次)"
+        work[user_id] = do_is_work(user_id)
+        work[user_id].time = datetime.now()
+        work[user_id].msg = work_msg_f
+        work[user_id].world = work_list
+        await do_work.finish(work_msg_f)
+
+    elif user_cd_message.type == 1:
+        await do_work.finish("已经在闭关中，请输入【出关】结束后才能获取悬赏令！", at_sender=True)
+
+    elif user_cd_message.type == 2:
+        await do_work.finish("已有悬赏令中，请输入【悬赏令结算】结束！", at_sender=True)
+
 
 
 
