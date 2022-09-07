@@ -66,7 +66,7 @@ class XiuxianDateManage:
                                     scheduled_time INTEGER);""")
 
         sql = "select * FROM level where name=?"
-        c.execute(sql, ("龙灵根",))
+        c.execute(sql, ("融合灵根",))
         result = c.fetchone()
         if result:
             pass
