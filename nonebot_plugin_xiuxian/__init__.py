@@ -8,7 +8,7 @@ from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OW
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from datetime import datetime
 import random
-from .xiuxian_opertion import gamebingo,do_is_work
+from .xiuxian_opertion import gamebingo, do_is_work, time_msg
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -27,7 +27,7 @@ __xiuxian_notes__ = f'''
 8、闭关、出关：修炼增加修为，挂机功能
 9、送灵石+数量+道号或者艾特对应人
 10、排行榜：修仙排行榜，灵石排行榜
-10、其他功能to do中 
+10、悬赏令：获取任务单，接取任务示例：悬赏令接取1， 任务结算：悬赏令结算
 '''.strip()
 
 driver = get_driver()
@@ -55,8 +55,9 @@ out_closing = on_command('出关',priority=5)
 give_stone = on_command('送灵石', priority=5)
 do_work = on_command("悬赏令", priority=5)
 
-race = {}
-work = {}
+race = {}  # 押注信息记录
+work = {}  # 悬赏令信息记录
+the_time = {}  # 操作时长记录
 sql_message = XiuxianDateManage()
 
 @run_xiuxian.handle()
@@ -340,13 +341,13 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         realm_rate = ((OtherSet().level.index(level)) * 0.2) + 1   # 境界倍率
         exp = int(exp_time * 10 * level_rate * realm_rate)
 
-        print("max_exp",max_exp)
-        print("user_get_exp_max",user_get_exp_max)
-        print("level_rate", level_rate)
-        print("realm_rate", realm_rate)
-        print("exp", exp)
-        print("OtherSet().level.index(level)", OtherSet().level.index(level))
-        print("user_level", level)
+        # print("max_exp",max_exp)
+        # print("user_get_exp_max",user_get_exp_max)
+        # print("level_rate", level_rate)
+        # print("realm_rate", realm_rate)
+        # print("exp", exp)
+        # print("OtherSet().level.index(level)", OtherSet().level.index(level))
+        # print("user_level", level)
 
 
         if exp >= user_get_exp_max:
@@ -478,27 +479,51 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     user_id = event.get_user_id()
 
     text = args.extract_plain_text().strip()
-    print(text)
-    if text == "接取1" or text == "接取2" or text == "接取3":
-        try:
-            if work[user_id]:
-                work_num = re.findall("\d+", text)  ##任务序号
-                if work_num[0] == '1':
-                    print("接取任务1")
-                elif work_num[0] == '2':
-                    print("接取任务2")
-                elif work_num[0] == '3':
-                    print("接取任务3")
-                else:
-                    print("任务接取错误")
-        except KeyError:
-            await do_work.finish("pass")
-    elif text == "结算":
-        pass
 
     if sql_message.get_user_message(user_id) is None:
         await do_work.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
+
     user_cd_message = sql_message.get_user_cd(user_id)
+
+    if "接取" in text:
+        try:
+            if work[user_id]:
+                work_num = re.findall("\d+", text)  ##任务序号
+
+                try:
+                    get_work = work[user_id].world[int(work_num[0])-1]
+                    sql_message.do_work(user_id, user_type, get_work[0])
+                    del work[user_id]
+                    the_time[user_id] = time_msg()
+                    the_time[user_id].time = get_work[1]
+                    await do_work.finish(f"接取任务【{get_work[0]}】成功")
+                except IndexError:
+                    await do_work.finish("没有这样的任务")
+
+        except KeyError:
+            await do_work.finish("没有查到你的悬赏令信息呢！")
+    elif text == "结算":
+        if user_cd_message is None:
+            await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
+
+        elif user_cd_message.type == 0:
+            await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
+
+        elif user_cd_message.type == 1:
+            await do_work.finish("道友现在在闭关呢，小心走火入魔！", at_sender=True)
+
+        elif user_cd_message.type == 2:
+            work_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
+            exp_time = (datetime.now() - work_time).seconds // 60  # 闭关时长计算
+            if exp_time < the_time[user_id].time:
+                await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{the_time[user_id].time - exp_time}分钟后可结束",
+                                     at_sender=True)
+            else:
+                work_sf = XiuxianJsonDate().do_work(2,user_cd_message.scheduled_time)
+                sql_message.update_ls(user_id,work_sf[1],1)
+                sql_message.do_work(user_id, 0)
+                del the_time[user_id]
+                await do_work.finish(f"悬赏令结算，{work_sf[0]},最终获得报酬{work_sf[1]}枚灵石！")
 
     try:
         if work[user_id]:
@@ -508,9 +533,9 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
                 n = 1
                 work_msg_f = f"""     ✨道友的个人悬赏令✨"""
                 for i in work_msg:
-                    work_list.append(i[0])
+                    work_list.append([i[0], i[3]])
                     work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}   预计需{i[3]}分钟"""
                     n += 1
                 work_msg_f += "\n(悬赏令每小时更新一次)"
                 work[user_id].msg = work_msg_f
@@ -526,9 +551,9 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         n = 1
         work_msg_f = f"""     ✨道友的个人悬赏令✨"""
         for i in work_msg:
-            work_list.append(i[0])
+            work_list.append([i[0], i[3]])
             work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+{n}、{i[0]}   完成机率{i[1]}  报酬{i[2]}  预计需{i[3]}分钟"""
             n += 1
         work_msg_f +=f"\n(悬赏令每小时更新一次)"
         work[user_id] = do_is_work(user_id)
@@ -543,9 +568,9 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         work_msg_f = f"""     ✨道友的个人悬赏令✨"""
         n = 1
         for i in work_msg:
-            work_list.append(i[0])
+            work_list.append([i[0], i[3]])
             work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}"""
+{n}、{i[0]}     完成机率{i[1]}   报酬{i[2]}  预计需{i[3]}分钟"""
             n+=1
         work_msg_f +=f"\n(榜单每小时更新一次)"
         work[user_id] = do_is_work(user_id)
@@ -558,7 +583,13 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         await do_work.finish("已经在闭关中，请输入【出关】结束后才能获取悬赏令！", at_sender=True)
 
     elif user_cd_message.type == 2:
-        await do_work.finish("已有悬赏令中，请输入【悬赏令结算】结束！", at_sender=True)
+        work_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
+        exp_time = (datetime.now() - work_time).seconds // 60   # 闭关时长计算
+        if exp_time < the_time[user_id].time:
+            await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{the_time[user_id].time - exp_time}分钟后可结束", at_sender=True)
+        else:
+            await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
+                                 at_sender=True)
 
 
 

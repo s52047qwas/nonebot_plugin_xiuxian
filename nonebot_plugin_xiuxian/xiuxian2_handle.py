@@ -73,25 +73,25 @@ class XiuxianDateManage:
         else:
             c.execute(f"DELETE from level")
             c.executescript(f"""INSERT INTO "main"."level" ("name", "power") VALUES ('江湖好手', 100);
-INSERT INTO "main"."level" ("name", "power") VALUES ('练气境初期', 1000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('练气境中期', 2000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('练气境圆满', 3000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境初期', 8000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境中期', 9000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境圆满', 10000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
-INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
-INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
-INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
-INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
-INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
-INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
-INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境初期', 160000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
-INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
+        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境初期', 1000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境中期', 2000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境圆满', 3000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境初期', 8000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境中期', 9000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境圆满', 10000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境初期', 160000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
 
     def _get_id(self) -> int:
         """获取下一个id"""
@@ -368,9 +368,10 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
 
         return mess
 
-    def do_work(self,user_id, the_type, sc_time):
+    def do_work(self,user_id, the_type, sc_time=None):
         """
         更新用户操作CD
+        :param sc_time: 任务
         :param user_id: qq
         :param the_type: 0:无状态  1：闭关中  2：历练中
         :param the_time: 本次操作的时长
@@ -381,7 +382,6 @@ INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);
             now_time = datetime.datetime.now()
         elif the_type == 0:
             now_time = 0
-            scheduled_time = None
         elif the_type == 2:
             now_time = datetime.datetime.now()
 
@@ -448,7 +448,7 @@ class XiuxianJsonDate:
                 get_work_list = []
                 for i in data:
                     name = random.choice(list(data[i].keys()))
-                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"]])
+                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"],data[i][name]["time"]])
                 return get_work_list
 
             elif key == 2:   # 如果是结算，则获取结果
@@ -546,10 +546,17 @@ class OtherSet:
                    "ATK": 10,
                    "AC": 19}
 
-        player1_gj = player1['ATK'] * player1["ROOT_RATE"] * player1["LEVEL_RATE"]
-        player2_gj = player2['ATK'] * player2["ROOT_RATE"] * player2["LEVEL_RATE"]
-        print(player1_gj)
-        print(player2_gj)
+        HP_SEND = True
+        while HP_SEND is True:
+            player1_gj = (random.randint(1, 10) + player1['ATK']) * player1["ROOT_RATE"] * player1["LEVEL_RATE"]
+            player2_gj = (random.randint(1, 10) + player2['ATK']) * player2["ROOT_RATE"] * player2["LEVEL_RATE"]
+
+            player2['HP'] = player2['HP'] - (int(player1_gj) - player2["AC"])
+            print(player2['HP'])
+            HP_SEND = False
+        else:
+            print('222')
+
 
 
 if __name__ == '__main__':
