@@ -314,7 +314,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     elif user_cd_message.type == 1:
         await in_closing.finish("已经在闭关中，请输入【出关】结束！", at_sender=True)
     elif user_cd_message.type == 2:
-        await in_closing.finish("已经在历练中，请输入【结束历练】结束！", at_sender=True)
+        await in_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
 
 @out_closing.handle()
 async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
