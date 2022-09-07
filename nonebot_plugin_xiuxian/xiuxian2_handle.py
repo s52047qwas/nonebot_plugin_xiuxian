@@ -438,7 +438,7 @@ class XiuxianJsonDate:
                 return root, lgen
 
 
-    def do_work(self,key,work_list=None):
+    def do_work(self,key,work_list=None,name=None):
         """悬赏令获取"""
         with open(self.do_work_jsonpath, 'r', encoding='utf-8') as e:
             a = e.read()
@@ -448,8 +448,15 @@ class XiuxianJsonDate:
                 get_work_list = []
                 for i in data:
                     name = random.choice(list(data[i].keys()))
-                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"],data[i][name]["time"]])
+                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"], data[i][name]["time"]])
                 return get_work_list
+
+            if key == 1:  ##返回对应的悬赏令信息
+                for i in data:
+                    try:
+                        return data[i][name]['time']
+                    except:
+                        pass
 
             elif key == 2:   # 如果是结算，则获取结果
                 work_event = None
