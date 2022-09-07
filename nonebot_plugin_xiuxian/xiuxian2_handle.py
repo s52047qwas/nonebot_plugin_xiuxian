@@ -86,6 +86,7 @@ class XiuxianDateManage:
         INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
         INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
         INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('融合灵根', 1.5);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
