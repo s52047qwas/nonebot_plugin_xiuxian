@@ -86,6 +86,7 @@ class XiuxianDateManage:
         INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
         INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
         INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
+        INSERT INTO "main"."level" ("name", "power") VALUES ('融合灵根', 1.5);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
         INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
@@ -157,8 +158,8 @@ class XiuxianDateManage:
         if not result:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
         elif result[0]==0:
-            ls = random.randint(1,100)
-            exp = random.randint(100,500)
+            ls = random.randint(100,300)
+            exp = random.randint(500,3000)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+?,exp=exp+? WHERE user_id=?"
             cur.execute(sql2, (ls, exp,user_id))
             self.conn.commit()
