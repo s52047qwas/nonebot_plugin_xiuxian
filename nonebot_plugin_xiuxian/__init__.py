@@ -1,14 +1,16 @@
 import re
-from itertools import chain
 from nonebot.log import logger
 from nonebot import get_driver
 from nonebot import on_command,require,on_message
 from nonebot.params import CommandArg, RawCommand,Depends, Arg, ArgStr, RegexMatched
-from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OWNER, Message, MessageEvent, GroupMessageEvent,MessageSegment
+from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OWNER, Message, MessageEvent, \
+    GroupMessageEvent, MessageSegment
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from datetime import datetime
 import random
 from .xiuxian_opertion import gamebingo, do_is_work, time_msg
+from .xiuxian_config import XiuConfig
+from .data_source import jsondata
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -57,7 +59,6 @@ do_work = on_command("悬赏令", priority=5)
 
 race = {}  # 押注信息记录
 work = {}  # 悬赏令信息记录
-the_time = {}  # 操作时长记录
 sql_message = XiuxianDateManage()
 
 @run_xiuxian.handle()
@@ -68,7 +69,7 @@ async def _(event: GroupMessageEvent):
     user_name = event.sender.card if event.sender.card else event.sender.nickname  # 获取为用户名
     root, root_type = XiuxianJsonDate().linggen_get()     # 获取灵根，灵根类型
 
-    rate = sql_message.get_type_power(root_type)
+    rate = sql_message.get_root_rate(root_type)
     power = 100 * float(rate)
     create_time = str(datetime.now())
 
@@ -88,10 +89,10 @@ async def _(event: GroupMessageEvent):
             pass
         else:
             user_name = '无名氏(发送改名+道号更新)'
-        level_rate = sql_message.get_type_power(mess.root_type)  # 灵根倍率
+        level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
         realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
-        print(level_rate)
-        print(realm_rate)
+        # print(level_rate)
+        # print(realm_rate)
         msg = f'''{user_name}道友的信息
 灵根为：{mess[3]}
 灵根类型为：{mess[4]}
@@ -337,7 +338,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
     elif user_cd_message.type == 1:
         in_closing_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
         exp_time = (now_time - in_closing_time).seconds // 60   # 闭关时长计算
-        level_rate = sql_message.get_type_power(user_mes.root_type)  # 灵根倍率
+        level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
         realm_rate = ((OtherSet().level.index(level)) * 0.2) + 1   # 境界倍率
         exp = int(exp_time * 10 * level_rate * realm_rate)
 
@@ -359,7 +360,7 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
             sql_message.update_exp(user_id, exp)
             await out_closing.finish("闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp),at_sender=True)
     elif user_cd_message.type == 2:
-        await out_closing.finish("已经在历练中，请输入【结束历练】结束！")
+        await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！",at_sender=True)
 
 
 
@@ -378,16 +379,15 @@ async def update_level(event: GroupMessageEvent):
     level_cd = user_mes.level_up_cd
     if level_cd:
         time_now = datetime.now()
-        cd = (time_now - datetime.strptime(level_cd, '%Y-%m-%d %H:%M:%S.%f')).seconds
-        if cd < 6000:
-            await level_up.finish('目前无法突破，还需要{}分钟'.format(100 - (cd//60)))
+        cd = OtherSet().date_diff(time_now,level_cd)
+        if cd < XiuConfig().level_up_cd * 100:
+            await level_up.finish('目前无法突破，还需要{}分钟'.format(100 - (cd // XiuConfig().level_up_cd)))
     else:
         pass
 
     level_name = user_mes.level  #境界
     exp = user_mes.exp   #修为
-
-    level_rate = XiuxianJsonDate().level_rate(level_name)  #对应境界突破的概率
+    level_rate = jsondata.level_rate_data()[level_name]  #对应境界突破的概率
 
     le = OtherSet().get_type(exp, level_rate, level_name)
 
@@ -399,7 +399,7 @@ async def update_level(event: GroupMessageEvent):
         await level_up.finish('道友突破失败,境界受损,修为减少{}，过段时间再突破吧！'.format(now_exp))
     elif type(le)==list:
         sql_message.updata_level(user_id,le[0])
-        sql_message.update_power(user_id)
+        sql_message.update_power2(user_id)
         sql_message.updata_level_cd(user_id)
         await level_up.finish('恭喜道友突破{}成功'.format(le[0]))
     else:
@@ -427,8 +427,8 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         await give_stone.finish('请输入正确的灵石数量！')
 
     give_stone_num = stone_num[0]
-    print(give_stone_num)
-    print(user_stone_num)
+    # print(give_stone_num)
+    # print(user_stone_num)
     if int(give_stone_num) > int(user_stone_num):
         await give_stone.finish('道友的灵石不够，请重新输入！')
 

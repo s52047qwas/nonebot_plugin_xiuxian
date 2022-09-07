@@ -4,6 +4,8 @@ import random
 import sqlite3
 from collections import namedtuple
 from pathlib import Path
+from .data_source import jsondata
+from .xiuxian_config import XiuConfig
 
 DATABASE =Path() / "data" / "xiuxian"
 
@@ -11,15 +13,6 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate", ["id", "user_id", "stone", "root","root_type","level","power","create_time","is_sign","exp","user_name","level_up_cd"])
 UserCd = namedtuple("UserCd", [ "user_id", "type", "create_time", "scheduled_time"])
-
-
-def linggen_get():
-    path_lg = DATABASE / "灵根_beifen.json"
-    with open(path_lg,'r', encoding='utf-8') as e:
-        a = e.read()
-        data = json.loads(a)
-        lg = random.choice(data)
-        return lg['name'],lg['type']
 
 
 class XiuxianDateManage:
@@ -65,34 +58,34 @@ class XiuxianDateManage:
                                     create_time    INTEGER,
                                     scheduled_time INTEGER);""")
 
-        sql = "select * FROM level where name=?"
-        c.execute(sql, ("融合灵根",))
-        result = c.fetchone()
-        if result:
-            pass
-        else:
-            c.execute(f"DELETE from level")
-            c.executescript(f"""INSERT INTO "main"."level" ("name", "power") VALUES ('江湖好手', 100);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境初期', 1000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境中期', 2000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('练气境圆满', 3000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境初期', 8000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境中期', 9000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境圆满', 10000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('融合灵根', 1.5);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境初期', 160000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
-        INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
+        # sql = "select * FROM level where name=?"
+        # c.execute(sql, ("融合灵根",))
+        # result = c.fetchone()
+        # if result:
+        #     pass
+        # else:
+        #     c.execute(f"DELETE from level")
+        #     c.executescript(f"""INSERT INTO "main"."level" ("name", "power") VALUES ('江湖好手', 100);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境初期', 1000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境中期', 2000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境圆满', 3000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境初期', 8000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境中期', 9000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境圆满', 10000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('融合灵根', 1.5);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境初期', 160000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
+        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
 
     def _get_id(self) -> int:
         """获取下一个id"""
@@ -116,7 +109,7 @@ class XiuxianDateManage:
 
 
     def get_user_message(self,user_id):
-        '''获取用户信息'''
+        '''根据USER_ID获取用户信息'''
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
         cur.execute(sql, (user_id,))
@@ -127,7 +120,7 @@ class XiuxianDateManage:
             return UserDate(*result)
 
     def get_user_message2(self,user_id):
-        '''获取用户信息'''
+        '''根据user_name获取用户信息'''
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_name=?"
         cur.execute(sql, (user_id,))
@@ -147,7 +140,7 @@ class XiuxianDateManage:
             self.conn.commit()
             return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1], args[2],args[3])
         else:
-            return '您已迈入修仙世界，输入我的修仙信息，获取数据吧！'
+            return '您已迈入修仙世界，输入【我的修仙信息】获取数据吧！'
 
     def get_sign(self,user_id):
         '''获取用户签到信息'''
@@ -180,25 +173,31 @@ class XiuxianDateManage:
             cur.execute(sql, (lg, type,user_id))
             self.conn.commit()
 
-            self.update_power(user_id)
+            self.update_power2(user_id)
             return "逆天之行，重获新生，新的灵根为：{}，类型为：{}".format(lg,type)
         else:
             return "你的灵石还不够呢，快去赚点灵石吧！"
 
-    def get_type_power(self,name):
-        """获取灵根或境界的战力和倍率"""
-        cur = self.conn.cursor()
-        sql = f"SELECT power FROM level WHERE name=?"
-        cur.execute(sql, (name,))
-        result = cur.fetchone()
-        return result[0]
 
-    def update_power(self,user_id) -> None:
+    def get_root_rate(self,name):
+        """获取灵根倍率"""
+        data = jsondata.root_data()
+        return data[name]['type_speeds']
+
+    def get_level_power(self,name):
+        """获取境界倍率"""
+        data = jsondata.level_data()
+        return data[name]['power']
+
+
+    def update_power2(self,user_id) -> None:
         """更新战力"""
         UserMessage = self.get_user_message(user_id)
         cur = self.conn.cursor()
-        sql = f"UPDATE user_xiuxian SET power=(SELECT power FROM level WHERE name=?)*(SELECT power FROM level WHERE name=?) WHERE user_id=?"
-        cur.execute(sql, (UserMessage.root_type, UserMessage.level, user_id))
+        level = jsondata.level_data()
+        root = jsondata.root_data()
+        sql = f"UPDATE user_xiuxian SET power=?*? WHERE user_id=?"
+        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]['power'], user_id))
         self.conn.commit()
 
     def update_ls(self, user_id, price,key):
@@ -473,12 +472,10 @@ class XiuxianJsonDate:
                     return random.choice(work_event["fail"]), work_event["fail_thank"]
 
 
-class OtherSet:
+class OtherSet(XiuConfig):
 
     def __init__(self):
-        self.level = ['江湖好手', '练气境初期','练气境中期', '练气境圆满', '筑基境初期', '筑基境中期', '筑基境圆满',
-                      '结丹境初期', '结丹境中期', '结丹境圆满', '元婴境初期', '元婴境中期', '元婴境圆满']
-
+        super().__init__()
 
     def set_closing_type(self,user_level):
         list_all = len(self.level) - 1
@@ -486,7 +483,7 @@ class OtherSet:
         if list_all == now_index:
             return "道友已是最高境界，无法修炼了！"
         is_updata_level = self.level[now_index + 1]
-        need_exp = XiuxianDateManage().get_type_power(is_updata_level)
+        need_exp = XiuxianDateManage().get_level_power(is_updata_level)
         return need_exp
 
     def get_type(self,user_exp,rate,user_level):
@@ -496,7 +493,7 @@ class OtherSet:
             return "道友已是最高境界，无法突破！"
 
         is_updata_level = self.level[now_index + 1]
-        need_exp = XiuxianDateManage().get_type_power(is_updata_level)
+        need_exp = XiuxianDateManage().get_level_power(is_updata_level)
 
         #判断修为是否足够突破
         if user_exp >= need_exp:
@@ -539,6 +536,23 @@ class OtherSet:
 
         return list(rate.keys())[index_num]
 
+    def date_diff(self,new_time,old_time):
+        """计算日期差"""
+        if isinstance(new_time,datetime.datetime):
+            pass
+        else:
+            new_time = datetime.datetime.strptime(new_time, '%Y-%m-%d %H:%M:%S.%f')
+
+        if isinstance(old_time,datetime.datetime):
+            pass
+        else:
+            old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
+
+        day = (new_time - old_time).days
+        sec = (new_time - old_time).seconds
+
+        return (day * 24 * 60 * 60) + sec
+
     def fight(self,player1=None,player2=None):
         player1 = {'HP': 100,
                    "ROOT_RATE": 1,
@@ -568,6 +582,7 @@ class OtherSet:
 
 
 if __name__ == '__main__':
+    print(OtherSet().date_diff("2022-09-08 00:42:56.740255","2022-09-08 00:42:56.740255"))
     # paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
     # with open(paths, 'r', encoding='utf-8') as e:
     #     a = e.read()
@@ -589,7 +604,6 @@ if __name__ == '__main__':
     #         print(random.choice( work_event["succeed"]), work_event["succeed_thank"])
     #     else:
     #         print (random.choice(work_event["fail"]), work_event["fail_thank"])
-    OtherSet().fight()
 
 #     apath = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\xiuxian.db"
 #     conn = sqlite3.connect(apath)
