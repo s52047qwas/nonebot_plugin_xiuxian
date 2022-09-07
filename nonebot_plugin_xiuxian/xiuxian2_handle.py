@@ -158,8 +158,8 @@ class XiuxianDateManage:
         if not result:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
         elif result[0]==0:
-            ls = random.randint(1,100)
-            exp = random.randint(100,500)
+            ls = random.randint(100,300)
+            exp = random.randint(500,3000)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+?,exp=exp+? WHERE user_id=?"
             cur.execute(sql2, (ls, exp,user_id))
             self.conn.commit()
