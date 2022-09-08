@@ -33,5 +33,5 @@ class XiuConfig:
         self.closing_exp = 10    # 闭关每分钟增加的修为
         self.closing_exp_upper_limit = 1.5   # 闭关可获取修为上限（下一个境界需要的修为的1.5倍）
         self.level_punishment_floor = 1  # 突破失败扣除修为，惩罚下限(当前实例：1%)
-        self.level_punishment_limit = 10  # 突破失败扣除修为，惩罚下限(当前实例：10%)
+        self.level_punishment_limit = 5  # 突破失败扣除修为，惩罚下限(当前实例：10%)
 
