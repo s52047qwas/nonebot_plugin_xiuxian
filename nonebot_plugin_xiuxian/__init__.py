@@ -384,8 +384,8 @@ async def update_level(event: GroupMessageEvent):
     if level_cd:
         time_now = datetime.now()
         cd = OtherSet().date_diff(time_now,level_cd)
-        if cd < XiuConfig().level_up_cd * 100:
-            await level_up.finish('目前无法突破，还需要{}分钟'.format(100 - (cd // XiuConfig().level_up_cd)))
+        if cd < XiuConfig().level_up_cd * 60:
+            await level_up.finish('目前无法突破，还需要{}分钟'.format( XiuConfig().level_up_cd - (cd // 60)))
     else:
         pass
 
