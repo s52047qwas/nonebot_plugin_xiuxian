@@ -91,9 +91,13 @@ async def _(event: GroupMessageEvent):
             pass
         else:
             user_name = '无名氏(发送改名+道号更新)'
-        level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
+         level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
         # realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
         realm_rate = jsondata.level_data()[mess.level]['spend']   # 境界倍率
+        list_all = len(XiuConfig().level) - 1
+        now_index = XiuConfig().level.index(mess.level)
+        is_updata_level = XiuConfig().level[now_index + 1]
+        need_exp = XiuxianDateManage().get_level_power(is_updata_level)
         # print(level_rate)
         # print(realm_rate)
         msg = f'''{user_name}道友的信息
@@ -104,6 +108,7 @@ async def _(event: GroupMessageEvent):
 境界倍率为：{round(realm_rate,2)}
 当前灵石：{mess[2]}
 当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
+到下个境界还需{need_exp-mess.exp}修为
 你的战力为：{mess[6]}'''
     else:
         msg = '未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!'
