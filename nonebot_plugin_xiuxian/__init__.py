@@ -262,13 +262,13 @@ async def _(event: GroupMessageEvent):
 @rank.handle()
 async def _(event: GroupMessageEvent):
     # rank = on_command('排行榜', aliases={'修仙排行榜', '灵石排行榜', '战力排行榜', '境界排行榜'}, priority=5)
-    message = event.message
+    message = str(event.message)
     if message == "排行榜" or message == "修仙排行榜" or message == "境界排行榜":
-        _rank = sql_message.realm_top()
-        await rank.finish(message=_rank)
+        p_rank = sql_message.realm_top()
+        await rank.finish(message=p_rank)
     elif message == "灵石排行榜":
-        _rank = sql_message.stone_top()
-        await rank.finish(message=_rank)
+        a_rank = sql_message.stone_top()
+        await rank.finish(message=a_rank)
     elif message == "战力排行榜":
         pass
 
