@@ -92,7 +92,8 @@ async def _(event: GroupMessageEvent):
         else:
             user_name = '无名氏(发送改名+道号更新)'
         level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
-        realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
+        # realm_rate = ((OtherSet().level.index(mess.level)) * 0.2) + 1  # 境界倍率
+        realm_rate = jsondata.level_data()[mess.level]['spend']   # 境界倍率
         # print(level_rate)
         # print(realm_rate)
         msg = f'''{user_name}道友的信息
@@ -341,9 +342,11 @@ async def _(bot: Bot, event: GroupMessageEvent,args: Message = CommandArg()):
         await out_closing.finish("道友现在什么都没干呢~", at_sender=True)
     elif user_cd_message.type == 1:
         in_closing_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
-        exp_time = (now_time - in_closing_time).seconds // 60   # 闭关时长计算
+        # exp_time = (now_time - in_closing_time).seconds // 60   # 闭关时长计算
+        exp_time = OtherSet().date_diff(now_time,in_closing_time) // 60    # 闭关时长计算
         level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
-        realm_rate = ((OtherSet().level.index(level)) * 0.2) + 1   # 境界倍率
+        # realm_rate = ((OtherSet().level.index(level)) * 0.2) + 1   # 境界倍率
+        realm_rate = jsondata.level_data()[level]['spend']   # 境界倍率
         exp = int(exp_time * 10 * level_rate * realm_rate)
 
         # print("max_exp",max_exp)
