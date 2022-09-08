@@ -27,7 +27,7 @@ class XiuxianDateManage:
             self.database_path /= "xiuxian.db"
             self.conn = sqlite3.connect(self.database_path)
         print(f"数据库已连接！")
-        self._check_data()
+        # self._check_data()
 
     def close(self):
         self.conn.close()
@@ -87,13 +87,6 @@ class XiuxianDateManage:
         # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
         # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
 
-    def _get_id(self) -> int:
-        """获取下一个id"""
-        cur = self.conn.cursor()
-        cur.execute('select id from user_xiuxian')
-        result = cur.fetchall()
-        print(result)
-        return len(result) + 1
 
     @classmethod
     def close_dbs(cls):
@@ -101,10 +94,9 @@ class XiuxianDateManage:
 
     def _create_user(self, user_id: str,root:str,type:str,power:str,create_time,user_name) -> None:
         """在数据库中创建用户并初始化"""
-        new_id = self._get_id()
         c = self.conn.cursor()
-        sql = f"INSERT INTO user_xiuxian (id,user_id,stone,root,root_type,level,power,create_time,user_name) VALUES (?,?,0,?,?,'江湖好手',?,?,?)"
-        c.execute(sql, (new_id, user_id,root,type,power,create_time,user_name))
+        sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name) VALUES (?,0,?,?,'江湖好手',?,?,?)"
+        c.execute(sql, (user_id,root,type,power,create_time,user_name))
         self.conn.commit()
 
 
@@ -131,6 +123,7 @@ class XiuxianDateManage:
             return UserDate(*result)
 
     def create_user(self,user_id,*args):
+        """校验用户是否存在"""
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
         cur.execute(sql, (user_id,))
@@ -415,61 +408,64 @@ class XiuxianJsonDate:
 
     def linggen_get(self):
         """获取灵根信息"""
-        with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
-            file_data = e.read()
-            data = json.loads(file_data)
-            rate_dict = {}
-            for i, v in data.items():
-                rate_dict[i] = v["type_rate"]
-            lgen = OtherSet().calculated(rate_dict)
-            if data[lgen]["type_flag"]:
-                flag = random.choice(data[lgen]["type_flag"])
-                root = random.sample(data[lgen]["type_list"], flag)
-                msg = ""
-                for j in root:
-                    if j == root[-1]:
-                        msg += j
-                        break
-                    msg += (j + "、")
+        # with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
+        #     file_data = e.read()
+        #     data = json.loads(file_data)
+        data = jsondata.root_data()
+        rate_dict = {}
+        for i, v in data.items():
+            rate_dict[i] = v["type_rate"]
+        lgen = OtherSet().calculated(rate_dict)
+        if data[lgen]["type_flag"]:
+            flag = random.choice(data[lgen]["type_flag"])
+            root = random.sample(data[lgen]["type_list"], flag)
+            msg = ""
+            for j in root:
+                if j == root[-1]:
+                    msg += j
+                    break
+                msg += (j + "、")
 
-                return msg + '属性灵根', lgen
-            else:
-                root = random.choice(data[lgen]["type_list"])
-                return root, lgen
+            return msg + '属性灵根', lgen
+        else:
+            root = random.choice(data[lgen]["type_list"])
+            return root, lgen
 
 
     def do_work(self,key,work_list=None,name=None):
         """悬赏令获取"""
-        with open(self.do_work_jsonpath, 'r', encoding='utf-8') as e:
-            a = e.read()
-            data = json.loads(a)
+        # with open(self.do_work_jsonpath, 'r', encoding='utf-8') as e:
+        #     a = e.read()
+        #     data = json.loads(a)
+        data = jsondata.reward_that_data()
+        print("111",data)
+        print(type(data))
+        if key == 0:   # 如果没有获取过，则返回悬赏令
+            get_work_list = []
+            for i in data:
+                name = random.choice(list(data[i].keys()))
+                get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"], data[i][name]["time"]])
+            return get_work_list
 
-            if key == 0:   # 如果没有获取过，则返回悬赏令
-                get_work_list = []
-                for i in data:
-                    name = random.choice(list(data[i].keys()))
-                    get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"], data[i][name]["time"]])
-                return get_work_list
+        if key == 1:  ##返回对应的悬赏令信息
+            for i in data:
+                try:
+                    return data[i][name]['time']
+                except:
+                    pass
 
-            if key == 1:  ##返回对应的悬赏令信息
-                for i in data:
-                    try:
-                        return data[i][name]['time']
-                    except:
-                        pass
-
-            elif key == 2:   # 如果是结算，则获取结果
-                work_event = None
-                for i, v in data.items():
-                    for vk, vv in v.items():
-                        if vk == work_list:
-                            work_event = vv
+        elif key == 2:   # 如果是结算，则获取结果
+            work_event = None
+            for i, v in data.items():
+                for vk, vv in v.items():
+                    if vk == work_list:
+                        work_event = vv
 
 
-                if random.randint(1, 100) <= work_event["rate"]:
-                    return random.choice(work_event["succeed"]), work_event["succeed_thank"]
-                else:
-                    return random.choice(work_event["fail"]), work_event["fail_thank"]
+            if random.randint(1, 100) <= work_event["rate"]:
+                return random.choice(work_event["succeed"]), work_event["succeed_thank"]
+            else:
+                return random.choice(work_event["fail"]), work_event["fail_thank"]
 
 
 class OtherSet(XiuConfig):

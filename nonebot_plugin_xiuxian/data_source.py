@@ -37,12 +37,12 @@ class JsonDate:
 
     def reward_that_data(self):
         """获取悬赏令信息"""
-        with open(self.level_rate_jsonpath, 'r', encoding='utf-8') as e:
+        with open(self.Reward_that_jsonpath, 'r', encoding='utf-8') as e:
             file_data = e.read()
             data = json.loads(file_data)
             return data
 
-    def my_test_file(self,pathfile):
+    def my_test_file(self, pathfile):
         with open(pathfile, 'r', encoding='utf-8') as e:
             file_data = e.read()
             data = json.loads(file_data)
