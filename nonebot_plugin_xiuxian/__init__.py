@@ -98,9 +98,9 @@ async def _(event: GroupMessageEvent):
         msg = f'''{user_name}道友的信息
 灵根为：{mess[3]}
 灵根类型为：{mess[4]}
-灵根倍率为：{round(level_rate，2)}
+灵根倍率为：{round(level_rate,2)}
 当前境界：{mess[5]}
-境界倍率为：{round(realm_rate，2)}
+境界倍率为：{round(realm_rate,2)}
 当前灵石：{mess[2]}
 当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
 你的战力为：{mess[6]}'''
