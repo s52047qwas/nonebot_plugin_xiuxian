@@ -4,31 +4,31 @@
       "rate": 80,
       "time": 60,
       "succeed": ["一番辛苦，终于找到了玉髓芝，成功完成了任务！"],
-      "succeed_thank" : 100,
+      "succeed_thank" : 200,
       "fail": ["采摘的玉髓芝被偷了一部分，报酬也少了大半..."],
-      "fail_thank" : 50
+      "fail_thank" : 100
     },
     "寻找紫猴花": {
       "rate": 70,
       "time": 60,
       "succeed": ["一番辛苦，终于找到了紫猴花，成功完成了任务！"],
-      "succeed_thank" : 120,
+      "succeed_thank" : 240,
       "fail": ["采摘的紫猴花被偷了一部分，报酬也少了大半..."],
-      "fail_thank" : 60
+      "fail_thank" : 100
     },
     "寻找天灵果": {
       "rate": 60,
       "time": 60,
       "succeed": ["一番辛苦，终于找到了天灵果，成功完成了任务！"],
-      "succeed_thank" : 150,
+      "succeed_thank" : 300,
       "fail": ["采摘的天灵果被偷了一部分，报酬也少了大半..."],
-      "fail_thank" : 80
+      "fail_thank" : 100
     },
     "寻找风灵花": {
       "rate": 50,
       "time": 60,
       "succeed": ["一番辛苦，终于找到了风灵花，成功完成了任务！"],
-      "succeed_thank" : 200,
+      "succeed_thank" : 400,
       "fail": ["采摘的风灵花被偷了一部分，报酬也少了大半..."],
       "fail_thank" : 100
     },
@@ -36,9 +36,9 @@
       "rate": 40,
       "time": 60,
       "succeed": ["一番辛苦，终于找到了玄冰花，成功完成了任务！"],
-      "succeed_thank" : 300,
+      "succeed_thank" : 500,
       "fail": ["采摘的玄冰花保存不当，消失； 一大半，报酬也少了大半..."],
-      "fail_thank" : 150
+      "fail_thank" : 100
     }
   },
   "捉妖": {
@@ -48,7 +48,7 @@
       "succeed": ["抓获七彩吞天蟒幼崽成功！快跑"],
       "succeed_thank" : 800,
       "fail": ["偷摸还没进去就被发现了，被打成了重伤..."],
-      "fail_thank" : 100
+      "fail_thank" : 200
     },
     "捕捉黄金比蒙": {
       "rate": 60,
@@ -56,15 +56,15 @@
       "succeed": ["捕捉黄金比蒙成功！"],
       "succeed_thank" : 600,
       "fail": ["失误把黄金比蒙杀死了..."],
-      "fail_thank" : 100
+      "fail_thank" : 200
     },
     "捕捉鬼面马": {
       "rate": 70,
       "time": 120,
       "succeed": ["捕捉鬼面马成功！"],
-      "succeed_thank" : 550,
+      "succeed_thank" : 500,
       "fail": ["失误把鬼面马杀死了..."],
-      "fail_thank" : 50
+      "fail_thank" : 200
     },
     "捕捉啸月天狼": {
       "rate": 50,
@@ -72,7 +72,7 @@
       "succeed": ["捕捉啸月天狼成功！"],
       "succeed_thank" : 700,
       "fail": ["失误把啸月天狼杀死了..."],
-      "fail_thank" : 150
+      "fail_thank" : 200
     },
     "捕捉雷纹虎": {
       "rate": 30,
@@ -114,6 +114,14 @@
       "succeed_thank" : 3600,
       "fail": ["一番大战下来，被打的落花流水，只能逃跑！..."],
       "fail_thank" : 200
+    },
+     "阻止唐三复活女大学生": {
+      "rate": 40,
+      "time": 180,
+      "succeed": ["赶到的时候只看到了唐三大喊:复活吧我滴爱人！"],
+      "succeed_thank" : 2000,
+      "fail": ["你偷偷的把女大学生的魂骨换成了大体老师的骨头，复活进行到一半唐三的魂环全炸了..."],
+      "fail_thank" : 100
     },
     "活捉涂山苏苏": {
       "rate": 10,
