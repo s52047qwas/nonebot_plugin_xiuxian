@@ -489,7 +489,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.update_ls(give_qq, num, 1)  # 增加用户灵石
 
                 await give_stone.finish(
-                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_qq, int(give_stone_num2)))
+                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_user.user_name, int(give_stone_num2)))
             else:
                 await give_stone.finish("对方未踏入修仙界，不可赠送！")
 

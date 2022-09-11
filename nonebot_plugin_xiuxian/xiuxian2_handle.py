@@ -144,8 +144,8 @@ class XiuxianDateManage:
         if not result:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
         elif result[0]==0:
-            ls = random.randint(100,300)
-            exp = random.randint(500,3000)
+            ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit,XiuConfig().sign_in_lingshi_upper_limit)
+            exp = random.randint(XiuConfig().sign_in_xiuwei_lower_limit,XiuConfig().sign_in_xiuwei_upper_limit)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+?,exp=exp+? WHERE user_id=?"
             cur.execute(sql2, (ls, exp,user_id))
             self.conn.commit()
@@ -323,19 +323,34 @@ class XiuxianDateManage:
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
-        WHEN level = '元婴境圆满' THEN '10'
-        WHEN level = '元婴境中期' THEN '11'
-        WHEN level = '元婴境初期' THEN '12'
-        WHEN level = '结丹境圆满' THEN '13'
-        WHEN level = '结丹境中期' THEN '14'
-        WHEN level = '结丹境初期' THEN '15'
-        WHEN level = '筑基境圆满' THEN '16'
-        WHEN level = '筑基境中期' THEN '17'
-        WHEN level = '筑基境初期' THEN '18'
-        WHEN level = '练气境圆满' THEN '19'
-        WHEN level = '练气境中期' THEN '20'
-        WHEN level = '练气境初期' THEN '21'
-        WHEN level = '江湖好手' THEN '22'
+        WHEN level = '渡劫境圆满' THEN '01'
+        WHEN level = '渡劫境中期' THEN '02'
+        WHEN level = '渡劫境初期' THEN '03'
+        WHEN level = '大乘境圆满' THEN '04'
+        WHEN level = '大乘境中期' THEN '05'
+        WHEN level = '大乘境初期' THEN '06'
+        WHEN level = '合体境圆满' THEN '07'
+        WHEN level = '合体境中期' THEN '08'
+        WHEN level = '合体境初期' THEN '09'
+        WHEN level = '炼虚境圆满' THEN '10'
+        WHEN level = '炼虚境中期' THEN '11'
+        WHEN level = '炼虚境初期' THEN '12'
+        WHEN level = '化神境圆满' THEN '13'
+        WHEN level = '化神境中期' THEN '14'
+        WHEN level = '化神境初期' THEN '15'
+        WHEN level = '元婴境圆满' THEN '16'
+        WHEN level = '元婴境中期' THEN '17'
+        WHEN level = '元婴境初期' THEN '18'
+        WHEN level = '结丹境圆满' THEN '19'
+        WHEN level = '结丹境中期' THEN '20'
+        WHEN level = '结丹境初期' THEN '21'
+        WHEN level = '筑基境圆满' THEN '22'
+        WHEN level = '筑基境中期' THEN '23'
+        WHEN level = '筑基境初期' THEN '24'
+        WHEN level = '练气境圆满' THEN '25'
+        WHEN level = '练气境中期' THEN '26'
+        WHEN level = '练气境初期' THEN '27'
+        WHEN level = '江湖好手' THEN '28'
         ELSE level END ASC,exp DESC LIMIT 5"""
         cur = self.conn.cursor()
         cur.execute(sql, )
