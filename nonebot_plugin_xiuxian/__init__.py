@@ -55,6 +55,7 @@ in_closing = on_command('闭关', priority=5)
 out_closing = on_command('出关', priority=5)
 give_stone = on_command('送灵石', priority=5)
 do_work = on_command("悬赏令", priority=5)
+gm_command = on_command("gm送灵石", priority=5)
 
 race = {}  # 押注信息记录
 work = {}  # 悬赏令信息记录
@@ -634,3 +635,55 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
                                  at_sender=True)
+
+# GM加灵石
+@gm_command.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if user_message is None:
+        await give_stone.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+
+    give_qq = None  # 艾特的时候存到这里
+    msg = args.extract_plain_text().strip()
+
+    stone_num = re.findall("\d+", msg)  ## 灵石数
+    nick_name = re.findall("\D+", msg)  ## 道号
+
+    if int(user_id) == int(XiuConfig().gm_qq):
+        pass
+    else:
+        await gm_command.finish("无法使用")
+
+    give_stone_num = stone_num[0]
+
+    if stone_num:
+        pass
+    else:
+        await give_stone.finish("请输入正确的灵石数量！")
+
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+
+    if give_qq:
+        give_user = sql_message.get_user_message(give_qq)
+        if give_user:
+            sql_message.update_ls(give_qq, give_stone_num, 1)  # 增加用户灵石
+            await give_stone.finish(
+                "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_user.user_name)
+            )
+        else:
+            await give_stone.finish("对方未踏入修仙界，不可赠送！")
+    if nick_name:
+        give_message = sql_message.get_user_message2(nick_name[0])
+        if give_message:
+            sql_message.update_ls(give_message.user_id, give_stone_num, 1)  # 增加用户灵石
+            await give_stone.finish(
+                "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_message.user_name)
+            )
+        else:
+            await give_stone.finish("对方未踏入修仙界，不可赠送！")
+    else:
+        await give_stone.finish("未获取道号信息，请输入正确的道号！")
