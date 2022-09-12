@@ -134,59 +134,6 @@ async def _():
 
 @dice.handle()
 async def _(event: GroupMessageEvent):
-    """金银阁，大小信息"""
-    global race
-    message = event.message
-    user_id = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
-    try:
-        race[group_id]
-    except KeyError:
-        await price.finish()
-
-    if race[group_id].player[0] == user_id:
-        pass
-    else:
-        await dice.finish('吃瓜道友请不要捣乱！！！')
-
-    price_num = race[group_id].price
-    if price_num == 0:
-        await dice.finish('道友押注失败,请发送【押注+数字】押注！', at_sender=True)
-
-    if str(message) == '大' or str(message) == '小':
-        pass
-    else:
-        await dice.finish('请输入正确的结果【大】或者【小】！')
-
-    value = random.randint(1, 6)
-    msg = Message("[CQ:dice,value={}]".format(value))
-
-    if value >= 4:
-        if str(message) == '大':
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 1)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜对了，收获灵石{}块'.format(value, price_num), at_sender=True)
-        else:
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 2)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜错了，损失灵石{}块'.format(value, price_num), at_sender=True)
-    elif value <= 3:
-        if str(message) == '大':
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 2)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜错了，损失灵石{}块'.format(value, price_num), at_sender=True)
-        else:
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 1)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜对了，收获灵石{}块'.format(value, price_num), at_sender=True)
-
-
-@dufang.handle()
-async def _(event: GroupMessageEvent):
     """金银阁，开场信息"""
     global race
     user_id = event.get_user_id()
@@ -209,7 +156,7 @@ async def _(event: GroupMessageEvent):
     race[group_id].start_change(1)
     race[group_id].add_player(user_id)
     race[group_id].time = datetime.now()
-    await dufang.finish(f'发送【押注+数字】参与', at_sender=True)
+    await dufang.finish(f"发送【押注+数字】参与", at_sender=True)
 
 
 @price.handle()
@@ -229,23 +176,23 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         if race[group_id].player[0] == user_id:
             pass
         else:
-            await price.finish('吃瓜道友请不要捣乱！')
+            await price.finish("吃瓜道友请不要捣乱！")
     except KeyError:
         await price.finish()
     if msg:
         price_num = msg
         if race[group_id].price != 0:
-            await price.finish('钱财离手，不可退回！', at_sender=True)
+            await price.finish("钱财离手，不可退回！", at_sender=True)
         elif int(user_message.stone) < int(price_num):
-            await price.finish('道友的金额不足，请重新输入！')
+            await price.finish("道友的金额不足，请重新输入！")
         elif price_num.isdigit():
             race[group_id].add_price(int(price_num))
         else:
-            await price.finish('请输入正确的金额！')
+            await price.finish("请输入正确的金额！")
     else:
         await price.finish(f"请输入押注金额", at_sender=True)
 
-    out_msg = f'押注完成，发送【大】或者【小】 参与本局游戏！'
+    out_msg = f"押注完成，发送【大】【小】或者 1-6 之间的数字参与本局游戏！"
     await price.finish(out_msg, at_sender=True)
 
 
