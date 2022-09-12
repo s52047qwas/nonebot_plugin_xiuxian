@@ -134,6 +134,67 @@ async def _():
 
 @dice.handle()
 async def _(event: GroupMessageEvent):
+    """金银阁，大小信息"""
+    global race
+    message = event.message
+    user_id = event.get_user_id()
+    group_id = await get_group_id(event.get_session_id())
+    in_msg = ["大", "小", "1", "2", "3", "4", "5", "6"]
+
+    try:
+        race[group_id]
+    except KeyError:
+        await price.finish()
+
+    if race[group_id].player[0] == user_id:
+        pass
+    else:
+        await dice.finish("吃瓜道友请不要捣乱！！！")
+
+    price_num = race[group_id].price
+    if price_num == 0:
+        await dice.finish("道友押注失败,请发送【押注+数字】押注！", at_sender=True)
+
+    if str(message) in in_msg:
+        pass
+    else:
+        await dice.finish("请输入正确的结果【大】【小】或者 1-6 之间的数字！")
+
+    value = random.randint(1, 6)
+    msg = Message("[CQ:dice,value={}]".format(value))
+
+    if value >= 4 and str(message) == "大":
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 1)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif value <= 3 and str(message) == "小":
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 2)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜错了，损失灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif str(value) == str(message):
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num * 6, 1)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 6), at_sender=True
+        )
+    else:
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 2)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜错了，损失灵石{}块".format(value, price_num), at_sender=True
+        )
+
+
+@dufang.handle()
+async def _(event: GroupMessageEvent):
     """金银阁，开场信息"""
     global race
     user_id = event.get_user_id()
