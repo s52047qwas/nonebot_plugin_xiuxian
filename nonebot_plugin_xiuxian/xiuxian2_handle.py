@@ -353,9 +353,7 @@ class XiuxianDateManage:
         WHEN level = '江湖好手' THEN '28'
         ELSE level END ASC,exp DESC LIMIT 10"""
         cur = self.conn.cursor()
-        cur.execute(
-            sql,
-        )
+        cur.execute(sql, )
         result = cur.fetchall()
         mess = f"✨位面境界排行榜TOP10✨\n"
         num = 0
@@ -368,9 +366,7 @@ class XiuxianDateManage:
     def stone_top(self):
         sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY stone DESC LIMIT 10"
         cur = self.conn.cursor()
-        cur.execute(
-            sql,
-        )
+        cur.execute(sql, )
         result = cur.fetchall()
         mess = f"✨位面灵石排行榜TOP10✨\n"
         num = 0
