@@ -173,9 +173,9 @@ async def _(event: GroupMessageEvent):
         )
     elif value <= 3 and str(message) == "小":
         del race[group_id]
-        sql_message.update_ls(user_id, price_num, 2)
+        sql_message.update_ls(user_id, price_num, 1)
         await dice.send(msg)
-        await dice.finish("最终结果为{}，你猜错了，损失灵石{}块".format(value, price_num), at_sender=True)
+        await dice.finish("最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True)
     elif str(value) == str(message):
         del race[group_id]
         sql_message.update_ls(user_id, price_num * 6, 1)
