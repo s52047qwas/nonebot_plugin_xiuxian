@@ -138,6 +138,7 @@ async def _(event: GroupMessageEvent):
     """修仙签到"""
     user_id = event.get_user_id()
     result = sql_message.get_sign(user_id)
+    sql_message.update_power2(user_id)
     await sign_in.send(result, at_sender=True)
 
 
@@ -279,7 +280,7 @@ async def _(event: GroupMessageEvent):
     user_id = event.get_user_id()
     name, root_type = XiuxianJsonDate().linggen_get()
     result = sql_message.ramaker(name, root_type, user_id)
-
+    sql_message.update_power2(user_id)   # 更新战力
     await remaker.send(message=result, at_sender=True)
 
 
@@ -417,6 +418,7 @@ async def _(event: GroupMessageEvent):
             # 用户获取的修为到达上限
             sql_message.in_closing(user_id, user_type)
             sql_message.update_exp(user_id, user_get_exp_max)
+            sql_message.update_power2(user_id)  # 更新战力
             await out_closing.finish(
                 "闭关结束，本次闭关到达上限，共增加修为：{}".format(user_get_exp_max), at_sender=True
             )
@@ -424,6 +426,7 @@ async def _(event: GroupMessageEvent):
             # 用户获取的修为没有到达上限
             sql_message.in_closing(user_id, user_type)
             sql_message.update_exp(user_id, exp)
+            sql_message.update_power2(user_id)  # 更新战力
             await out_closing.finish(
                 "闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True
             )
@@ -709,7 +712,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
     nick_name = re.findall("\D+", msg)  ## 道号
 
-    coststone_num = 10  # print(give_stone_num)# print(user_stone_num)
+    coststone_num = XiuConfig().tou  # print(give_stone_num)# print(user_stone_num)
     if int(coststone_num) > int(user_stone_num):
         await steal_stone.finish('道友的偷窃准备(灵石)不足，请打工之后再切格瓦拉！')
 

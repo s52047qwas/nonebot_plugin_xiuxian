@@ -34,9 +34,9 @@ class XiuConfig:
         self.closing_exp_upper_limit = 1.5   # 闭关可获取修为上限（下一个境界需要的修为的1.5倍）
         self.level_punishment_floor = 1  # 突破失败扣除修为，惩罚下限(当前实例：1%)
         self.level_punishment_limit = 5  # 突破失败扣除修为，惩罚上限(当前实例：10%)
-        self.sign_in_lingshi_lower_limit = 100 # 每日签到灵石下限
-        self.sign_in_lingshi_upper_limit = 300 # 每日签到灵石上限
-        self.sign_in_xiuwei_lower_limit = 1000 # 每日签到修为下限
-        self.sign_in_xiuwei_upper_limit = 3000 # 每日签到修为上限
-        self.gm_qq = 1044763336
+        self.sign_in_lingshi_lower_limit = 100  # 每日签到灵石下限
+        self.sign_in_lingshi_upper_limit = 300  # 每日签到灵石上限
+        self.sign_in_xiuwei_lower_limit = 1000  # 每日签到修为下限
+        self.sign_in_xiuwei_upper_limit = 3000  # 每日签到修为上限
+        self.tou = 70  # 偷灵石惩罚
 

@@ -189,8 +189,8 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         level = jsondata.level_data()
         root = jsondata.root_data()
-        sql = f"UPDATE user_xiuxian SET power=?*? WHERE user_id=?"
-        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]['power'], user_id))
+        sql = f"UPDATE user_xiuxian SET power=exp*?*? WHERE user_id=?"
+        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]["spend"], user_id))
         self.conn.commit()
 
     def update_ls(self, user_id, price,key):
@@ -591,13 +591,13 @@ class OtherSet(XiuConfig):
             print('222')
             
     def get_power_rate(self, mind, other):
-        power_rate = mind / other
-        if power_rate > 10:
+        power_rate = mind / (other + mind)
+        if power_rate >= 9.5:
             return "道友偷窃小辈实属天道所不齿！"
-        elif power_rate < 0.1:
+        elif power_rate <= 0.05:
             return "道友请不要不自量力！"
         else:
-            return int(power_rate * 50)
+            return int(power_rate * 100)
 
 
 
