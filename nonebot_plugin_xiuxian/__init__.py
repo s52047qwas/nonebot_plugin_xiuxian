@@ -65,6 +65,7 @@ in_closing = on_command("闭关", priority=5)
 out_closing = on_command("出关", priority=5)
 give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
+steal_stone = on_command("偷灵石", priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 
 race = {}  # 押注信息记录
