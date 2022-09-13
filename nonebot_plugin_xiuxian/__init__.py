@@ -752,20 +752,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         give_user_stone = give_message.stone
         if give_message:
             steal_success2 = random.randint(0, 100)
-            if int(steal_success2) < OtherSet().get_power_rate(user_message.power, give_message.power):
+
+            result = OtherSet().get_power_rate(user_message.power, give_message.power)
+
+            if isinstance(result, int):
+                if int(steal_success2) < result:
+                    sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+                    await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
+                get_stone2 = random.randint(5, 100)
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
-                await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
-            get_stone2 = random.randint(5, 100)
-            sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
-            if int(get_stone2) > int(give_user_stone):
-                sql_message.update_ls(user_id, give_user_stone, 1)  # 增加偷到的灵石
-                sql_message.update_ls(give_message.user_id, give_user_stone, 2)  # 减少被偷的人的灵石
-                await steal_stone.finish(
-                "{}道友已经被榨干了~".format(give_message.user_name))
+                if int(get_stone2) > int(give_user_stone):
+                    sql_message.update_ls(user_id, give_user_stone, 1)  # 增加偷到的灵石
+                    sql_message.update_ls(give_message.user_id, give_user_stone, 2)  # 减少被偷的人的灵石
+                    await steal_stone.finish("{}道友已经被榨干了~".format(give_message.user_name))
+                else:
+                    sql_message.update_ls(user_id, get_stone2, 1)  # 增加偷到的灵石
+                    sql_message.update_ls(give_message.user_id, get_stone2, 2)  # 减少被偷的人的灵石
+                    await steal_stone.finish("共偷取{}道友{}枚灵石！".format(give_message.user_name, get_stone2))
             else:
-                sql_message.update_ls(user_id, get_stone2, 1)  # 增加偷到的灵石
-                sql_message.update_ls(give_message.user_id, get_stone2, 2)  # 减少被偷的人的灵石
-                await steal_stone.finish("共偷取{}道友{}枚灵石！".format(give_message.user_name, get_stone2))
+                await steal_stone.finish(result)
         else:
             await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
 
