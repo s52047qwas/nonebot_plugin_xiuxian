@@ -68,6 +68,11 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 
 ## 更新
 # 2022/09/13
+新增灵石出关功能，消耗对应灵石增加修为
+调整重入仙途为配置处调整消耗，XiuConfig.py
+新增偷灵石功能
+
+# 2022/09/13
 更新版本0.3.3
 调整存档显示，修复排行榜缺失，新增GM权限
 pip install nonebot-plugin-xiuxian==0.3.3
