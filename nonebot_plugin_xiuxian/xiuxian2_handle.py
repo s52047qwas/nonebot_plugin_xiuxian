@@ -589,6 +589,15 @@ class OtherSet(XiuConfig):
             HP_SEND = False
         else:
             print('222')
+            
+    def get_power_rate(self, mind, other):
+        power_rate = mind / other
+        if power_rate > 10:
+            return "道友偷窃小辈实属天道所不齿！"
+        elif power_rate < 0.1:
+            return "道友请不要不自量力！"
+        else:
+            return int(power_rate * 50)
 
 
 
