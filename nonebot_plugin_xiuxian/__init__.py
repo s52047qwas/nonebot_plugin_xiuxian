@@ -17,6 +17,7 @@ from nonebot.adapters.onebot.v11 import (
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from datetime import datetime
 import random
+from nonebot.permission import SUPERUSER
 from .xiuxian_opertion import gamebingo, do_is_work, time_msg
 from .xiuxian_config import XiuConfig
 from .data_source import jsondata
@@ -64,7 +65,7 @@ in_closing = on_command("闭关", priority=5)
 out_closing = on_command("出关", priority=5)
 give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
-gm_command = on_command("gm送灵石", priority=5)
+gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 
 race = {}  # 押注信息记录
 work = {}  # 悬赏令信息记录
@@ -688,27 +689,97 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
                 at_sender=True,
             )
+            
+#偷灵石
+@steal_stone.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    steal_user = None
+    steal_user_stone = None
+
+    if user_message is None:
+        await steal_stone.finish('修仙界没有你的信息！请输入我要修仙，踏入修行')
+
+    user_stone_num = user_message.stone
+    steal_qq = None  # 艾特的时候存到这里, 要偷的人
+    steal_name = None
+    msg = args.extract_plain_text().strip()
+
+    nick_name = re.findall("\D+", msg)  ## 道号
+
+    coststone_num = 10  # print(give_stone_num)# print(user_stone_num)
+    if int(coststone_num) > int(user_stone_num):
+        await steal_stone.finish('道友的偷窃准备(灵石)不足，请打工之后再切格瓦拉！')
+
+    for arg in args:
+        if arg.type == "at":
+            steal_qq = arg.data.get('qq', '')
+
+    if steal_qq:
+        if steal_qq == user_id:
+            await steal_stone.finish("请不要偷自己刷成就！")
+        else:
+            steal_user = sql_message.get_user_message(steal_qq)
+            steal_user_stone = steal_user.stone
+    if steal_user:
+        steal_success = random.randint(0, 100)
+
+        if int(steal_success) < OtherSet().get_power_rate(user_message.stone, steal_user.stone):
+            sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+            await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
+
+        get_stone = random.randint(5, 100)
+        sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+
+        if int(get_stone) > int(steal_user_stone):
+            sql_message.update_ls(user_id, steal_user_stone, 1)  # 增加偷到的灵石
+            sql_message.update_ls(steal_qq, steal_user_stone, 2)  # 减少被偷的人的灵石
+            await steal_stone.finish(
+                "{}道友已经被榨干了~".format(steal_user.user_name))
+        else:
+            sql_message.update_ls(user_id, get_stone, 1)  # 增加偷到的灵石
+            sql_message.update_ls(steal_qq, get_stone, 2)  # 减少被偷的人的灵石
+            await steal_stone.finish(
+                "共偷取{}道友{}枚灵石！".format(steal_user.user_name, get_stone))
+
+    else:
+        await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
+
+    if nick_name:
+        give_message = sql_message.get_user_message2(nick_name[0])
+        give_user_stone = give_message.stone
+        if give_message:
+            steal_success2 = random.randint(0, 100)
+            if int(steal_success2) < OtherSet().get_power_rate(user_message.power, give_message.power):
+                sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+                await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
+            get_stone2 = random.randint(5, 100)
+            sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+            if int(get_stone2) > int(give_user_stone):
+                sql_message.update_ls(user_id, give_user_stone, 1)  # 增加偷到的灵石
+                sql_message.update_ls(give_message.user_id, give_user_stone, 2)  # 减少被偷的人的灵石
+                await steal_stone.finish(
+                "{}道友已经被榨干了~".format(give_message.user_name))
+            else:
+                sql_message.update_ls(user_id, get_stone2, 1)  # 增加偷到的灵石
+                sql_message.update_ls(give_message.user_id, get_stone2, 2)  # 减少被偷的人的灵石
+                await steal_stone.finish("共偷取{}道友{}枚灵石！".format(give_message.user_name, get_stone2))
+        else:
+            await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
+
+    else:
+        await steal_stone.finish("未获取道号信息，请输入正确的道号！")
 
 
 # GM加灵石
 @gm_command.handle()
 async def _(event: GroupMessageEvent, args: Message = CommandArg()):
-
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
-    if user_message is None:
-        await give_stone.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
-
     give_qq = None  # 艾特的时候存到这里
     msg = args.extract_plain_text().strip()
 
     stone_num = re.findall("\d+", msg)  ## 灵石数
     nick_name = re.findall("\D+", msg)  ## 道号
-
-    if int(user_id) == int(XiuConfig().gm_qq):
-        pass
-    else:
-        await gm_command.finish("无法使用")
 
     give_stone_num = stone_num[0]
 
