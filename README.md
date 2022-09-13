@@ -61,6 +61,11 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 处下载文件，放置于bot目录，data -> xiuxian文件夹处
 
 ## 更新
+# 2022/09/13
+更新版本0.3.3
+调整存档显示，修复排行榜缺失，新增GM权限
+pip install nonebot-plugin-xiuxian==0.3.3
+
 # 2022/09/09
 部分境界信息从数据库分离为json文件，调整各项配置文件，更新各个json格式，需替换更新，新增Xiuconfig.py配置文件，配置CD等信息
 
