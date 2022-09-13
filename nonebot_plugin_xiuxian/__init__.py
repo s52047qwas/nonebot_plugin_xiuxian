@@ -3,8 +3,17 @@ from nonebot.log import logger
 from nonebot import get_driver
 from nonebot import on_command, require, on_message
 from nonebot.params import CommandArg, RawCommand, Depends, Arg, ArgStr, RegexMatched
-from nonebot.adapters.onebot.v11 import Bot, Event, GROUP, GROUP_ADMIN, GROUP_OWNER, Message, MessageEvent, \
-    GroupMessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import (
+    Bot,
+    Event,
+    GROUP,
+    GROUP_ADMIN,
+    GROUP_OWNER,
+    Message,
+    MessageEvent,
+    GroupMessageEvent,
+    MessageSegment,
+)
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from datetime import datetime
 import random
@@ -15,7 +24,7 @@ from .data_source import jsondata
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 __xiuxian_version__ = "v0.0.1"
-__xiuxian_notes__ = f'''
+__xiuxian_notes__ = f"""
 修仙模拟器帮助信息:
 指令：
 1、我要修仙：进入修仙模式
@@ -31,30 +40,31 @@ __xiuxian_notes__ = f'''
 11、悬赏令：获取任务单，接取任务示例：悬赏令接取1， 结算命令示例：悬赏令结算
 -简易灵根帮助-
 混沌灵根>融合灵根>超灵根>龙灵根>天灵根>变异灵根>真灵根>伪灵根
-'''.strip()
+""".strip()
 
 driver = get_driver()
 
-run_xiuxian = on_command('我要修仙', priority=5)
-xiuxian_message = on_command('我的修仙信息', aliases={'我的存档'}, priority=5)
-restart = on_command('再入仙途', aliases={'重新修仙'}, priority=5)
-package = on_command('我的纳戒', aliases={'升级纳戒'}, priority=5)
-sign_in = on_command('修仙签到', priority=5)
-dufang = on_command('#金银阁', aliases={'金银阁'}, priority=5)
-dice = on_command('大', aliases={'小'}, priority=5)
-price = on_command('押注', priority=5)
-help_in = on_command('修仙帮助', priority=5)
-remaker = on_command('重入仙途', priority=5)
-use = on_command('#使用', priority=5)
-buy = on_command('#购买', priority=5)
-rank = on_command('排行榜', aliases={'修仙排行榜', '灵石排行榜', '战力排行榜','境界排行榜'}, priority=5)
+run_xiuxian = on_command("我要修仙", priority=5)
+xiuxian_message = on_command("我的修仙信息", aliases={"我的存档"}, priority=5)
+restart = on_command("再入仙途", aliases={"重新修仙"}, priority=5)
+package = on_command("我的纳戒", aliases={"升级纳戒"}, priority=5)
+sign_in = on_command("修仙签到", priority=5)
+dufang = on_command("#金银阁", aliases={"金银阁"}, priority=5)
+dice = on_command("大", aliases={"小", "1", "2", "3", "4", "5", "6"}, priority=5)
+price = on_command("押注", priority=5)
+help_in = on_command("修仙帮助", priority=5)
+remaker = on_command("重入仙途", priority=5)
+use = on_command("#使用", priority=5)
+buy = on_command("#购买", priority=5)
+rank = on_command("排行榜", aliases={"修仙排行榜", "灵石排行榜", "战力排行榜", "境界排行榜"}, priority=5)
 time_mes = on_message(priority=999)
-remaname = on_command('改名', priority=5)
-level_up = on_command('突破', priority=5)
-in_closing = on_command('闭关', priority=5)
-out_closing = on_command('出关', priority=5)
-give_stone = on_command('送灵石', priority=5)
+remaname = on_command("改名", priority=5)
+level_up = on_command("突破", priority=5)
+in_closing = on_command("闭关", priority=5)
+out_closing = on_command("出关", priority=5)
+give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
+gm_command = on_command("gm送灵石", priority=5)
 
 race = {}  # 押注信息记录
 work = {}  # 悬赏令信息记录
@@ -65,14 +75,18 @@ sql_message = XiuxianDateManage()  # sql类
 async def _(event: GroupMessageEvent):
     """加入修仙"""
     user_id = event.get_user_id()
-    user_name = event.sender.card if event.sender.card else event.sender.nickname  # 获取为用户名
+    user_name = (
+        event.sender.card if event.sender.card else event.sender.nickname
+    )  # 获取为用户名
     root, root_type = XiuxianJsonDate().linggen_get()  # 获取灵根，灵根类型
 
     rate = sql_message.get_root_rate(root_type)  # 灵根倍率
     power = 100 * float(rate)  # 战力=境界的power字段 * 灵根的rate字段
     create_time = str(datetime.now())
 
-    msg = sql_message.create_user(user_id, root, root_type, int(power), create_time, user_name)
+    msg = sql_message.create_user(
+        user_id, root, root_type, int(power), create_time, user_name
+    )
     await run_xiuxian.finish(msg, at_sender=True)
 
 
@@ -87,15 +101,15 @@ async def _(event: GroupMessageEvent):
         if user_name:
             pass
         else:
-            user_name = '无名氏(发送改名+道号更新)'
+            user_name = "无名氏(发送改名+道号更新)"
         level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
-        realm_rate = jsondata.level_data()[mess.level]['spend']  # 境界倍率
+        realm_rate = jsondata.level_data()[mess.level]["spend"]  # 境界倍率
 
         # 判断突破的修为
         list_all = len(OtherSet().level) - 1
         now_index = OtherSet().level.index(mess.level)
         if list_all == now_index:
-            get_exp = '位面至高'
+            get_exp = "位面至高"
         else:
             is_updata_level = OtherSet().level[now_index + 1]
             need_exp = XiuxianDateManage().get_level_power(is_updata_level)
@@ -104,15 +118,15 @@ async def _(event: GroupMessageEvent):
             else:
                 get_exp = "可突破！"
 
-        msg = f'''{user_name}道友的信息
+        msg = f"""{user_name}道友的信息
 灵根为：{mess.root}({mess.root_type}+{int(level_rate * 100)}%)
 当前境界：{mess.level}(境界+{int(realm_rate * 100)}%)
 当前灵石：{mess.stone}
 当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
 突破状态：{get_exp}
-你的战力为：{int(mess.exp * level_rate * realm_rate)}'''
+你的战力为：{int(mess.exp * level_rate * realm_rate)}"""
     else:
-        msg = '未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!'
+        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
 
     await run_xiuxian.finish(msg, at_sender=True)
 
@@ -139,6 +153,8 @@ async def _(event: GroupMessageEvent):
     message = event.message
     user_id = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())
+    in_msg = ["大", "小", "1", "2", "3", "4", "5", "6"]
+
     try:
         race[group_id]
     except KeyError:
@@ -147,42 +163,48 @@ async def _(event: GroupMessageEvent):
     if race[group_id].player[0] == user_id:
         pass
     else:
-        await dice.finish('吃瓜道友请不要捣乱！！！')
+        await dice.finish("吃瓜道友请不要捣乱！！！")
 
     price_num = race[group_id].price
     if price_num == 0:
-        await dice.finish('道友押注失败,请发送【押注+数字】押注！', at_sender=True)
+        await dice.finish("道友押注失败,请发送【押注+数字】押注！", at_sender=True)
 
-    if str(message) == '大' or str(message) == '小':
+    if str(message) in in_msg:
         pass
     else:
-        await dice.finish('请输入正确的结果【大】或者【小】！')
+        await dice.finish("请输入正确的结果【大】【小】或者 1-6 之间的数字！")
 
     value = random.randint(1, 6)
     msg = Message("[CQ:dice,value={}]".format(value))
 
-    if value >= 4:
-        if str(message) == '大':
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 1)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜对了，收获灵石{}块'.format(value, price_num), at_sender=True)
-        else:
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 2)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜错了，损失灵石{}块'.format(value, price_num), at_sender=True)
-    elif value <= 3:
-        if str(message) == '大':
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 2)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜错了，损失灵石{}块'.format(value, price_num), at_sender=True)
-        else:
-            del race[group_id]
-            sql_message.update_ls(user_id, price_num, 1)
-            await dice.send(msg)
-            await dice.finish('最终结果为{}，你猜对了，收获灵石{}块'.format(value, price_num), at_sender=True)
+    if value >= 4 and str(message) == "大":
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 1)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif value <= 3 and str(message) == "小":
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 1)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif str(value) == str(message):
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num * 6, 1)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 6), at_sender=True
+        )
+    else:
+        del race[group_id]
+        sql_message.update_ls(user_id, price_num, 2)
+        await dice.send(msg)
+        await dice.finish(
+            "最终结果为{}，你猜错了，损失灵石{}块".format(value, price_num), at_sender=True
+        )
 
 
 @dufang.handle()
@@ -209,7 +231,7 @@ async def _(event: GroupMessageEvent):
     race[group_id].start_change(1)
     race[group_id].add_player(user_id)
     race[group_id].time = datetime.now()
-    await dufang.finish(f'发送【押注+数字】参与', at_sender=True)
+    await dufang.finish(f"发送【押注+数字】参与", at_sender=True)
 
 
 @price.handle()
@@ -229,23 +251,23 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         if race[group_id].player[0] == user_id:
             pass
         else:
-            await price.finish('吃瓜道友请不要捣乱！')
+            await price.finish("吃瓜道友请不要捣乱！")
     except KeyError:
         await price.finish()
     if msg:
         price_num = msg
         if race[group_id].price != 0:
-            await price.finish('钱财离手，不可退回！', at_sender=True)
+            await price.finish("钱财离手，不可退回！", at_sender=True)
         elif int(user_message.stone) < int(price_num):
-            await price.finish('道友的金额不足，请重新输入！')
+            await price.finish("道友的金额不足，请重新输入！")
         elif price_num.isdigit():
             race[group_id].add_price(int(price_num))
         else:
-            await price.finish('请输入正确的金额！')
+            await price.finish("请输入正确的金额！")
     else:
         await price.finish(f"请输入押注金额", at_sender=True)
 
-    out_msg = f'押注完成，发送【大】或者【小】 参与本局游戏！'
+    out_msg = f"押注完成，发送【大】【小】或者 1-6 之间的数字参与本局游戏！"
     await price.finish(out_msg, at_sender=True)
 
 
@@ -295,7 +317,7 @@ async def _(event: GroupMessageEvent):
             time_now = datetime.now()
             if (time_now - race_time).seconds > 30:
                 del race[group_id]
-                await time_mes.finish('太久没押注开始，被挤走了')
+                await time_mes.finish("太久没押注开始，被挤走了")
             else:
                 pass
         else:
@@ -355,7 +377,9 @@ async def _(event: GroupMessageEvent):
     level = user_mes.level
     use_exp = user_mes.exp
 
-    max_exp = int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit  # 获取下个境界需要的修为 * 1.5为闭关上限
+    max_exp = (
+        int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
+    )  # 获取下个境界需要的修为 * 1.5为闭关上限
     user_get_exp_max = int(max_exp) - use_exp
 
     if user_get_exp_max < 0:
@@ -375,22 +399,32 @@ async def _(event: GroupMessageEvent):
 
     elif user_cd_message.type == 1:
         # 用户状态为1
-        in_closing_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")  # 进入闭关的时间
-        exp_time = OtherSet().date_diff(now_time, in_closing_time) // 60  # 闭关时长计算(分钟) = second // 60
+        in_closing_time = datetime.strptime(
+            user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
+        )  # 进入闭关的时间
+        exp_time = (
+            OtherSet().date_diff(now_time, in_closing_time) // 60
+        )  # 闭关时长计算(分钟) = second // 60
         level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
-        realm_rate = jsondata.level_data()[level]['spend']  # 境界倍率
-        exp = int(exp_time * XiuConfig().closing_exp * level_rate * realm_rate)   # 本次闭关获取的修为
+        realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+        exp = int(
+            exp_time * XiuConfig().closing_exp * level_rate * realm_rate
+        )  # 本次闭关获取的修为
 
         if exp >= user_get_exp_max:
             # 用户获取的修为到达上限
             sql_message.in_closing(user_id, user_type)
             sql_message.update_exp(user_id, user_get_exp_max)
-            await out_closing.finish("闭关结束，本次闭关到达上限，共增加修为：{}".format(user_get_exp_max), at_sender=True)
+            await out_closing.finish(
+                "闭关结束，本次闭关到达上限，共增加修为：{}".format(user_get_exp_max), at_sender=True
+            )
         else:
             # 用户获取的修为没有到达上限
             sql_message.in_closing(user_id, user_type)
             sql_message.update_exp(user_id, exp)
-            await out_closing.finish("闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True)
+            await out_closing.finish(
+                "闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True
+            )
 
     elif user_cd_message.type == 2:
         await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
@@ -413,10 +447,12 @@ async def update_level(event: GroupMessageEvent):
     if level_cd:
         # 校验是否存在CD
         time_now = datetime.now()
-        cd = OtherSet().date_diff(time_now, level_cd)   # 获取second
+        cd = OtherSet().date_diff(time_now, level_cd)  # 获取second
         if cd < XiuConfig().level_up_cd * 60:
             # 如果cd小于配置的cd，返回等待时间
-            await level_up.finish('目前无法突破，还需要{}分钟'.format(XiuConfig().level_up_cd - (cd // 60)))
+            await level_up.finish(
+                "目前无法突破，还需要{}分钟".format(XiuConfig().level_up_cd - (cd // 60))
+            )
     else:
         pass
 
@@ -426,23 +462,25 @@ async def update_level(event: GroupMessageEvent):
 
     le = OtherSet().get_type(exp, level_rate, level_name)
 
-    if le == '失败':
+    if le == "失败":
         # 突破失败
-        sql_message.updata_level_cd(user_id)   # 更新突破CD
+        sql_message.updata_level_cd(user_id)  # 更新突破CD
 
         # 失败惩罚，随机扣减修为
-        percentage = random.randint(XiuConfig().level_punishment_floor, XiuConfig().level_punishment_limit)
+        percentage = random.randint(
+            XiuConfig().level_punishment_floor, XiuConfig().level_punishment_limit
+        )
         now_exp = int(int(exp) * (percentage / 100))
 
-        sql_message.update_j_exp(user_id, now_exp)   # 更新用户修为
-        await level_up.finish('道友突破失败,境界受损,修为减少{}，过段时间再突破吧！'.format(now_exp))
+        sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
+        await level_up.finish("道友突破失败,境界受损,修为减少{}，过段时间再突破吧！".format(now_exp))
 
     elif type(le) == list:
         # 突破成功
         sql_message.updata_level(user_id, le[0])  # 更新境界
-        sql_message.update_power2(user_id)   # 更新战力
+        sql_message.update_power2(user_id)  # 更新战力
         sql_message.updata_level_cd(user_id)  # 更新CD
-        await level_up.finish('恭喜道友突破{}成功'.format(le[0]))
+        await level_up.finish("恭喜道友突破{}成功".format(le[0]))
     else:
         # 最高境界
         await level_up.finish(le)
@@ -454,7 +492,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
     user_id = event.get_user_id()
     user_message = sql_message.get_user_message(user_id)
     if user_message is None:
-        await give_stone.finish('修仙界没有你的信息！请输入我要修仙，踏入修行')
+        await give_stone.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
 
     user_stone_num = user_message.stone
     give_qq = None  # 艾特的时候存到这里
@@ -466,16 +504,16 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
     if stone_num:
         pass
     else:
-        await give_stone.finish('请输入正确的灵石数量！')
+        await give_stone.finish("请输入正确的灵石数量！")
 
     give_stone_num = stone_num[0]
 
     if int(give_stone_num) > int(user_stone_num):
-        await give_stone.finish('道友的灵石不够，请重新输入！')
+        await give_stone.finish("道友的灵石不够，请重新输入！")
 
     for arg in args:
         if arg.type == "at":
-            give_qq = arg.data.get('qq', '')
+            give_qq = arg.data.get("qq", "")
 
     if give_qq:
         if give_qq == user_id:
@@ -489,7 +527,10 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.update_ls(give_qq, num, 1)  # 增加用户灵石
 
                 await give_stone.finish(
-                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_user.user_name, int(give_stone_num2)))
+                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(
+                        give_stone_num, give_user.user_name, int(give_stone_num2)
+                    )
+                )
             else:
                 await give_stone.finish("对方未踏入修仙界，不可赠送！")
 
@@ -504,7 +545,10 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 num = int(give_stone_num) - int(give_stone_num2)
                 sql_message.update_ls(give_message.user_id, num, 1)  # 增加用户灵石
                 await give_stone.finish(
-                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(give_stone_num, give_message.user_name, int(give_stone_num2)))
+                    "共赠送{}枚灵石给{}道友！收取手续费{}枚".format(
+                        give_stone_num, give_message.user_name, int(give_stone_num2)
+                    )
+                )
         else:
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
 
@@ -553,12 +597,18 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
             await do_work.finish("道友现在在闭关呢，小心走火入魔！", at_sender=True)
 
         elif user_cd_message.type == 2:
-            work_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
+            work_time = datetime.strptime(
+                user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
+            )
             exp_time = (datetime.now() - work_time).seconds // 60  # 时长计算
-            time2 = XiuxianJsonDate().do_work(key=1, name=user_cd_message.scheduled_time)
+            time2 = XiuxianJsonDate().do_work(
+                key=1, name=user_cd_message.scheduled_time
+            )
             if exp_time < time2:
-                await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束",
-                                     at_sender=True)
+                await do_work.finish(
+                    f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束",
+                    at_sender=True,
+                )
             else:
                 work_sf = XiuxianJsonDate().do_work(2, user_cd_message.scheduled_time)
                 sql_message.update_ls(user_id, work_sf[1], 1)
@@ -623,12 +673,71 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await do_work.finish("已经在闭关中，请输入【出关】结束后才能获取悬赏令！", at_sender=True)
 
     elif user_cd_message.type == 2:
-        work_time = datetime.strptime(user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f")
+        work_time = datetime.strptime(
+            user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
+        )
         exp_time = (datetime.now() - work_time).seconds // 60  # 闭关时长计算
         time2 = XiuxianJsonDate().do_work(key=1, name=user_cd_message.scheduled_time)
         if exp_time < time2:
-            await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束",
-                                 at_sender=True)
+            await do_work.finish(
+                f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束",
+                at_sender=True,
+            )
         else:
-            await do_work.finish(f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
-                                 at_sender=True)
+            await do_work.finish(
+                f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
+                at_sender=True,
+            )
+
+
+# GM加灵石
+@gm_command.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if user_message is None:
+        await give_stone.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+
+    give_qq = None  # 艾特的时候存到这里
+    msg = args.extract_plain_text().strip()
+
+    stone_num = re.findall("\d+", msg)  ## 灵石数
+    nick_name = re.findall("\D+", msg)  ## 道号
+
+    if int(user_id) == int(XiuConfig().gm_qq):
+        pass
+    else:
+        await gm_command.finish("无法使用")
+
+    give_stone_num = stone_num[0]
+
+    if stone_num:
+        pass
+    else:
+        await give_stone.finish("请输入正确的灵石数量！")
+
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+
+    if give_qq:
+        give_user = sql_message.get_user_message(give_qq)
+        if give_user:
+            sql_message.update_ls(give_qq, give_stone_num, 1)  # 增加用户灵石
+            await give_stone.finish(
+                "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_user.user_name)
+            )
+        else:
+            await give_stone.finish("对方未踏入修仙界，不可赠送！")
+    if nick_name:
+        give_message = sql_message.get_user_message2(nick_name[0])
+        if give_message:
+            sql_message.update_ls(give_message.user_id, give_stone_num, 1)  # 增加用户灵石
+            await give_stone.finish(
+                "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_message.user_name)
+            )
+        else:
+            await give_stone.finish("对方未踏入修仙界，不可赠送！")
+    else:
+        await give_stone.finish("未获取道号信息，请输入正确的道号！")

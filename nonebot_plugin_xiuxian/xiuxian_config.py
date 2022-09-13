@@ -38,4 +38,5 @@ class XiuConfig:
         self.sign_in_lingshi_upper_limit = 300 # 每日签到灵石上限
         self.sign_in_xiuwei_lower_limit = 1000 # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = 3000 # 每日签到修为上限
+        self.gm_qq = 1044763336
 
