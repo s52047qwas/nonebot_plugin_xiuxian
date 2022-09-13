@@ -62,7 +62,7 @@ time_mes = on_message(priority=999)
 remaname = on_command("改名", priority=5)
 level_up = on_command("突破", priority=5)
 in_closing = on_command("闭关", priority=5)
-out_closing = on_command("出关", priority=5)
+out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
 steal_stone = on_command("偷灵石", priority=5)
@@ -295,8 +295,8 @@ async def _(event: GroupMessageEvent):
         a_rank = sql_message.stone_top()
         await rank.finish(message=a_rank)
     elif message == "战力排行榜":
-        pass
-
+        a_rank = sql_message.power_top()
+        await rank.finish(message=a_rank)
 
 # 重置每日签到
 @scheduler.scheduled_job(
@@ -424,12 +424,34 @@ async def _(event: GroupMessageEvent):
             )
         else:
             # 用户获取的修为没有到达上限
-            sql_message.in_closing(user_id, user_type)
-            sql_message.update_exp(user_id, exp)
-            sql_message.update_power2(user_id)  # 更新战力
-            await out_closing.finish(
-                "闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True
-            )
+
+            if str(event.message) == "灵石出关":
+                user_stone = user_mes.stone  # 用户灵石数
+                if exp <= user_stone:
+                    exp = exp * 2
+                    sql_message.in_closing(user_id, user_type)
+                    sql_message.update_exp(user_id, exp)
+                    sql_message.update_ls(user_id, exp, 2)
+                    sql_message.update_power2(user_id)  # 更新战力
+                    await out_closing.finish(
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, exp/2), at_sender=True
+                    )
+                else:
+                    exp = exp + user_stone
+                    sql_message.in_closing(user_id, user_type)
+                    sql_message.update_exp(user_id, exp)
+                    sql_message.update_ls(user_id, user_stone, 2)
+                    sql_message.update_power2(user_id)  # 更新战力
+                    await out_closing.finish(
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, user_stone), at_sender=True
+                    )
+            else:
+                sql_message.in_closing(user_id, user_type)
+                sql_message.update_exp(user_id, exp)
+                sql_message.update_power2(user_id)  # 更新战力
+                await out_closing.finish(
+                    "闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True
+                )
 
     elif user_cd_message.type == 2:
         await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)

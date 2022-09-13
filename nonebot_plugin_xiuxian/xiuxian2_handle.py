@@ -161,9 +161,9 @@ class XiuxianDateManage:
         sql_s = f"SELECT stone FROM user_xiuxian WHERE user_id=?"
         cur.execute(sql_s, (user_id,))
         result = cur.fetchone()
-        if result[0]>=100:
-            sql = f"UPDATE user_xiuxian SET root=?,root_type=?,stone=stone-100 WHERE user_id=?"
-            cur.execute(sql, (lg, type,user_id))
+        if result[0]>=XiuConfig().remake:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=?,stone=stone-? WHERE user_id=?"
+            cur.execute(sql, (lg, type, XiuConfig().remake, user_id))
             self.conn.commit()
 
             self.update_power2(user_id)
@@ -193,7 +193,7 @@ class XiuxianDateManage:
         cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]["spend"], user_id))
         self.conn.commit()
 
-    def update_ls(self, user_id, price,key):
+    def update_ls(self, user_id, price, key):
         """更新灵石  1为增加，2为减少"""
         cur = self.conn.cursor()
 
@@ -373,6 +373,20 @@ class XiuxianDateManage:
         for i in result:
             num += 1
             mess += f"第{num}位  {i[0]}  灵石：{i[1]}枚\n"
+
+        return mess
+
+    def power_top(self):
+        """战力排行榜"""
+        sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY power DESC LIMIT 10"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        mess = f"✨位面战力排行榜TOP10✨\n"
+        num = 0
+        for i in result:
+            num += 1
+            mess += f"第{num}位  {i[0]}  战力：{i[1]}枚\n"
 
         return mess
 

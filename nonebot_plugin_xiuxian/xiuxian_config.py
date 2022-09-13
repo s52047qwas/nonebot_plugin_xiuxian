@@ -39,4 +39,5 @@ class XiuConfig:
         self.sign_in_xiuwei_lower_limit = 1000  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = 3000  # 每日签到修为上限
         self.tou = 70  # 偷灵石惩罚
+        self.remake = 200  # 重入仙途的消费
 
