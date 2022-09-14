@@ -579,30 +579,52 @@ class OtherSet(XiuConfig):
         return (day * 24 * 60 * 60) + sec
 
     def fight(self,player1=None,player2=None):
+        import random
         player1 = {'HP': 100,
                    "ROOT_RATE": 1,
                    "LEVEL_RATE": 1,
                    "COMBO": 0,
                    "ATK": 12,
-                   "AC": 20}
+                   "AC": 1,
+                   "MP": 100}
 
         player2 = {'HP': 100,
                    "ROOT_RATE": 1.2,
                    "LEVEL_RATE": 1,
                    "COMBO": 0,
                    "ATK": 10,
-                   "AC": 19}
+                   "AC": 1,
+                   "MP": 100}
 
         HP_SEND = True
-        while HP_SEND is True:
+        while HP_SEND:
             player1_gj = (random.randint(1, 10) + player1['ATK']) * player1["ROOT_RATE"] * player1["LEVEL_RATE"]
             player2_gj = (random.randint(1, 10) + player2['ATK']) * player2["ROOT_RATE"] * player2["LEVEL_RATE"]
 
-            player2['HP'] = player2['HP'] - (int(player1_gj) - player2["AC"])
-            print(player2['HP'])
-            HP_SEND = False
-        else:
-            print('222')
+            # 造成的伤害
+            play1_sh: int = int(player1_gj) - player2['AC']
+            play2_sh: int = int(player2_gj) - player1['AC']
+
+            print(f"play1发起攻击，造成伤害{play1_sh}")
+            player2['HP'] = player2['HP'] - play1_sh
+            print(f"play2剩余血量{player2['HP']}")
+
+            if player2['HP'] <= 0:
+                print("play1胜利")
+                break
+
+            import time
+            time.sleep(1)
+            print(f"play2发起攻击，造成伤害{play2_sh}")
+            player1['HP'] = player1['HP'] - play2_sh
+            print(f"play1剩余血量{player1['HP']}\n")
+            time.sleep(1)
+            if player1['HP'] <= 0:
+                print("play2胜利")
+                break
+
+            if player1['HP'] <= 0 or player2['HP'] <= 0:
+                break
             
     def get_power_rate(self, mind, other):
         power_rate = mind / (other + mind)
@@ -616,7 +638,7 @@ class OtherSet(XiuConfig):
 
 
 if __name__ == '__main__':
-    print(OtherSet().date_diff("2022-09-08 00:42:56.740255","2022-09-08 00:42:56.740255"))
+    print(OtherSet().fight)
     # paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
     # with open(paths, 'r', encoding='utf-8') as e:
     #     a = e.read()

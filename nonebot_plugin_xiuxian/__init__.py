@@ -723,7 +723,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_id = event.get_user_id()
     user_message = sql_message.get_user_message(user_id)
     steal_user = None
-    steal_user_stone = None
 
     if user_message is None:
         await steal_stone.finish('修仙界没有你的信息！请输入我要修仙，踏入修行')
@@ -748,23 +747,35 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await steal_stone.finish("请不要偷自己刷成就！")
         else:
             steal_user = sql_message.get_user_message(steal_qq)
-            steal_user_stone = steal_user.stone
+
     if steal_user:
+        # 判断是否存在用户
         steal_success = random.randint(0, 100)
         result = OtherSet().get_power_rate(user_message.power, steal_user.power)
+
+
+        print("result",result)
+        print("result", type(result))
         if isinstance(result, int):
-            if int(steal_success) < OtherSet().get_power_rate(user_message.stone, steal_user.stone):
-                sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+            # 判断返回类型是否为int
+
+            if int(steal_success) > result:
+                # 判断是否偷窃成功，例：成功率为80，steal_success>80则失败
+                sql_message.update_ls(user_id, coststone_num, 2)  # 偷窃失败扣费
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
 
-            get_stone = random.randint(5, 100)
-            sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
+            steal_user_stone = steal_user.stone  # 被偷用户的灵石
+            get_stone = random.randint(5, 100)   # 偷取的灵石
+            sql_message.update_ls(user_id, coststone_num, 2)  # 偷窃失败扣费
 
             if int(get_stone) > int(steal_user_stone):
+                # 如果偷取的灵石数量大于对方身上的灵石
+
                 sql_message.update_ls(user_id, steal_user_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, steal_user_stone, 2)  # 减少被偷的人的灵石
                 await steal_stone.finish(
                     "{}道友已经被榨干了~".format(steal_user.user_name))
+
             else:
                 sql_message.update_ls(user_id, get_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, get_stone, 2)  # 减少被偷的人的灵石
@@ -772,21 +783,22 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     "共偷取{}道友{}枚灵石！".format(steal_user.user_name, get_stone))
         else:
             await steal_stone.finish(result)
-
     else:
         await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
 
     if nick_name:
         give_message = sql_message.get_user_message2(nick_name[0])
-        give_user_stone = give_message.stone
+
         if give_message:
             steal_success2 = random.randint(0, 100)
 
             result = OtherSet().get_power_rate(user_message.power, give_message.power)
             if isinstance(result, int):
-                if int(steal_success2) < result:
+                if int(steal_success2) > result:
                     sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                     await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
+
+                give_user_stone = give_message.stone
                 get_stone2 = random.randint(5, 100)
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 if int(get_stone2) > int(give_user_stone):
