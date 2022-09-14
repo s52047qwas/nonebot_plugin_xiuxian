@@ -189,7 +189,7 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         level = jsondata.level_data()
         root = jsondata.root_data()
-        sql = f"UPDATE user_xiuxian SET power=exp*?*? WHERE user_id=?"
+        sql = f"UPDATE user_xiuxian SET power=round(exp*?*?,0) WHERE user_id=?"
         cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]["spend"], user_id))
         self.conn.commit()
 
