@@ -378,7 +378,7 @@ class XiuxianDateManage:
 
     def power_top(self):
         """战力排行榜"""
-        sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY power DESC LIMIT 10"
+        sql = f"SELECT user_name,power FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY power DESC LIMIT 10"
         cur = self.conn.cursor()
         cur.execute(sql, )
         result = cur.fetchall()
@@ -386,7 +386,7 @@ class XiuxianDateManage:
         num = 0
         for i in result:
             num += 1
-            mess += f"第{num}位  {i[0]}  战力：{i[1]}枚\n"
+            mess += f"第{num}位  {i[0]}  战力：{i[1]}\n"
 
         return mess
 
