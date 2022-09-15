@@ -197,7 +197,7 @@ async def _(event: GroupMessageEvent):
         )
     elif str(value) == str(message):
         del race[group_id]
-        sql_message.update_ls(user_id, price_num * 6, 1)
+        sql_message.update_ls(user_id, price_num * 5, 1)
         await dice.send(msg)
         await dice.finish(
             "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 6), at_sender=True
