@@ -58,7 +58,7 @@ help_in = on_command("修仙帮助", priority=5)
 remaker = on_command("重入仙途", priority=5)
 use = on_command("#使用", priority=5)
 buy = on_command("#购买", priority=5)
-rank = on_command("排行榜", aliases={"修仙排行榜", "灵石排行榜", "战力排行榜", "境界排行榜"}, priority=5)
+rank = on_command("排行榜", aliases={"修仙排行榜", "灵石排行榜", "战力排行榜", "境界排行榜", "宗门排行榜"}, priority=5)
 time_mes = on_message(priority=999)
 remaname = on_command("改名", priority=5)
 level_up = on_command("突破", priority=5)
@@ -66,11 +66,21 @@ in_closing = on_command("闭关", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
-steal_stone = on_command("偷灵石", priority=5)
+steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
+
+my_sect = on_command("我的宗门", aliases={"宗门信息"}, priority=5)
+create_sect = on_command("创建宗门", priority=5)
+join_sect = on_command("加入宗门", priority=5)
+sect_position_update = on_command("宗门职位变更", priority=5)
+sect_donate = on_command("宗门捐献", priority=5)
+sect_out = on_command("退出宗门", priority=5)
+sect_kick_out = on_command("踢出宗门", priority=5)
+sect_owner_change = on_command("宗主传位", priority=5)
 
 race = {}  # 押注信息记录
 work = {}  # 悬赏令信息记录
+sect_out_check = {}  # 退出宗门或踢出宗门信息记录
 sql_message = XiuxianDateManage()  # sql类
 
 
@@ -78,6 +88,10 @@ sql_message = XiuxianDateManage()  # sql类
 async def _(event: GroupMessageEvent):
     """加入修仙"""
     user_id = event.get_user_id()
+    if isinstance(event, GroupMessageEvent
+                  ) and str(event.group_id) not in get_driver().config.dict().get("xiuxian_groups"):
+        await run_xiuxian.send(f"《我带群友意识穿越修仙界》dev中，内测群暂未开放。。。", at_sender=True)
+        return
     user_name = (
         event.sender.card if event.sender.card else event.sender.nickname
     )  # 获取为用户名
@@ -186,18 +200,18 @@ async def _(event: GroupMessageEvent):
         sql_message.update_ls(user_id, price_num, 1)
         await dice.send(msg)
         await dice.finish(
-            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num*2), at_sender=True
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
         )
     elif value <= 3 and str(message) == "小":
         del race[group_id]
         sql_message.update_ls(user_id, price_num, 1)
         await dice.send(msg)
         await dice.finish(
-            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num*2), at_sender=True
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
         )
     elif str(value) == str(message):
         del race[group_id]
-        sql_message.update_ls(user_id, price_num * 5, 1)
+        sql_message.update_ls(user_id, price_num * 6, 1)
         await dice.send(msg)
         await dice.finish(
             "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 6), at_sender=True
@@ -281,7 +295,7 @@ async def _(event: GroupMessageEvent):
     user_id = event.get_user_id()
     name, root_type = XiuxianJsonDate().linggen_get()
     result = sql_message.ramaker(name, root_type, user_id)
-    sql_message.update_power2(user_id)   # 更新战力
+    sql_message.update_power2(user_id)  # 更新战力
     await remaker.send(message=result, at_sender=True)
 
 
@@ -298,6 +312,10 @@ async def _(event: GroupMessageEvent):
     elif message == "战力排行榜":
         a_rank = sql_message.power_top()
         await rank.finish(message=a_rank)
+    elif message in ["宗门排行榜", "宗门建设度排行榜"]:
+        s_rank, _ = sql_message.scale_top()
+        await rank.finish(message=s_rank)
+
 
 # 重置每日签到
 @scheduler.scheduled_job(
@@ -382,7 +400,7 @@ async def _(event: GroupMessageEvent):
     use_exp = user_mes.exp
 
     max_exp = (
-        int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
+            int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
     )  # 获取下个境界需要的修为 * 1.5为闭关上限
     user_get_exp_max = int(max_exp) - use_exp
 
@@ -407,7 +425,7 @@ async def _(event: GroupMessageEvent):
             user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
         )  # 进入闭关的时间
         exp_time = (
-            OtherSet().date_diff(now_time, in_closing_time) // 60
+                OtherSet().date_diff(now_time, in_closing_time) // 60
         )  # 闭关时长计算(分钟) = second // 60
         level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
         realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
@@ -435,7 +453,7 @@ async def _(event: GroupMessageEvent):
                     sql_message.update_ls(user_id, exp, 2)
                     sql_message.update_power2(user_id)  # 更新战力
                     await out_closing.finish(
-                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, exp/2), at_sender=True
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, exp / 2), at_sender=True
                     )
                 else:
                     exp = exp + user_stone
@@ -716,13 +734,15 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
                 at_sender=True,
             )
-            
-#偷灵石
+
+
+# 偷灵石
 @steal_stone.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_id = event.get_user_id()
     user_message = sql_message.get_user_message(user_id)
     steal_user = None
+    steal_user_stone = None
 
     if user_message is None:
         await steal_stone.finish('修仙界没有你的信息！请输入我要修仙，踏入修行')
@@ -747,35 +767,23 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await steal_stone.finish("请不要偷自己刷成就！")
         else:
             steal_user = sql_message.get_user_message(steal_qq)
-
+            steal_user_stone = steal_user.stone
     if steal_user:
-        # 判断是否存在用户
         steal_success = random.randint(0, 100)
         result = OtherSet().get_power_rate(user_message.power, steal_user.power)
-
-
-        print("result",result)
-        print("result", type(result))
         if isinstance(result, int):
-            # 判断返回类型是否为int
-
-            if int(steal_success) > result:
-                # 判断是否偷窃成功，例：成功率为80，steal_success>80则失败
-                sql_message.update_ls(user_id, coststone_num, 2)  # 偷窃失败扣费
+            if int(steal_success) < OtherSet().get_power_rate(user_message.stone, steal_user.stone):
+                sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
 
-            steal_user_stone = steal_user.stone  # 被偷用户的灵石
-            get_stone = random.randint(5, 100)   # 偷取的灵石
-            sql_message.update_ls(user_id, coststone_num, 2)  # 偷窃失败扣费
+            get_stone = random.randint(5, 100)
+            sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
 
             if int(get_stone) > int(steal_user_stone):
-                # 如果偷取的灵石数量大于对方身上的灵石
-
                 sql_message.update_ls(user_id, steal_user_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, steal_user_stone, 2)  # 减少被偷的人的灵石
                 await steal_stone.finish(
                     "{}道友已经被榨干了~".format(steal_user.user_name))
-
             else:
                 sql_message.update_ls(user_id, get_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, get_stone, 2)  # 减少被偷的人的灵石
@@ -783,22 +791,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     "共偷取{}道友{}枚灵石！".format(steal_user.user_name, get_stone))
         else:
             await steal_stone.finish(result)
+
     else:
         await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
 
     if nick_name:
         give_message = sql_message.get_user_message2(nick_name[0])
-
+        give_user_stone = give_message.stone
         if give_message:
             steal_success2 = random.randint(0, 100)
 
             result = OtherSet().get_power_rate(user_message.power, give_message.power)
             if isinstance(result, int):
-                if int(steal_success2) > result:
+                if int(steal_success2) < result:
                     sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                     await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
-
-                give_user_stone = give_message.stone
                 get_stone2 = random.randint(5, 100)
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 if int(get_stone2) > int(give_user_stone):
@@ -858,3 +865,270 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
     else:
         await give_stone.finish("未获取道号信息，请输入正确的道号！")
+
+
+# --------------------------------------------------------------------------------
+# editer:zyp981204
+@my_sect.handle()
+async def _(event: GroupMessageEvent):
+    """查看所在宗门信息"""
+    user_id = event.get_user_id()
+    mess = sql_message.get_user_message(user_id)
+
+    if mess:
+        sect_id = mess.sect_id
+        sect_position = mess.sect_position
+        user_name = mess.user_name
+        sect_info = sql_message.get_sect_info(sect_id)
+        owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+        owner_position = int(owner_idx[0]) if len(owner_idx) == 1 else 0
+        if sect_id:
+            _, sql_res = sql_message.scale_top()
+            top_idx_list = [_[0] for _ in sql_res]
+            msg = f"""{user_name}所在宗门
+    宗门名讳：{sect_info.sect_name}
+    宗门编号：{sect_id}
+    宗   主：{sql_message.get_user_message(sect_info.sect_owner).user_name}
+    道友职位：{jsondata.sect_config_data()[f"{sect_position}"]["title"]}
+    宗门建设度：{sect_info.sect_scale}
+    洞天福地：{sect_info.sect_fairyland if sect_info.sect_fairyland else "暂无"}
+    宗门位面排名：{top_idx_list.index(sect_id)+1}"""
+            if sect_position == owner_position:
+                msg += f"\n   宗门储备：{sect_info.sect_used_stone}灵石"
+        else:
+            msg = "一介散修，莫要再问。"
+    else:
+        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
+
+    await run_xiuxian.finish(msg, at_sender=True)
+
+
+@create_sect.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """创建宗门，对灵石、修为等级有要求，且需要当前状态无宗门"""
+    user_id = event.get_user_id()
+    mess = sql_message.get_user_message(user_id)
+    if mess:
+        # 首先判断是否满足创建宗门的三大条件
+        level = mess.level
+        list_level_all = list(jsondata.level_data().keys())
+        if list_level_all.index(level) < list_level_all.index(
+                xiuxian_config.XiuConfig().sect_min_level) or mess.stone < xiuxian_config.XiuConfig().sect_create_cost or mess.sect_id:
+            msg = f"创建宗门要求：（1）创建者境界最低要求为{xiuxian_config.XiuConfig().sect_min_level}；" \
+                  f"（2）花费{xiuxian_config.XiuConfig().sect_create_cost}灵石费用；" \
+                  f"（3）创建者当前处于无宗门状态。道友暂未满足所有条件，请逐一核实后，再来寻我。"
+        else:
+            # 切割command获取宗门名称
+            sect_name = args.extract_plain_text().strip()
+            if sect_name:
+                # sect表新增
+                sql_message.create_sect(user_id, sect_name)
+                # 获取新增宗门的id（自增而非可设定）
+                new_sect = sql_message.get_sect_info_by_qq(user_id)
+                owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+                owner_position = int(owner_idx[0]) if len(owner_idx) == 1 else 0
+                # 设置用户信息表的宗门字段
+                sql_message.update_usr_sect(user_id, new_sect.sect_id, owner_position)
+                # 扣灵石
+                sql_message.update_ls(user_id, xiuxian_config.XiuConfig().sect_min_level, 2)
+                msg = f"恭喜{mess.user_name}道友创建宗门——{sect_name}，宗门编号为{new_sect.sect_id}。为道友贺！为仙道贺！"
+            else:
+                msg = f"道友确定要创建无名之宗门？还请三思。"
+    else:
+        msg = f"区区凡人，也想创立万世仙门，大胆！"
+    await create_sect.finish(msg, at_sender=True)
+
+
+@join_sect.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """加入宗门，后跟宗门ID，要求加入者当前状态无宗门，入门默认为外门弟子"""
+    user_id = event.get_user_id()
+    mess = sql_message.get_user_message(user_id)
+    if mess:
+        if not mess.sect_id:
+            sect_no = args.extract_plain_text().strip()
+            sql_sects = sql_message.get_all_sect_id()
+            sects_all = [tup[0] for tup in sql_sects]
+            if not sect_no.isdigit():
+                msg = f"申请加入的宗门编号解析异常，应全为数字!"
+            elif int(sect_no) not in sects_all:
+                msg = f"申请加入的宗门编号似乎有误，未在宗门名录上发现!"
+            else:
+                owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "外门弟子"]
+                owner_position = int(owner_idx[0]) if len(owner_idx) == 1 else 4
+                sql_message.update_usr_sect(user_id, int(sect_no), owner_position)
+                new_sect = sql_message.get_sect_info_by_id(int(sect_no))
+                msg = f"欢迎{mess.user_name}师弟入我{new_sect.sect_name}，共参天道。"
+        else:
+            msg = f"守山弟子：我观道友气运中已有宗门气运加持，又何必与我为难。"
+    else:
+        msg = f"守山弟子：凡人，回去吧，仙途难入，莫要自误！"
+    await join_sect.finish(msg, at_sender=True)
+
+
+@sect_position_update.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """宗门职位变更，首先确认操作者的职位是长老及以上（宗主可以变更宗主及以下，长老可以变更长老以下），然后读取变更等级及艾特目标"""
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if not user_message:
+        await sect_position_update.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    position_zhanglao = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "长老"]
+    idx_position = int(position_zhanglao[0]) if len(position_zhanglao) == 1 else 1
+    if user_message.sect_position > idx_position:
+        await sect_position_update.finish(
+            f"你的宗门职位为{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}，无权进行职位管理")
+
+    give_qq = None  # 艾特的时候存到这里
+    msg = args.extract_plain_text().strip()
+    position_num = re.findall("\d+", msg)  # 职位品阶
+
+    for arg in args:
+        # print(args)
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+    if give_qq:
+        if give_qq == user_id:
+            await sect_position_update.finish("无法对自己的职位进行管理。")
+        else:
+            if len(position_num) > 0 and position_num[0] in list(jsondata.sect_config_data().keys()):
+                give_user = sql_message.get_user_message(give_qq)
+                if give_user.sect_id == user_message.sect_id and give_user.sect_position > user_message.sect_position:
+                    if int(position_num[0]) > user_message.sect_position:
+                        sql_message.update_usr_sect(give_user.user_id, give_user.sect_id, int(position_num[0]))
+                        await sect_position_update.finish(f"传{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}"
+                                                          f"{user_message.user_name}法旨，即日起{give_user.user_name}为"
+                                                          f"本宗{jsondata.sect_config_data()[f'{int(position_num[0])}']['title']}")
+                    else:
+                        await sect_position_update.finish("道友试图变更的职位品阶必须在你品阶之下")
+                else:
+                    await sect_position_update.finish("请确保变更目标道友与你在同一宗门，且职位品阶在你之下。")
+            else:
+                await sect_position_update.finish("职位品阶数字解析异常，请输入宗门职位变更帮助，查看支持的数字解析配置")
+    else:
+        await sect_position_update.finish(f"请按照规范进行操作，ex:宗门职位变更2@XXX，将XXX道友（需在自己管理下的宗门）的"
+                                    f"变更为{jsondata.sect_config_data().get('2', {'title': '没有找到2品阶'})['title']}")
+
+@sect_donate.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """宗门捐献"""
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if not user_message:
+        await sect_donate.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    if not user_message.sect_id:
+        await sect_donate.finish("道友还未加入一方宗门。")
+    msg = args.extract_plain_text().strip()
+    donate_num = re.findall("\d+", msg)  # 捐献灵石数
+    if len(donate_num) > 0:
+        if int(donate_num[0]) > user_message.stone:
+            await sect_donate.finish(f"道友的灵石数量小于欲捐献数量{int(donate_num[0])}，请检查")
+        else:
+            sql_message.update_ls(user_id, int(donate_num[0]), 2)
+            sql_message.donate_update(user_message.sect_id, int(donate_num[0]))
+            await sect_donate.finish(f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0])*10}，蒸蒸日上！")
+    else:
+        await sect_donate.finish("捐献的灵石数量解析异常")
+
+@sect_out.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """退出宗门"""
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if not user_message:
+        await sect_out.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    if not user_message.sect_id:
+        await sect_out.finish("道友还未加入一方宗门。")
+    position_this = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+    owner_position = int(position_this[0]) if len(position_this) == 1 else 0
+    if user_message.sect_position != owner_position:
+        msg = args.extract_plain_text().strip()
+        sect_out_id = re.findall("\d+", msg)  # 退出宗门的宗门编号
+        if len(sect_out_id) > 0:
+            if int(sect_out_id[0]) == user_message.sect_id:
+                sql_sects = sql_message.get_all_sect_id()
+                sects_all = [tup[0] for tup in sql_sects]
+                if int(sect_out_id[0]) not in sects_all:
+                    await sect_out.finish(f"欲退出的宗门编号{int(sect_out_id[0])}似乎有误，未在宗门名录上发现!")
+                else:
+                    sql_message.update_usr_sect(user_id, None, None)
+                    sect_info = sql_message.get_sect_info_by_id(int(sect_out_id[0]))
+                    await sect_out.finish(f"道友已退出{sect_info.sect_name}，今后就是自由散修，是福是祸，犹未可知。")
+            else:
+                await sect_out.finish(f"道友所在宗门编号为{user_message.sect_id}，与欲退出的宗门编号{int(sect_out_id[0])}不符")
+        else:
+            await sect_out.finish("欲退出的宗门编号解析异常")
+    else:
+        await sect_out.finish("宗主无法直接退出宗门，如确有需要，请完成宗主传位后另行尝试。")
+
+@sect_kick_out.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """踢出宗门"""
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if not user_message:
+        await sect_kick_out.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    if not user_message.sect_id:
+        await sect_kick_out.finish("道友还未加入一方宗门。")
+    give_qq = None  # 艾特的时候存到这里
+    for arg in args:
+        # print(args)
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+    if give_qq:
+        if give_qq == user_id:
+            await sect_kick_out.finish("无法对自己的进行踢出操作，试试退出宗门？")
+        else:
+            give_user = sql_message.get_user_message(give_qq)
+            if give_user.sect_id == user_message.sect_id:
+                position_zhanglao = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "长老"]
+                idx_position = int(position_zhanglao[0]) if len(position_zhanglao) == 1 else 1
+                if user_message.sect_position <= idx_position:
+                    if give_user.sect_position <= user_message.sect_position:
+                        await sect_kick_out.finish(f"{give_user.user_name}的宗门职务为{jsondata.sect_config_data()[f'{give_user.sect_position}']['title']}，不在你之下，无权操作。")
+                    else:
+                        sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
+                        sql_message.update_usr_sect(give_user.user_id, None, None)
+                        await sect_kick_out.finish(f"传{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}"
+                                                              f"{user_message.user_name}法旨，即日起{give_user.user_name}被"
+                                                              f"{sect_info.sect_name}除名")
+                else:
+                    await sect_kick_out.finish(f"你的宗门职务为{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}，只有长老及以上可执行踢出操作。")
+            else:
+                await sect_kick_out.finish(f"{give_user.user_name}不在你管理的宗门内，请检查。")
+    else:
+        await sect_kick_out.finish(f"请按照规范进行操作，ex:踢出宗门@XXX，将XXX道友（需在自己管理下的宗门）踢出宗门")
+
+@sect_owner_change.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """宗主传位"""
+    user_id = event.get_user_id()
+    user_message = sql_message.get_user_message(user_id)
+    if not user_message:
+        await sect_owner_change.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    if not user_message.sect_id:
+        await sect_owner_change.finish("道友还未加入一方宗门。")
+    position_this = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+    owner_position = int(position_this[0]) if len(position_this) == 1 else 0
+    if user_message.sect_position != owner_position:
+        await sect_owner_change.finish("只有宗主才能进行传位。")
+    give_qq = None  # 艾特的时候存到这里
+    for arg in args:
+        # print(args)
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+    if give_qq:
+        if give_qq == user_id:
+            await sect_owner_change.finish("无法对自己的进行传位操作。")
+        else:
+            give_user = sql_message.get_user_message(give_qq)
+            if give_user.sect_id == user_message.sect_id:
+                sql_message.update_usr_sect(give_user.user_id, give_user.sect_id, owner_position)
+                sql_message.update_usr_sect(user_message.user_id, user_message.sect_id, owner_position+1)
+                sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
+                await sect_owner_change.finish(f"传老宗主{user_message.user_name}法旨，即日起{give_user.user_name}继任{sect_info.sect_name}宗主")
+            else:
+                await sect_owner_change.finish(f"{give_user.user_name}不在你管理的宗门内，请检查。")
+    else:
+        await sect_owner_change.finish(f"请按照规范进行操作，ex:宗主传位@XXX，将XXX道友（需在自己管理下的宗门）升为宗主，自己则变为宗主下一等职位。")
+# -----------------------------------------------------------------------------
