@@ -75,7 +75,7 @@ sql_message = XiuxianDateManage()  # sql类
 
 
 @run_xiuxian.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """加入修仙"""
     user_id = event.get_user_id()
     user_name = (
@@ -94,42 +94,41 @@ async def _(event: GroupMessageEvent):
 
 
 @xiuxian_message.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """我的修仙信息"""
-    user_id = event.get_user_id()
-    mess = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
 
-    if mess:
-        user_name = mess.user_name
-        if user_name:
-            pass
+    user_name = mess.user_name
+    if user_name:
+        pass
+    else:
+        user_name = "无名氏(发送改名+道号更新)"
+    level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[mess.level]["spend"]  # 境界倍率
+
+    # 判断突破的修为
+    list_all = len(OtherSet().level) - 1
+    now_index = OtherSet().level.index(mess.level)
+    if list_all == now_index:
+        get_exp = "位面至高"
+    else:
+        is_updata_level = OtherSet().level[now_index + 1]
+        need_exp = sql_message.get_level_power(is_updata_level)
+        if need_exp - mess.exp > 0:
+            get_exp = "还需{}修为可突破".format(need_exp - mess.exp)
         else:
-            user_name = "无名氏(发送改名+道号更新)"
-        level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
-        realm_rate = jsondata.level_data()[mess.level]["spend"]  # 境界倍率
+            get_exp = "可突破！"
 
-        # 判断突破的修为
-        list_all = len(OtherSet().level) - 1
-        now_index = OtherSet().level.index(mess.level)
-        if list_all == now_index:
-            get_exp = "位面至高"
-        else:
-            is_updata_level = OtherSet().level[now_index + 1]
-            need_exp = XiuxianDateManage().get_level_power(is_updata_level)
-            if need_exp - mess.exp > 0:
-                get_exp = "还需{}修为可突破".format(need_exp - mess.exp)
-            else:
-                get_exp = "可突破！"
-
-        msg = f"""{user_name}道友的信息
+    msg = f"""{user_name}道友的信息
 灵根为：{mess.root}({mess.root_type}+{int(level_rate * 100)}%)
 当前境界：{mess.level}(境界+{int(realm_rate * 100)}%)
 当前灵石：{mess.stone}
 当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
 突破状态：{get_exp}
 你的战力为：{int(mess.exp * level_rate * realm_rate)}"""
-    else:
-        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
 
     await run_xiuxian.finish(msg, at_sender=True)
 
@@ -335,8 +334,13 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
     """修改道号"""
     user_id = event.get_user_id()
     user_name = args.extract_plain_text().strip()
+
+    len_username = len(user_name.encode('gbk'))
+    if len_username > 20:
+        await remaname.finish("道号长度过长，请修改后重试！")
+
     if sql_message.get_user_message(user_id) is None:
-        await in_closing.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
+        await remaname.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
 
     mes = sql_message.update_user_name(user_id, user_name)
     await remaname.finish(mes)
@@ -469,7 +473,8 @@ async def get_group_id(session_id):
 async def update_level(event: GroupMessageEvent):
     """突破"""
     user_id = event.get_user_id()
-    user_msg = sql_message.get_user_message(user_id)
+    user_msg = sql_message.get_user_message(user_id)  # 用户信息
+    user_leveluprate =  int(user_msg.level_up_rate)  # 用户失败次数加成
 
     level_cd = user_msg.level_up_cd
     if level_cd:
@@ -488,7 +493,7 @@ async def update_level(event: GroupMessageEvent):
     exp = user_msg.exp  # 用户修为
     level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
 
-    le = OtherSet().get_type(exp, level_rate, level_name)
+    le = OtherSet().get_type(exp, level_rate + user_leveluprate, level_name)
 
     if le == "失败":
         # 突破失败
@@ -501,13 +506,21 @@ async def update_level(event: GroupMessageEvent):
         now_exp = int(int(exp) * (percentage / 100))
 
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
-        await level_up.finish("道友突破失败,境界受损,修为减少{}，过段时间再突破吧！".format(now_exp))
+
+        update_rate = 1 if int(level_rate * 0.05) <= 1 else int(level_rate * 0.05)  # 失败增加突破几率
+
+        sql_message.update_levelrate(user_id, user_leveluprate + update_rate)
+
+        await level_up.finish("道友突破失败,境界受损,修为减少{}，下次突破成功率增加{}%，道友不要放弃！".format(now_exp, update_rate))
 
     elif type(le) == list:
         # 突破成功
         sql_message.updata_level(user_id, le[0])  # 更新境界
         sql_message.update_power2(user_id)  # 更新战力
         sql_message.updata_level_cd(user_id)  # 更新CD
+
+        sql_message.update_levelrate(user_id, 0)
+
         await level_up.finish("恭喜道友突破{}成功".format(le[0]))
     else:
         # 最高境界
@@ -716,7 +729,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
                 f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
                 at_sender=True,
             )
-            
+
 #偷灵石
 @steal_stone.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -858,3 +871,21 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
     else:
         await give_stone.finish("未获取道号信息，请输入正确的道号！")
+
+
+async def data_check(bot, event):
+    user_qq = event.get_user_id()
+    group_id = await get_group_id(event.get_session_id())
+    msg = sql_message.get_user_message(user_qq)
+
+    if msg:
+        pass
+    else:
+        await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
+        raise MsgError
+
+    return user_qq, group_id, msg
+
+
+class MsgError(ValueError):
+    pass

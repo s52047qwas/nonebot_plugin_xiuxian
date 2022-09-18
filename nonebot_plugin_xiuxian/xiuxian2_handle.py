@@ -11,23 +11,36 @@ DATABASE =Path() / "data" / "xiuxian"
 
 xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
-UserDate = namedtuple("UserDate", ["id", "user_id", "stone", "root","root_type","level","power","create_time","is_sign","exp","user_name","level_up_cd"])
+UserDate = namedtuple("UserDate",
+                      ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
+                       "user_name", "level_up_cd", "level_up_rate"])
 UserCd = namedtuple("UserCd", [ "user_id", "type", "create_time", "scheduled_time"])
 
+num = '578043031'
 
 class XiuxianDateManage:
+    _instance = {}
+    _has_init = {}
+
+
+    def __new__(cls):
+        if cls._instance.get(num) is None:
+            cls._instance[num] = super(XiuxianDateManage, cls).__new__(cls)
+        return cls._instance[num]
+
     def __init__(self):
-        self.database_path = DATABASE
-        if not self.database_path.exists():
-            self.database_path.mkdir(parents=True)
-            self.database_path /= "xiuxian.db"
-            self.conn = sqlite3.connect(self.database_path)
-            # self._create_file()
-        else:
-            self.database_path /= "xiuxian.db"
-            self.conn = sqlite3.connect(self.database_path)
-        print(f"数据库已连接！")
-        # self._check_data()
+        if not XiuxianDateManage._has_init.get(num):
+            self.database_path = DATABASE
+            if not self.database_path.exists():
+                self.database_path.mkdir(parents=True)
+                self.database_path /= "xiuxian.db"
+                self.conn = sqlite3.connect(self.database_path)
+                # self._create_file()
+            else:
+                self.database_path /= "xiuxian.db"
+                self.conn = sqlite3.connect(self.database_path)
+            print(f"数据库已连接！")
+            self._check_data()
 
     def close(self):
         self.conn.close()
@@ -49,44 +62,48 @@ class XiuxianDateManage:
     def _check_data(self):
         """检查数据完整性"""
         c = self.conn.cursor()
-        try:
-            c.execute(f"select count(1) from user_cd")
-        except:
-            c.execute("""CREATE TABLE user_cd
-                                    (user_id       INTEGER PRIMARY KEY UNIQUE,
-                                    type           INTEGER,
-                                    create_time    INTEGER,
-                                    scheduled_time INTEGER);""")
 
-        # sql = "select * FROM level where name=?"
-        # c.execute(sql, ("融合灵根",))
-        # result = c.fetchone()
-        # if result:
-        #     pass
-        # else:
-        #     c.execute(f"DELETE from level")
-        #     c.executescript(f"""INSERT INTO "main"."level" ("name", "power") VALUES ('江湖好手', 100);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境初期', 1000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境中期', 2000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('练气境圆满', 3000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境初期', 8000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境中期', 9000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('筑基境圆满', 10000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('伪灵根', 0.8);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('真灵根', 1);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('天灵根', 1.2);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('变异灵根', 1.2);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('超灵根', 1.4);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('龙灵根', 1.3);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('混沌灵根', 1.5);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('融合灵根', 1.5);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境初期', 20000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境中期', 40000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('结丹境圆满', 80000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境初期', 160000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境中期', 360000);
-        # INSERT INTO "main"."level" ("name", "power") VALUES ('元婴境圆满', 720000);""")
+        for i in XiuConfig().sql_table:
+            if i == "user_xiuxian":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "user_xiuxian" (
+      "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      "user_id" INTEGER NOT NULL,
+      "stone" integer DEFAULT 0,
+      "root" TEXT,
+      "root_type" TEXT,
+      "level" TEXT,
+      "power" integer DEFAULT 0,
+      "create_time" integer,
+      "is_sign" integer DEFAULT 0,
+      "exp" integer DEFAULT 0,
+      "user_name" TEXT DEFAULT NULL,
+      "level_up_cd" integer DEFAULT NULL,
+      "level_up_rate" integer DEFAULT NULL
+    );""")
+            elif i == "user_cd":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "user_cd" (
+  "user_id" INTEGER NOT NULL,
+  "type" integer DEFAULT 0,
+  "create_time" integer DEFAULT NULL,
+  "scheduled_time" integer,
+  PRIMARY KEY ("user_id")
+);""")
 
+        for i in XiuConfig().sql_user_xiuxian:
+            try:
+                c.execute(f"select {i} from user_xiuxian")
+            except sqlite3.OperationalError:
+                sql = f"ALTER TABLE user_xiuxian ADD COLUMN {i} INTEGER DEFAULT 0;"
+                print(sql)
+                c.execute(sql)
+
+        self.conn.commit()
 
     @classmethod
     def close_dbs(cls):
@@ -410,6 +427,13 @@ class XiuxianDateManage:
         sql = f"UPDATE user_cd SET type=?,create_time=?,scheduled_time=? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (the_type, now_time, sc_time, user_id))
+        self.conn.commit()
+
+    def update_levelrate(self, user_id, rate):
+        """更新突破成功率"""
+        sql = f"UPDATE user_xiuxian SET level_up_rate=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (rate, user_id))
         self.conn.commit()
 
 
