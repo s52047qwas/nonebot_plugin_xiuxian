@@ -38,8 +38,12 @@ class XiuConfig:
         self.sign_in_lingshi_upper_limit = 300  # 每日签到灵石上限
         self.sign_in_xiuwei_lower_limit = 1000  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = 3000  # 每日签到修为上限
-        self.tou = 70  # 偷灵石惩罚
+        self.tou = 30  # 偷灵石惩罚
         self.remake = 200  # 重入仙途的消费
         self.sect_min_level = "练气境初期"  # 创建宗门的最低修为等级要求
         self.sect_create_cost = 50  # 创建宗门的最低修为等级要求
+
+        self.sql_table = ["user_xiuxian", "user_cd"]
+        self.sql_user_xiuxian = ["level_up_rate"]
+
 
