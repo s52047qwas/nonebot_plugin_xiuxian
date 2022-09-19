@@ -43,7 +43,7 @@ class XiuConfig:
         self.sect_min_level = "练气境初期"  # 创建宗门的最低修为等级要求
         self.sect_create_cost = 50  # 创建宗门的最低修为等级要求
 
-        self.sql_table = ["user_xiuxian", "user_cd"]
+        self.sql_table = ["user_xiuxian", "user_cd", "sects"]
         self.sql_user_xiuxian = ["level_up_rate","sect_id", "sect_position"]
 
 

@@ -88,10 +88,6 @@ sql_message = XiuxianDateManage()  # sql类
 async def _(bot: Bot, event: GroupMessageEvent):
     """加入修仙"""
     user_id = event.get_user_id()
-    if isinstance(event, GroupMessageEvent
-                  ) and str(event.group_id) not in get_driver().config.dict().get("xiuxian_groups"):
-        await run_xiuxian.send(f"《我带群友意识穿越修仙界》dev中，内测群暂未开放。。。", at_sender=True)
-        return
     user_name = (
         event.sender.card if event.sender.card else event.sender.nickname
     )  # 获取为用户名

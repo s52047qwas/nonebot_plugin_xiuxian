@@ -98,6 +98,18 @@ class XiuxianDateManage:
   "scheduled_time" integer,
   PRIMARY KEY ("user_id")
 );""")
+            elif i == "sects":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "sects" (
+  "sect_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "sect_name" TEXT NOT NULL,
+  "sect_owner" integer,
+  "sect_scale" integer NOT NULL,
+  "sect_used_stone" integer,
+  "sect_fairyland" integer
+);""")
 
         for i in XiuConfig().sql_user_xiuxian:
             try:
@@ -317,7 +329,7 @@ class XiuxianDateManage:
         :param sect_name:宗门名称
         :return:
         """
-        sql = f"INSERT INTO sects(sect_name, sect_owner, sect_scale, sect_used_stone) VALUES (?,?,0)"
+        sql = f"INSERT INTO sects(sect_name, sect_owner, sect_scale, sect_used_stone) VALUES (?,?,0,0)"
         cur = self.conn.cursor()
         cur.execute(sql, (sect_name, user_id))
         self.conn.commit()
