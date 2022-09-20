@@ -191,12 +191,12 @@ class XiuxianDateManage:
         if not result:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
         elif result[0] == 0:
-            ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit, XiuConfig().sign_in_lingshi_upper_limit) + 3000
+            ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit, XiuConfig().sign_in_lingshi_upper_limit)
             exp = random.randint(XiuConfig().sign_in_xiuwei_lower_limit, XiuConfig().sign_in_xiuwei_upper_limit)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+?,exp=exp+? WHERE user_id=?"
             cur.execute(sql2, (ls, exp, user_id))
             self.conn.commit()
-            return '签到成功，获取{}块灵石(内测福利+3000),修为增加{}！'.format(ls, exp)
+            return '签到成功，获取{}块灵石,修为增加{}！'.format(ls, exp)
         elif result[0] == 1:
             return '贪心的人是不会有好运的！'
 
