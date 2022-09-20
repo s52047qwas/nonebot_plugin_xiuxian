@@ -68,7 +68,6 @@ in_closing = on_command("闭关", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 give_stone = on_command("送灵石", priority=5)
 do_work = on_command("悬赏令", priority=5)
-<<<<<<< HEAD
 
 # if get_plugin_by_module_name("nonebot_plugin_xiuxian"):
 #     load_all_plugins(
@@ -78,17 +77,11 @@ do_work = on_command("悬赏令", priority=5)
 #         [],
 #     )
 
-=======
->>>>>>> d8bd113f490b8ab13067d7138264940d60fd4e29
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 
 my_sect = on_command("我的宗门", aliases={"宗门信息"}, priority=5)
-<<<<<<< HEAD
 create_sect = on_command("创建宗门", priority=5)
-=======
-create_sect = on_command("创建宗门", priority=5)
->>>>>>> d8bd113f490b8ab13067d7138264940d60fd4e29
 join_sect = on_command("加入宗门", priority=5)
 sect_position_update = on_command("宗门职位变更", priority=5)
 sect_donate = on_command("宗门捐献", priority=5)
