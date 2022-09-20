@@ -15,13 +15,13 @@ from nonebot.adapters.onebot.v11 import (
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet # ,XiuxianJsonDate
 from .work_handle import workhandle
 from datetime import datetime
-import random
 from nonebot.permission import SUPERUSER
 from ..xiuxian_opertion import gamebingo, do_is_work, time_msg
-from ..xiuxian_config import XiuConfig
-from ..data_source import jsondata
+import os
 
 do_work = on_command("悬赏令", priority=5)
+
+path = os.path.dirname(os.path.realpath(__file__))
 
 work = {}  # 悬赏令信息记录
 sql_message = XiuxianDateManage()  # sql类
@@ -74,7 +74,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             exp_time = (datetime.now() - work_time).seconds // 60  # 时长计算
             time2 = workhandle().do_work(
                 # key=1, name=user_cd_message.scheduled_time  修改点
-                key=1, name=user_cd_message.scheduled_time, level=userinfo.level[:3], exp=userinfo.exp
+                key=1, name=user_cd_message.scheduled_time, level=userinfo.level[:3], exp=userinfo.exp, user_id=userinfo.user_id
             )
             if exp_time < time2:
                 await do_work.finish(
@@ -82,11 +82,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     at_sender=True,
                 )
             else:
-                work_sf = workhandle().do_work(2, work_list= user_cd_message.scheduled_time, level=userinfo.level[:3], exp=userinfo.exp)
+                work_sf = workhandle().do_work(2, work_list= user_cd_message.scheduled_time, level=userinfo.level[:3], exp=userinfo.exp, user_id=userinfo.user_id)
                 if work_sf[3]: #大成功
                     sql_message.update_ls(user_id, work_sf[1] * 2, 1)
                     sql_message.do_work(user_id, 0)
-                    #todu 战利品结算sql
+                    #todo 战利品结算sql
                     await do_work.finish(f"悬赏令结算，{work_sf[0]},最终获得报酬{work_sf[1] * 2}枚灵石,额外获得战利品{work_sf[2]}!")
                     
                 else: #普通结算
@@ -98,14 +98,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         if work[user_id]:
             if (datetime.now() - work[user_id].time).seconds // 60 >= 60:
-                work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp)
+                work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp, user_id=userinfo.user_id)
 
                 n = 1
                 work_msg_f = f"""     ✨道友的个人悬赏令✨"""
                 for i in work_msg:
                     work_list.append([i[0], i[3]])
                     work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   基础报酬{i[2]}灵石   预计需{i[3]}分钟   可能获取额外战利品{''.join(sp + ' ' for sp in i[4])}"""
+{n}、{i[0]},完成机率{i[1]},基础报酬{i[2]}灵石,预计需{i[3]}分钟,可能获取额外{i[4]}!"""
                     n += 1
                 work_msg_f += "\n(悬赏令每小时更新一次)"
                 work[user_id].msg = work_msg_f
@@ -117,13 +117,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         pass
 
     if user_cd_message is None:
-        work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp)
+        work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp, user_id=userinfo.user_id)
         n = 1
         work_msg_f = f"""     ✨道友的个人悬赏令✨"""
         for i in work_msg:
             work_list.append([i[0], i[3]])
             work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   基础报酬{i[2]}灵石   预计需{i[3]}分钟   可能获取额外战利品{''.join(sp + ' ' for sp in i[4])}"""
+{n}、{i[0]},完成机率{i[1]},基础报酬{i[2]}灵石,预计需{i[3]}分钟,可能获取额外{i[4]}!"""
             n += 1
         work_msg_f += f"\n(悬赏令每小时更新一次)"
         work[user_id] = do_is_work(user_id)
@@ -134,13 +134,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
     elif user_cd_message.type == 0:
 
-        work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp)
+        work_msg = workhandle().do_work(0, level=userinfo.level[:3], exp=userinfo.exp, user_id=userinfo.user_id)
         work_msg_f = f"""     ✨道友的个人悬赏令✨"""
         n = 1
         for i in work_msg:
             work_list.append([i[0], i[3]])
             work_msg_f += f"""
-{n}、{i[0]}     完成机率{i[1]}   基础报酬{i[2]}灵石   预计需{i[3]}分钟   可能获取额外战利品{''.join(sp + ' ' for sp in i[4])}"""
+{n}、{i[0]},完成机率{i[1]},基础报酬{i[2]}灵石,预计需{i[3]}分钟,可能获取额外{i[4]}!"""
             n += 1
         work_msg_f += f"\n(榜单每小时更新一次)"
         work[user_id] = do_is_work(user_id)
@@ -157,7 +157,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
         )
         exp_time = (datetime.now() - work_time).seconds // 60  # 闭关时长计算
-        time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time)
+        time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time, user_id=userinfo.user_id)
         if exp_time < time2:
             await do_work.finish(
                 f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束",

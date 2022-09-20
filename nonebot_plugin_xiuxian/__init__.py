@@ -67,15 +67,15 @@ level_up = on_command("突破", priority=5)
 in_closing = on_command("闭关", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 give_stone = on_command("送灵石", priority=5)
-do_work = on_command("悬赏令", priority=5)
+# do_work = on_command("悬赏令", priority=5)
 
-# if get_plugin_by_module_name("nonebot_plugin_xiuxian"):
-#     load_all_plugins(
-#         [
-#             'nonebot_plugin_xiuxian.xiuxian_work',
-#         ],
-#         [],
-#     )
+if get_plugin_by_module_name("nonebot_plugin_xiuxian"):
+    load_all_plugins(
+        [
+            'nonebot_plugin_xiuxian.xiuxian_work',
+        ],
+        [],
+    )
 
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
@@ -622,8 +622,8 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await give_stone.finish("未获取道号信息，请输入正确的道号！")
 
 
-@do_work.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+# @do_work.handle()
+# async def _(event: GroupMessageEvent, args: Message = CommandArg()):
     """悬赏令"""
     global work
     user_type = 2

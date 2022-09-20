@@ -1,7 +1,54 @@
+from json import JSONDecodeError, JSONDecoder
 from ..data_source import *
+import os
 
+
+
+WORKDATA = Path() / "data" / "xiuxian" / "work"
 
 class reward(JsonDate):
     
     def __init__(self):
         self.Reward_that_jsonpath = DATABASE / "悬赏令test.json"
+        
+        self.Reward_ansa_jsonpath = WORKDATA / "暗杀名单.json"
+        self.Reward_levelprice_jsonpath = WORKDATA / "等级奖励.json"
+        self.Reward_yaocai_jsonpath = WORKDATA / "药材.json"
+        self.Reward_zuoyao_jsonpath = WORKDATA / "捉妖.json"
+        self.Reward_spoils_jsonpath = WORKDATA / "战利品.json"
+        
+    def reward_ansa_data(self):
+        """获取暗杀名单信息"""
+        with open(self.Reward_ansa_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+        
+    def reward_levelprice_data(self):
+        """获取等级奖励信息"""
+        with open(self.Reward_levelprice_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+        
+    def reward_yaocai_data(self):
+        """获取药材信息"""
+        with open(self.Reward_yaocai_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+        
+    def reward_zuoyao_data(self):
+        """获取捉妖信息"""
+        with open(self.Reward_zuoyao_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+        
+    def reward_spoils_data(self):
+        """获取战利品信息"""
+        with open(self.Reward_spoils_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+        
