@@ -784,7 +784,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if isinstance(result, int):
             if int(steal_success) < OtherSet().get_power_rate(user_message.stone, steal_user.stone):
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
-                await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
+                sql_message.update_ls(steal_qq, coststone_num, 1)  # 增加被偷的人的灵石
+                await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！赔款{}灵石'.format(coststone_num))
 
             get_stone = random.randint(5, 100)
             sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
