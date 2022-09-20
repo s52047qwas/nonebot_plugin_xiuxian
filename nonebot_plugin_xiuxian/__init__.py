@@ -521,7 +521,7 @@ async def update_level(event: GroupMessageEvent):
 
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
 
-        update_rate = 1 if int(level_rate * 0.05) <= 1 else int(level_rate * 0.05)  # 失败增加突破几率
+        update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
 
         sql_message.update_levelrate(user_id, user_leveluprate + update_rate)
 
