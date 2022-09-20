@@ -7,14 +7,18 @@ from pathlib import Path
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
 
-DATABASE =Path() / "data" / "xiuxian"
+DATABASE = Path() / "data" / "xiuxian"
 
 xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate"])
-UserCd = namedtuple("UserCd", [ "user_id", "type", "create_time", "scheduled_time"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position"])
+                       
+UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
+SectInfo = namedtuple("SectInfo", ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
+
+
 
 num = '578043031'
 
@@ -94,6 +98,18 @@ class XiuxianDateManage:
   "scheduled_time" integer,
   PRIMARY KEY ("user_id")
 );""")
+            elif i == "sects":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "sects" (
+  "sect_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "sect_name" TEXT NOT NULL,
+  "sect_owner" integer,
+  "sect_scale" integer NOT NULL,
+  "sect_used_stone" integer,
+  "sect_fairyland" integer
+);""")
 
         for i in XiuConfig().sql_user_xiuxian:
             try:
@@ -109,15 +125,14 @@ class XiuxianDateManage:
     def close_dbs(cls):
         XiuxianDateManage().close()
 
-    def _create_user(self, user_id: str,root:str,type:str,power:str,create_time,user_name) -> None:
+    def _create_user(self, user_id: str, root: str, type: str, power: str, create_time, user_name) -> None:
         """在数据库中创建用户并初始化"""
         c = self.conn.cursor()
         sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name) VALUES (?,0,?,?,'江湖好手',?,?,?)"
-        c.execute(sql, (user_id,root,type,power,create_time,user_name))
+        c.execute(sql, (user_id, root, type, power, create_time, user_name))
         self.conn.commit()
 
-
-    def get_user_message(self,user_id):
+    def get_user_message(self, user_id):
         '''根据USER_ID获取用户信息'''
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
@@ -128,7 +143,22 @@ class XiuxianDateManage:
         else:
             return UserDate(*result)
 
-    def get_user_message2(self,user_id):
+    def get_sect_info(self, sect_id):
+        """
+        通过宗门编号获取宗门信息
+        :param sect_id: 宗门编号
+        :return:
+        """
+        cur = self.conn.cursor()
+        sql = f"select * from sects where sect_id=?"
+        cur.execute(sql, (sect_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return SectInfo(*result)
+
+    def get_user_message2(self, user_id):
         '''根据user_name获取用户信息'''
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_name=?"
@@ -139,20 +169,20 @@ class XiuxianDateManage:
         else:
             return UserDate(*result)
 
-    def create_user(self,user_id,*args):
+    def create_user(self, user_id, *args):
         """校验用户是否存在"""
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
         cur.execute(sql, (user_id,))
         result = cur.fetchone()
         if not result:
-            self._create_user(user_id,args[0],args[1],args[2],args[3],args[4])
+            self._create_user(user_id, args[0], args[1], args[2], args[3], args[4])
             self.conn.commit()
-            return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1], args[2],args[3])
+            return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1], args[2], args[3])
         else:
             return '您已迈入修仙世界，输入【我的修仙信息】获取数据吧！'
 
-    def get_sign(self,user_id):
+    def get_sign(self, user_id):
         '''获取用户签到信息'''
         cur = self.conn.cursor()
         sql = f"select is_sign from user_xiuxian where user_id=?"
@@ -160,17 +190,17 @@ class XiuxianDateManage:
         result = cur.fetchone()
         if not result:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
-        elif result[0]==0:
-            ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit,XiuConfig().sign_in_lingshi_upper_limit)
-            exp = random.randint(XiuConfig().sign_in_xiuwei_lower_limit,XiuConfig().sign_in_xiuwei_upper_limit)
+        elif result[0] == 0:
+            ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit, XiuConfig().sign_in_lingshi_upper_limit) + 3000
+            exp = random.randint(XiuConfig().sign_in_xiuwei_lower_limit, XiuConfig().sign_in_xiuwei_upper_limit)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+?,exp=exp+? WHERE user_id=?"
-            cur.execute(sql2, (ls, exp,user_id))
+            cur.execute(sql2, (ls, exp, user_id))
             self.conn.commit()
-            return '签到成功，获取{}块灵石,修为增加{}！'.format(ls,exp)
-        elif result[0]==1:
+            return '签到成功，获取{}块灵石(内测福利+3000),修为增加{}！'.format(ls, exp)
+        elif result[0] == 1:
             return '贪心的人是不会有好运的！'
 
-    def ramaker(self,lg,type,user_id):
+    def ramaker(self, lg, type, user_id):
         """洗灵根"""
         cur = self.conn.cursor()
 
@@ -178,29 +208,27 @@ class XiuxianDateManage:
         sql_s = f"SELECT stone FROM user_xiuxian WHERE user_id=?"
         cur.execute(sql_s, (user_id,))
         result = cur.fetchone()
-        if result[0]>=XiuConfig().remake:
+        if result[0] >= XiuConfig().remake:
             sql = f"UPDATE user_xiuxian SET root=?,root_type=?,stone=stone-? WHERE user_id=?"
             cur.execute(sql, (lg, type, XiuConfig().remake, user_id))
             self.conn.commit()
 
             self.update_power2(user_id)
-            return "逆天之行，重获新生，新的灵根为：{}，类型为：{}".format(lg,type)
+            return "逆天之行，重获新生，新的灵根为：{}，类型为：{}".format(lg, type)
         else:
             return "你的灵石还不够呢，快去赚点灵石吧！"
 
-
-    def get_root_rate(self,name):
+    def get_root_rate(self, name):
         """获取灵根倍率"""
         data = jsondata.root_data()
         return data[name]['type_speeds']
 
-    def get_level_power(self,name):
+    def get_level_power(self, name):
         """获取境界倍率"""
         data = jsondata.level_data()
         return data[name]['power']
 
-
-    def update_power2(self,user_id) -> None:
+    def update_power2(self, user_id) -> None:
         """更新战力"""
         UserMessage = self.get_user_message(user_id)
         cur = self.conn.cursor()
@@ -223,15 +251,13 @@ class XiuxianDateManage:
             cur.execute(sql, (price, user_id))
             self.conn.commit()
 
-
     def get_ls_rank(self):
         """灵石排行榜"""
         sql = f"SELECT user_id,stone FROM user_xiuxian  WHERE stone>0 ORDER BY stone DESC LIMIT 5"
         cur = self.conn.cursor()
-        cur.execute(sql,)
+        cur.execute(sql, )
         result = cur.fetchall()
         return result
-
 
     def singh_remake(self):
         """重置签到"""
@@ -240,7 +266,7 @@ class XiuxianDateManage:
         cur.execute(sql, )
         self.conn.commit()
 
-    def update_user_name(self,user_id,user_name):
+    def update_user_name(self, user_id, user_name):
         """更新用户道号"""
         cur = self.conn.cursor()
         get_name = f"select user_name from user_xiuxian where user_name=?"
@@ -251,11 +277,11 @@ class XiuxianDateManage:
         else:
             sql = f"UPDATE user_xiuxian SET user_name=? where user_id=?"
 
-            cur.execute(sql,(user_name, user_id))
+            cur.execute(sql, (user_name, user_id))
             self.conn.commit()
             return '道友的道号更新成功拉~'
 
-    def updata_level_cd(self,user_id):
+    def updata_level_cd(self, user_id):
         """更新破镜CD"""
         sql = f"UPDATE user_xiuxian SET level_up_cd=? where user_id=?"
         cur = self.conn.cursor()
@@ -263,7 +289,7 @@ class XiuxianDateManage:
         cur.execute(sql, (now_time, user_id))
         self.conn.commit()
 
-    def updata_level(self,user_id,level_name):
+    def updata_level(self, user_id, level_name):
         """更新境界"""
         sql = f"UPDATE user_xiuxian SET level=? where user_id=?"
         cur = self.conn.cursor()
@@ -282,7 +308,7 @@ class XiuxianDateManage:
         if result:
             return UserCd(*result)
         else:
-            self.insert_user_cd(user_id,)
+            self.insert_user_cd(user_id, )
             return None
 
     def insert_user_cd(self, user_id) -> None:
@@ -296,7 +322,70 @@ class XiuxianDateManage:
         cur.execute(sql, (user_id,))
         self.conn.commit()
 
-    def in_closing(self,user_id, the_type):
+    def create_sect(self, user_id, sect_name) -> None:
+        """
+        创建宗门
+        :param user_id:qq
+        :param sect_name:宗门名称
+        :return:
+        """
+        sql = f"INSERT INTO sects(sect_name, sect_owner, sect_scale, sect_used_stone) VALUES (?,?,0,0)"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_name, user_id))
+        self.conn.commit()
+
+    def get_sect_info_by_qq(self, user_id):
+        """
+        通过用户qq获取宗门信息
+        :param user_id:
+        :return:
+        """
+        cur = self.conn.cursor()
+        sql = f"select * from sects where sect_owner=?"
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return SectInfo(*result)
+
+    def get_sect_info_by_id(self, sect_id):
+        """
+        通过宗门id获取宗门信息
+        :param sect_id:
+        :return:
+        """
+        cur = self.conn.cursor()
+        sql = f"select * from sects where sect_id=?"
+        cur.execute(sql, (sect_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return SectInfo(*result)
+
+    def update_usr_sect(self, user_id, usr_sect_id, usr_sect_position):
+        """
+        更新用户信息表的宗门信息字段
+        :param user_id:
+        :param usr_sect_id:
+        :param usr_sect_position:
+        :return:
+        """
+        sql = f"UPDATE user_xiuxian SET sect_id=?,sect_position=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (usr_sect_id, usr_sect_position, user_id))
+        self.conn.commit()
+
+    def get_all_sect_id(self):
+        """获取全部宗门id"""
+        sql = f"SELECT sect_id FROM sects"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        return result
+
+    def in_closing(self, user_id, the_type):
         """
         更新用户操作CD
         :param user_id: qq
@@ -316,24 +405,23 @@ class XiuxianDateManage:
         cur.execute(sql, (the_type, now_time, user_id))
         self.conn.commit()
 
-    def out_closing(self,user_id, the_type):
+    def out_closing(self, user_id, the_type):
         """出关状态更新"""
         pass
 
-    def update_exp(self,user_id,exp):
+    def update_exp(self, user_id, exp):
         """增加修为"""
         sql = f"UPDATE user_xiuxian SET exp=exp+? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (exp, user_id))
         self.conn.commit()
 
-    def update_j_exp(self,user_id,exp):
+    def update_j_exp(self, user_id, exp):
         """减少修为"""
         sql = f"UPDATE user_xiuxian SET exp=exp-? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (exp, user_id))
         self.conn.commit()
-
 
     def realm_top(self):
         """境界排行榜"""
@@ -407,7 +495,32 @@ class XiuxianDateManage:
 
         return mess
 
-    def do_work(self,user_id, the_type, sc_time=None):
+    def scale_top(self):
+        """
+        宗门建设度排行榜
+        :return:
+        """
+        sql = f"SELECT sect_id, sect_name, sect_scale FROM sects WHERE sect_owner is NOT NULL ORDER BY sect_scale DESC"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        mess = f"✨位面宗门建设排行榜TOP10✨\n"
+        num = 0
+        for i in result:
+            num += 1
+            mess += f"第{num}位  {i[1]}  建设度：{i[2]}\n"
+            if num == 10:
+                break
+        return mess, result
+
+    def donate_update(self, sect_id, stone_num):
+        """宗门捐献更新建设度及可用灵石"""
+        sql = f"UPDATE sects SET sect_used_stone=sect_used_stone+?,sect_scale=sect_scale+? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (stone_num, stone_num*10, sect_id))
+        self.conn.commit()
+
+    def do_work(self, user_id, the_type, sc_time=None):
         """
         更新用户操作CD
         :param sc_time: 任务
@@ -437,13 +550,11 @@ class XiuxianDateManage:
         self.conn.commit()
 
 
-
 class XiuxianJsonDate:
     def __init__(self):
         self.root_jsonpath = DATABASE / "灵根.json"
         self.level_jsonpath = DATABASE / "突破概率.json"
         self.do_work_jsonpath = DATABASE / "悬赏令.json"
-
 
     def beifen_linggen_get(self):
         with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
@@ -457,7 +568,6 @@ class XiuxianJsonDate:
             a = e.read()
             data = json.loads(a)
             return data[0][level]
-
 
     def linggen_get(self):
         """获取灵根信息"""
@@ -484,20 +594,20 @@ class XiuxianJsonDate:
             root = random.choice(data[lgen]["type_list"])
             return root, lgen
 
-
-    def do_work(self,key,work_list=None,name=None):
+    def do_work(self, key, work_list=None, name=None):
         """悬赏令获取"""
         # with open(self.do_work_jsonpath, 'r', encoding='utf-8') as e:
         #     a = e.read()
         #     data = json.loads(a)
         data = jsondata.reward_that_data()
-        print("111",data)
+        print("111", data)
         print(type(data))
-        if key == 0:   # 如果没有获取过，则返回悬赏令
+        if key == 0:  # 如果没有获取过，则返回悬赏令
             get_work_list = []
             for i in data:
                 name = random.choice(list(data[i].keys()))
-                get_work_list.append([name, data[i][name]["rate"], data[i][name]["succeed_thank"], data[i][name]["time"]])
+                get_work_list.append(
+                    [name, data[i][name]["rate"], data[i][name]["succeed_thank"], data[i][name]["time"]])
             return get_work_list
 
         if key == 1:  ##返回对应的悬赏令信息
@@ -507,13 +617,12 @@ class XiuxianJsonDate:
                 except:
                     pass
 
-        elif key == 2:   # 如果是结算，则获取结果
+        elif key == 2:  # 如果是结算，则获取结果
             work_event = None
             for i, v in data.items():
                 for vk, vv in v.items():
                     if vk == work_list:
                         work_event = vv
-
 
             if random.randint(1, 100) <= work_event["rate"]:
                 return random.choice(work_event["succeed"]), work_event["succeed_thank"]
@@ -526,7 +635,7 @@ class OtherSet(XiuConfig):
     def __init__(self):
         super().__init__()
 
-    def set_closing_type(self,user_level):
+    def set_closing_type(self, user_level):
         list_all = len(self.level) - 1
         now_index = self.level.index(user_level)
         if list_all == now_index:
@@ -535,7 +644,7 @@ class OtherSet(XiuConfig):
         need_exp = XiuxianDateManage().get_level_power(is_updata_level)
         return need_exp
 
-    def get_type(self,user_exp,rate,user_level):
+    def get_type(self, user_exp, rate, user_level):
         list_all = len(self.level) - 1
         now_index = self.level.index(user_level)
         if list_all == now_index:
@@ -544,11 +653,11 @@ class OtherSet(XiuConfig):
         is_updata_level = self.level[now_index + 1]
         need_exp = XiuxianDateManage().get_level_power(is_updata_level)
 
-        #判断修为是否足够突破
+        # 判断修为是否足够突破
         if user_exp >= need_exp:
             pass
         else:
-            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp-user_exp,is_updata_level)
+            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp - user_exp, is_updata_level)
 
         success_rate = True if random.randint(0, 100) < rate else False
 
@@ -558,7 +667,7 @@ class OtherSet(XiuConfig):
         else:
             return '失败'
 
-    def calculated(self,rate: dict) -> str:
+    def calculated(self, rate: dict) -> str:
         """
         根据概率计算，轮盘型
         :rate:格式{"数据名"："获取几率"}
@@ -585,14 +694,14 @@ class OtherSet(XiuConfig):
 
         return list(rate.keys())[index_num]
 
-    def date_diff(self,new_time,old_time):
+    def date_diff(self, new_time, old_time):
         """计算日期差"""
-        if isinstance(new_time,datetime.datetime):
+        if isinstance(new_time, datetime.datetime):
             pass
         else:
             new_time = datetime.datetime.strptime(new_time, '%Y-%m-%d %H:%M:%S.%f')
 
-        if isinstance(old_time,datetime.datetime):
+        if isinstance(old_time, datetime.datetime):
             pass
         else:
             old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
@@ -602,54 +711,32 @@ class OtherSet(XiuConfig):
 
         return (day * 24 * 60 * 60) + sec
 
-    def fight(self,player1=None,player2=None):
-        import random
+    def fight(self, player1=None, player2=None):
         player1 = {'HP': 100,
                    "ROOT_RATE": 1,
                    "LEVEL_RATE": 1,
                    "COMBO": 0,
                    "ATK": 12,
-                   "AC": 1,
-                   "MP": 100}
+                   "AC": 20}
 
         player2 = {'HP': 100,
                    "ROOT_RATE": 1.2,
                    "LEVEL_RATE": 1,
                    "COMBO": 0,
                    "ATK": 10,
-                   "AC": 1,
-                   "MP": 100}
+                   "AC": 19}
 
         HP_SEND = True
-        while HP_SEND:
+        while HP_SEND is True:
             player1_gj = (random.randint(1, 10) + player1['ATK']) * player1["ROOT_RATE"] * player1["LEVEL_RATE"]
             player2_gj = (random.randint(1, 10) + player2['ATK']) * player2["ROOT_RATE"] * player2["LEVEL_RATE"]
 
-            # 造成的伤害
-            play1_sh: int = int(player1_gj) - player2['AC']
-            play2_sh: int = int(player2_gj) - player1['AC']
+            player2['HP'] = player2['HP'] - (int(player1_gj) - player2["AC"])
+            print(player2['HP'])
+            HP_SEND = False
+        else:
+            print('222')
 
-            print(f"play1发起攻击，造成伤害{play1_sh}")
-            player2['HP'] = player2['HP'] - play1_sh
-            print(f"play2剩余血量{player2['HP']}")
-
-            if player2['HP'] <= 0:
-                print("play1胜利")
-                break
-
-            import time
-            time.sleep(1)
-            print(f"play2发起攻击，造成伤害{play2_sh}")
-            player1['HP'] = player1['HP'] - play2_sh
-            print(f"play1剩余血量{player1['HP']}\n")
-            time.sleep(1)
-            if player1['HP'] <= 0:
-                print("play2胜利")
-                break
-
-            if player1['HP'] <= 0 or player2['HP'] <= 0:
-                break
-            
     def get_power_rate(self, mind, other):
         power_rate = mind / (other + mind)
         if power_rate >= 9.5:
@@ -660,9 +747,8 @@ class OtherSet(XiuConfig):
             return int(power_rate * 100)
 
 
-
 if __name__ == '__main__':
-    print(OtherSet().fight)
+    print(OtherSet().date_diff("2022-09-08 00:42:56.740255", "2022-09-08 00:42:56.740255"))
     # paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
     # with open(paths, 'r', encoding='utf-8') as e:
     #     a = e.read()

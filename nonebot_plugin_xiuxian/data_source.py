@@ -13,6 +13,7 @@ class JsonDate:
         self.level_rate_jsonpath = DATABASE / "突破概率.json"
         self.Reward_that_jsonpath = DATABASE / "悬赏令.json"
         self.level_jsonpath = DATABASE / "境界.json"
+        self.sect_json_pth = DATABASE / "宗门玩法配置.json"
 
     def level_data(self):
         """境界数据"""
@@ -20,6 +21,13 @@ class JsonDate:
             a = e.read()
             data = json.loads(a)
             return data
+
+    def sect_config_data(self):
+        """宗门玩法配置"""
+        with open(self.sect_json_pth, "r", encoding="utf-8") as fp:
+            file = fp.read()
+            config_data = json.loads(file)
+            return config_data
 
     def root_data(self):
         """获取灵根数据"""
