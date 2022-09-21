@@ -67,12 +67,15 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
 处下载文件，放置于bot目录，data -> xiuxian文件夹处
 
 ## 更新
+# 2022/09/20
+新增了宗门功能
+优化更新了悬赏令功能
+注意下载json数据更新
+
 # 2022/09/13
 新增灵石出关功能，消耗对应灵石增加修为
 调整重入仙途为配置处调整消耗，XiuConfig.py
 新增偷灵石功能
-
-# 2022/09/13
 更新版本0.3.3
 调整存档显示，修复排行榜缺失，新增GM权限
 pip install nonebot-plugin-xiuxian==0.3.3

@@ -34,13 +34,14 @@ class XiuConfig:
         self.closing_exp_upper_limit = 1.5   # 闭关可获取修为上限（下一个境界需要的修为的1.5倍）
         self.level_punishment_floor = 1  # 突破失败扣除修为，惩罚下限(当前实例：1%)
         self.level_punishment_limit = 5  # 突破失败扣除修为，惩罚上限(当前实例：10%)
+        self.level_up_probability = 0.3  # 突破失败增加当前境界突破概率的比例
         self.sign_in_lingshi_lower_limit = 100  # 每日签到灵石下限
         self.sign_in_lingshi_upper_limit = 300  # 每日签到灵石上限
         self.sign_in_xiuwei_lower_limit = 1000  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = 3000  # 每日签到修为上限
         self.tou = 30  # 偷灵石惩罚
-        self.remake = 200  # 重入仙途的消费
-        self.sect_min_level = "练气境初期"  # 创建宗门的最低修为等级要求
+        self.remake = 1000  # 重入仙途的消费
+        self.sect_min_level = "化神境圆满"  # 创建宗门的最低修为等级要求
         self.sect_create_cost = 50  # 创建宗门的最低修为等级要求
 
         self.sql_table = ["user_xiuxian", "user_cd", "sects"]
