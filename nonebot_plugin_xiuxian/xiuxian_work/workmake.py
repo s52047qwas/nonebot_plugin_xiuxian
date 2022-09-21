@@ -56,7 +56,8 @@ def readf(user_id):
     return json.loads(data)
 
 def savef(user_id, data):
-    with open(os.path.join(readpath, f"{user_id}.json"), "w", encoding="UTF-8") as f:
+    savemode = "w" if os.path.exists(os.path.join(readpath, f"{user_id}.json")) else "x"
+    with open(os.path.join(readpath, f"{user_id}.json"), mode=savemode, encoding="UTF-8") as f:
         f.write(data)
         f.close
     return True

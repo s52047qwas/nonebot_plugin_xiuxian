@@ -69,13 +69,15 @@ out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 give_stone = on_command("送灵石", priority=5)
 # do_work = on_command("悬赏令", priority=5)
 
-if get_plugin_by_module_name("nonebot_plugin_xiuxian"):
-    load_all_plugins(
-        [
-            'nonebot_plugin_xiuxian.xiuxian_work',
-        ],
-        [],
-    )
+# if get_plugin_by_module_name("nonebot_plugin_xiuxian"):
+#     load_all_plugins(
+#         [
+#             'nonebot_plugin_xiuxian.xiuxian_work',
+#         ],
+#         [],
+#     )
+from nonebot import load_plugin
+load_plugin("nonebot_plugin_xiuxian.xiuxian_work")
 
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
