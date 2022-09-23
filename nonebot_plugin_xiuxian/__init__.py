@@ -461,10 +461,10 @@ async def _(event: GroupMessageEvent):
                     exp = exp * 2
                     sql_message.in_closing(user_id, user_type)
                     sql_message.update_exp(user_id, exp)
-                    sql_message.update_ls(user_id, exp, 2)
+                    sql_message.update_ls(user_id, int(exp/2), 2)
                     sql_message.update_power2(user_id)  # 更新战力
                     await out_closing.finish(
-                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, exp / 2), at_sender=True
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, int(exp / 2)), at_sender=True
                     )
                 else:
                     exp = exp + user_stone
@@ -793,7 +793,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         steal_success = random.randint(0, 100)
         result = OtherSet().get_power_rate(user_message.power, steal_user.power)
         if isinstance(result, int):
-            if int(steal_success) < OtherSet().get_power_rate(user_message.stone, steal_user.stone):
+            if int(steal_success) < result:
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 sql_message.update_ls(steal_qq, coststone_num, 1)  # 增加被偷的人的灵石
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！赔款{}灵石'.format(coststone_num))
