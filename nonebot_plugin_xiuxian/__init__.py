@@ -78,8 +78,7 @@ do_work = on_command("悬赏令", priority=5)
 # load_all_plugins(
 #     [
 #         # 'nonebot_plugin_xiuxian.xiuxian_work',
-#         # 'nonebot_plugin_xiuxian.work_info',
-#         'nonebot_plugin_xiuxian.dufang',
+#         # 'nonebot_plugin_xiuxian.xiuxian_info',
 #     ],
 #     [],
 # )
@@ -187,7 +186,7 @@ async def _():
 async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
     if cd := check_cd(event):
         # 如果 CD 还没到 则直接结束
-        await xiuxian_message.finish(cd_msg(cd), at_sender=True)
+        await dufang.finish(cd_msg(cd), at_sender=True)
     
     global race
 
