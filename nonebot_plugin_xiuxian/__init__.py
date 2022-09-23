@@ -216,6 +216,7 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
     
     price_num = int(price)
     if int(user_message.stone) < int(price_num):
+        del race[group_id]
         await dufang.finish("道友的金额不足，请重新输入！")
     
     race[group_id].add_price(int(price_num))
