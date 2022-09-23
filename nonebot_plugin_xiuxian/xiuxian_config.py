@@ -40,9 +40,11 @@ class XiuConfig:
         self.sign_in_xiuwei_lower_limit = 1000  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = 3000  # 每日签到修为上限
         self.tou = 30  # 偷灵石惩罚
-        self.remake = 1000  # 重入仙途的消费
+        self.remake = 200  # 重入仙途的消费
         self.sect_min_level = "化神境圆满"  # 创建宗门的最低修为等级要求
         self.sect_create_cost = 50  # 创建宗门的最低修为等级要求
+        self.user_info_cd = 30 #我的修仙信息查询cd
+        self.user_info_cd_msg = '你急啥呢？{cd_msg}后再查询吧'
 
         self.sql_table = ["user_xiuxian", "user_cd", "sects"]
         self.sql_user_xiuxian = ["level_up_rate","sect_id", "sect_position"]
