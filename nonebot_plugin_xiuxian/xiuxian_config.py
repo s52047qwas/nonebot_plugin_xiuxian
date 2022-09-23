@@ -45,6 +45,9 @@ class XiuConfig:
         self.sect_create_cost = 50  # 创建宗门的最低修为等级要求
         self.user_info_cd = 30 #我的修仙信息查询cd
         self.user_info_cd_msg = '你急啥呢？{cd_msg}后再查询吧'
+        self.dufang_cd = 15#金银阁cd
+        self.dufang_cd_msg = '你急啥呢？{cd_msg}后再查询吧'
+        
 
         self.sql_table = ["user_xiuxian", "user_cd", "sects"]
         self.sql_user_xiuxian = ["level_up_rate","sect_id", "sect_position"]
