@@ -46,7 +46,7 @@ class XiuConfig:
         self.user_info_cd = 30 #我的修仙信息查询cd
         self.user_info_cd_msg = '你急啥呢？{cd_msg}后再查询吧'
         self.dufang_cd = 15#金银阁cd
-        self.dufang_cd_msg = '你急啥呢？{cd_msg}后再查询吧'
+        self.dufang_cd_msg = '你急啥呢？{cd_msg}后再来吧'
         
 
         self.sql_table = ["user_xiuxian", "user_cd", "sects"]
