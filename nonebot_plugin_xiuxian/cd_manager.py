@@ -10,6 +10,7 @@ driver = get_driver()
 
 cd_data: Dict[str, int] = {}
 
+
 def check_cd(event: MessageEvent) -> int:
     """
     :说明: `check_cd`
@@ -54,8 +55,5 @@ def cd_msg(time_last) -> str:
     else:
         seconds = time_last
     cd_msg = f"{str(hours) + '小时' if hours else ''}{str(minutes) + '分钟' if minutes else ''}{str(seconds) + '秒' if seconds else ''}"
-    
-    
-    
 
     return XiuConfig().dufang_cd_msg.format(cd_msg=cd_msg)

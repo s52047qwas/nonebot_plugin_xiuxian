@@ -25,6 +25,7 @@ from .xiuxian_opertion import gamebingo, do_is_work, time_msg
 from .xiuxian_config import XiuConfig
 from .data_source import jsondata
 from .cd_manager import add_cd, check_cd, cd_msg
+import command
 
 
 from nonebot.params import State
@@ -57,7 +58,7 @@ driver = get_driver()
 
 run_xiuxian = on_command("我要修仙", priority=5)
 xiuxian_message = on_command("我的修仙信息", aliases={"我的存档"}, priority=5)
-restart = on_command("再入仙途", aliases={"重新修仙"}, priority=5)
+restart = on_command("再入仙途", aliases={"重新修仙","重入仙途"}, priority=5)
 package = on_command("我的纳戒", aliases={"升级纳戒"}, priority=5)
 sign_in = on_command("修仙签到", priority=5)
 # dufang = on_command("#金银阁", aliases={"金银阁"}, priority=5)
@@ -108,7 +109,7 @@ sect_out_check = {}  # 退出宗门或踢出宗门信息记录
 sql_message = XiuxianDateManage()  # sql类
 
 
-@run_xiuxian.handle()
+@command.run_xiuxian.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """加入修仙"""
     user_id = event.get_user_id()
@@ -1246,7 +1247,11 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await sect_owner_change.finish(f"请按照规范进行操作，ex:宗主传位@XXX，将XXX道友（需在自己管理下的宗门）升为宗主，自己则变为宗主下一等职位。")
 # -----------------------------------------------------------------------------
 
+
 async def data_check(bot, event):
+    """
+    判断用户信息是否存在
+    """
     user_qq = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())
     msg = sql_message.get_user_message(user_qq)

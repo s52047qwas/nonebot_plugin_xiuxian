@@ -56,6 +56,7 @@ class JsonDate:
             data = json.loads(file_data)
             return data
 
+
 jsondata = JsonDate()
 
 
