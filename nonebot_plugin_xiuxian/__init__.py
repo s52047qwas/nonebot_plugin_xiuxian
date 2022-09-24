@@ -1,4 +1,5 @@
 import re
+from sre_constants import IN
 from nonebot.log import logger
 from nonebot import get_driver
 from nonebot import on_command, require, on_message,on_regex
@@ -213,6 +214,8 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
     mode_num = 0
     if mode == '猜':
         mode_num = args[3]#猜的数值
+    if str(mode_num) not in ['1', '2', '3', '4', '5', '6']:
+        await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
     
     
     race[group_id] = gamebingo()
