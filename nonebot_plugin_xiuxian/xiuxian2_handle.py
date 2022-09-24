@@ -6,6 +6,7 @@ from collections import namedtuple
 from pathlib import Path
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
+from nonebot.log import logger
 
 DATABASE = Path() / "data" / "xiuxian"
 
@@ -18,11 +19,10 @@ UserDate = namedtuple("UserDate",
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 SectInfo = namedtuple("SectInfo", ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
 
-
-
 num = '578043031'
 
 class XiuxianDateManage:
+    global num
     _instance = {}
     _has_init = {}
 
@@ -33,7 +33,8 @@ class XiuxianDateManage:
         return cls._instance[num]
 
     def __init__(self):
-        if not XiuxianDateManage._has_init.get(num):
+        if not self._has_init.get(num):
+            self._has_init[num] = True
             self.database_path = DATABASE
             if not self.database_path.exists():
                 self.database_path.mkdir(parents=True)
@@ -43,12 +44,12 @@ class XiuxianDateManage:
             else:
                 self.database_path /= "xiuxian.db"
                 self.conn = sqlite3.connect(self.database_path)
-            print(f"数据库已连接！")
+            logger.info(f"数据库已连接！")
             self._check_data()
 
     def close(self):
         self.conn.close()
-        print("数据库关闭！")
+        logger.info(f"数据库关闭！")
 
     def _create_file(self) -> None:
         """创建数据库文件"""

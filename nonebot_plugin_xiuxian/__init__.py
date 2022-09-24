@@ -1262,3 +1262,9 @@ async def data_check(bot, event):
 
 class MsgError(ValueError):
     pass
+
+
+@driver.on_shutdown
+async def close_db():
+    sql_message.close_dbs()
+
