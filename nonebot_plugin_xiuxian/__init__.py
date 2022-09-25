@@ -1,10 +1,10 @@
 import random
 import re
 from datetime import datetime
-from re import I
 
+from help import *
 from nonebot import get_driver
-from nonebot import on_command, require, on_message, on_regex
+from nonebot import require
 from nonebot.adapters.onebot.v11 import (
     PRIVATE_FRIEND,
     Bot,
@@ -27,26 +27,6 @@ from .xiuxian_config import XiuConfig
 from .xiuxian_opertion import do_is_work
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
-
-__xiuxian_version__ = "v0.0.1"
-__xiuxian_notes__ = f"""
-修仙模拟器帮助信息:
-指令：
-1、我要修仙：进入修仙模式
-2、我的修仙信息：获取修仙数据
-3、修仙签到：获取灵石及修为
-4、重入仙途：重置灵根数据，每次{XiuConfig().remake}灵石
-5、金银阁：猜大小/数字，赌灵石 示例:金银阁10大/小/猜3
-6、改名xx：修改你的道号
-7、突破：修为足够后，可突破境界（一定几率失败）
-8、闭关、出关、灵石出关：修炼增加修为，挂机功能
-9、送灵石+数量+道号或者艾特对应人
-10、排行榜：修仙排行榜，灵石排行榜
-11、悬赏令：获取任务单，接取任务示例：悬赏令接取1， 结算命令示例：悬赏令结算
-12、偷灵石：偷灵石@xxx
--简易灵根帮助-
-混沌灵根>融合灵根>超灵根>龙灵根>天灵根>变异灵根>真灵根>伪灵根
-""".strip()
 
 driver = get_driver()
 work = {}  # 悬赏令信息记录
@@ -125,7 +105,7 @@ async def _(event: GroupMessageEvent):
 @command.help_in.handle()
 async def _():
     """修仙帮助"""
-    msg = __xiuxian_notes__
+    msg = help.__xiuxian_notes__
     await help_in.send(msg, at_sender=True)
 
 
