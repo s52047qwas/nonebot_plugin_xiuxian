@@ -4,9 +4,11 @@ import random
 import sqlite3
 from collections import namedtuple
 from pathlib import Path
+
+from nonebot.log import logger
+
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
-from nonebot.log import logger
 
 DATABASE = Path() / "data" / "xiuxian"
 
@@ -15,17 +17,18 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
                        "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position"])
-                       
+
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
-SectInfo = namedtuple("SectInfo", ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
+SectInfo = namedtuple("SectInfo",
+                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
 
 num = '578043031'
+
 
 class XiuxianDateManage:
     global num
     _instance = {}
     _has_init = {}
-
 
     def __new__(cls):
         if cls._instance.get(num) is None:
@@ -391,9 +394,9 @@ class XiuxianDateManage:
         更新用户操作CD
         :param user_id: qq
         :param the_type: 0:无状态  1：闭关中  2：历练中
-        :param the_time: 本次操作的时长
         :return:
         """
+        now_time = None
         if the_type == 1:
             now_time = datetime.datetime.now()
         elif the_type == 0:
@@ -518,7 +521,7 @@ class XiuxianDateManage:
         """宗门捐献更新建设度及可用灵石"""
         sql = f"UPDATE sects SET sect_used_stone=sect_used_stone+?,sect_scale=sect_scale+? where sect_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, (stone_num, stone_num*10, sect_id))
+        cur.execute(sql, (stone_num, stone_num * 10, sect_id))
         self.conn.commit()
 
     def do_work(self, user_id, the_type, sc_time=None):
@@ -747,9 +750,59 @@ class OtherSet(XiuConfig):
         else:
             return int(power_rate * 100)
 
+    def player_fight(self, player1: dict, player2, type_in: int):
+        """
+        回合制战斗
+        type_in : 1 为完整返回战斗过程
+        2：只返回战斗结果
+        数据示例：
+        player1 = {
+            "NAME": player,
+            "HP": player,
+            "ATK": ATK,
+            "COMBO": COMBO
+        }
+        """
+        msg1 = "{}发起攻击，造成了{}伤害"
+        msg2 = "{}发起攻击，造成了{}伤害"
+
+        while True:
+            player1_gj = int(round(random.uniform(0.95, 1), 2) * player1['ATK'])
+            if random.randint(0, 100) <= player1['COMBO']:
+                player1_gj = int(player1_gj * 1.5)
+                msg1 = "{}发起会心一击，造成了{}伤害"
+
+            player2_gj = int(round(random.uniform(0.95, 1), 2) * player2['ATK'])
+            if random.randint(0, 100) <= player2['COMBO']:
+                player1_gj = int(player2_gj * 1.5)
+                msg2 = "{}发起会心一击，造成了{}伤害"
+
+            # 造成的伤害
+            play1_sh: int = int(player1_gj) - player2['AC']
+            play2_sh: int = int(player2_gj) - player1['AC']
+
+            print(msg1.format(player1['NAME'], play1_sh))
+            player2['HP'] = player2['HP'] - play1_sh
+            print(f"{player2['NAME']}剩余血量{player2['HP']}")
+
+            if player2['HP'] <= 0:
+                print("{}胜利".format(player1['NAME']))
+                break
+
+            print(msg2.format(player2['NAME'], play2_sh))
+            player1['HP'] = player1['HP'] - play2_sh
+            print(f"{player1['NAME']}剩余血量{player1['HP']}\n")
+            if player1['HP'] <= 0:
+                print("{}胜利".format(player2['NAME']))
+                break
+
+            if player1['HP'] <= 0 or player2['HP'] <= 0:
+                break
+
 
 if __name__ == '__main__':
     print(OtherSet().date_diff("2022-09-08 00:42:56.740255", "2022-09-08 00:42:56.740255"))
+
     # paths = r"G:\yuzi_bot\yuzi_bot\data\xiuxian\悬赏令.json"
     # with open(paths, 'r', encoding='utf-8') as e:
     #     a = e.read()
