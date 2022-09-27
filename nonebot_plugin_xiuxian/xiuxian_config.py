@@ -23,6 +23,8 @@ class XiuConfig:
         self.sign_in_xiuwei_lower_limit = config_data['sign_in_xiuwei_lower_limit']  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = config_data['sign_in_xiuwei_upper_limit']  # 每日签到修为上限
         self.tou = config_data['tou']  # 偷灵石惩罚
+        self.tou_lower_limit = config_data['tou_lower_limit'] # 偷灵石下限
+        self.tou_upper_limit  = config_data['tou_upper_limit '] # 偷灵石上限
         self.remake = config_data['remake']  # 重入仙途的消费
         self.sect_min_level = config_data['sect_min_level']  # 创建宗门的最低修为等级要求
         self.sect_create_cost = config_data['sect_create_cost']  # 创建宗门的最低修为等级要求
