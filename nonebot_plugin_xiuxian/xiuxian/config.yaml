@@ -39,6 +39,8 @@ sign_in_lingshi_upper_limit : 300  # 每日签到灵石上限
 sign_in_xiuwei_lower_limit : 1000  # 每日签到修为下限
 sign_in_xiuwei_upper_limit : 3000  # 每日签到修为上限
 tou : 30  # 偷灵石惩罚
+tou_lower_limit : 30  # 偷灵石下限
+tou_upper_limit : 100  # 偷灵石上限
 remake : 200  # 重入仙途的消费
 sect_min_level : "化神境圆满"  # 创建宗门的最低修为等级要求
 sect_create_cost : 50  # 创建宗门的灵石需求
