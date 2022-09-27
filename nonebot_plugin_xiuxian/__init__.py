@@ -1,10 +1,10 @@
 import random
 import re
 from datetime import datetime
-from re import I
 
+from .help import *
 from nonebot import get_driver
-from nonebot import on_command, require, on_message, on_regex
+from nonebot import require
 from nonebot.adapters.onebot.v11 import (
     PRIVATE_FRIEND,
     Bot,
@@ -26,27 +26,8 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig
 from .xiuxian_opertion import do_is_work
 
+# 定时任务
 scheduler = require("nonebot_plugin_apscheduler").scheduler
-
-__xiuxian_version__ = "v0.0.1"
-__xiuxian_notes__ = f"""
-修仙模拟器帮助信息:
-指令：
-1、我要修仙：进入修仙模式
-2、我的修仙信息：获取修仙数据
-3、修仙签到：获取灵石及修为
-4、重入仙途：重置灵根数据，每次{XiuConfig().remake}灵石
-5、金银阁：猜大小/数字，赌灵石 示例:金银阁10大/小/猜3
-6、改名xx：修改你的道号
-7、突破：修为足够后，可突破境界（一定几率失败）
-8、闭关、出关、灵石出关：修炼增加修为，挂机功能
-9、送灵石+数量+道号或者艾特对应人
-10、排行榜：修仙排行榜，灵石排行榜
-11、悬赏令：获取任务单，接取任务示例：悬赏令接取1， 结算命令示例：悬赏令结算
-12、偷灵石：偷灵石@xxx
--简易灵根帮助-
-混沌灵根>融合灵根>超灵根>龙灵根>天灵根>变异灵根>真灵根>伪灵根
-""".strip()
 
 driver = get_driver()
 work = {}  # 悬赏令信息记录
@@ -114,9 +95,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @sign_in.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """修仙签到"""
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     result = sql_message.get_sign(user_id)
     sql_message.update_power2(user_id)
     await sign_in.send(result, at_sender=True)
@@ -125,28 +110,28 @@ async def _(event: GroupMessageEvent):
 @command.help_in.handle()
 async def _():
     """修仙帮助"""
-    msg = __xiuxian_notes__
+    msg = help.__xiuxian_notes__
     await help_in.send(msg, at_sender=True)
 
 
 @command.dufang.handle()
 async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     if cd := check_cd(event):
         # 如果 CD 还没到 则直接结束
         await dufang.finish(cd_msg(cd), at_sender=True)
 
-    global race
-
-    user_id = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
     user_message = sql_message.get_user_message(user_id)
 
     add_cd(event)
 
-
     args = list(state["_matched_groups"])
 
-    if args[2] == None:
+    if args[2] is None:
         await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
 
     price = args[1]  # 300
@@ -156,7 +141,6 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
         mode_num = args[3]  # 猜的数值
         if str(mode_num) not in ['1', '2', '3', '4', '5', '6']:
             await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
-
 
     price_num = int(price)
     if int(user_message.stone) < int(price_num):
@@ -192,9 +176,13 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
 
 
 @command.remaker.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """重置灵根信息"""
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     name, root_type = XiuxianJsonDate().linggen_get()
     result = sql_message.ramaker(name, root_type, user_id)
     sql_message.update_power2(user_id)  # 更新战力
@@ -239,31 +227,32 @@ async def _(event: GroupMessageEvent):
 
 
 @command.remaname.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """修改道号"""
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     user_name = args.extract_plain_text().strip()
 
     len_username = len(user_name.encode('gbk'))
     if len_username > 20:
         await remaname.finish("道号长度过长，请修改后重试！")
 
-    if sql_message.get_user_message(user_id) is None:
-        await remaname.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
-
     mes = sql_message.update_user_name(user_id, user_name)
     await remaname.finish(mes)
 
 
 @command.in_closing.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """闭关"""
     user_type = 1  # 状态1为闭关
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
 
-    if sql_message.get_user_message(user_id) is None:
-        # 校验是否存在用户信息
-        await in_closing.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
     user_cd_message = sql_message.get_user_cd(user_id)
 
     if user_cd_message is None:
@@ -285,10 +274,13 @@ async def _(event: GroupMessageEvent):
 
 
 @command.out_closing.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """出关"""
     user_type = 0  # 状态0为无事件
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
 
     user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
     level = user_mes.level
@@ -379,9 +371,13 @@ async def get_group_id(session_id):
 
 
 @command.level_up.handle()
-async def update_level(event: GroupMessageEvent):
+async def update_level(bot: Bot, event: GroupMessageEvent):
     """突破"""
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     user_msg = sql_message.get_user_message(user_id)  # 用户信息
     user_leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
 
@@ -438,9 +434,13 @@ async def update_level(event: GroupMessageEvent):
 
 
 @command.give_stone.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """送灵石"""
-    user_id = event.get_user_id()
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     user_message = sql_message.get_user_message(user_id)
     if user_message is None:
         await give_stone.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
@@ -508,17 +508,18 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.do_work.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """悬赏令"""
     global work
     user_type = 2
     work_list = []
-    user_id = event.get_user_id()
+
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
 
     text = args.extract_plain_text().strip()
-
-    if sql_message.get_user_message(user_id) is None:
-        await do_work.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
 
     user_cd_message = sql_message.get_user_cd(user_id)
 
@@ -644,22 +645,22 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 # 偷灵石
 @command.steal_stone.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, user_message = await data_check(bot, event)
+    except MsgError:
+        return
+
     steal_user = None
     steal_user_stone = None
 
-    if user_message is None:
-        await steal_stone.finish('修仙界没有你的信息！请输入我要修仙，踏入修行')
-
     user_stone_num = user_message.stone
     steal_qq = None  # 艾特的时候存到这里, 要偷的人
-    steal_name = None
-    msg = args.extract_plain_text().strip()
+    # steal_name = None
+    # msg = args.extract_plain_text().strip()
 
-    nick_name = re.findall("\D+", msg)  ## 道号
+    # nick_name = re.findall("\D+", msg)  ## 道号
 
-    coststone_num = XiuConfig().tou  # print(give_stone_num)# print(user_stone_num)
+    coststone_num = XiuConfig().tou
     if int(coststone_num) > int(user_stone_num):
         await steal_stone.finish('道友的偷窃准备(灵石)不足，请打工之后再切格瓦拉！')
 
@@ -677,7 +678,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         steal_success = random.randint(0, 100)
         result = OtherSet().get_power_rate(user_message.power, steal_user.power)
         if isinstance(result, int):
-            if int(steal_success) < result:
+            if int(steal_success) > result:
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 sql_message.update_ls(steal_qq, coststone_num, 1)  # 增加被偷的人的灵石
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！赔款{}灵石'.format(coststone_num))
@@ -700,35 +701,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
     else:
         await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
-
-    if nick_name:
-        give_message = sql_message.get_user_message2(nick_name[0])
-        give_user_stone = give_message.stone
-        if give_message:
-            steal_success2 = random.randint(0, 100)
-
-            result = OtherSet().get_power_rate(user_message.power, give_message.power)
-            if isinstance(result, int):
-                if int(steal_success2) < result:
-                    sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
-                    await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！')
-                get_stone2 = random.randint(5, 100)
-                sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
-                if int(get_stone2) > int(give_user_stone):
-                    sql_message.update_ls(user_id, give_user_stone, 1)  # 增加偷到的灵石
-                    sql_message.update_ls(give_message.user_id, give_user_stone, 2)  # 减少被偷的人的灵石
-                    await steal_stone.finish("{}道友已经被榨干了~".format(give_message.user_name))
-                else:
-                    sql_message.update_ls(user_id, get_stone2, 1)  # 增加偷到的灵石
-                    sql_message.update_ls(give_message.user_id, get_stone2, 2)  # 减少被偷的人的灵石
-                    await steal_stone.finish("共偷取{}道友{}枚灵石！".format(give_message.user_name, get_stone2))
-            else:
-                await steal_stone.finish(result)
-        else:
-            await steal_stone.finish("对方未踏入修仙界，不要对杂修出手！")
-
-    else:
-        await steal_stone.finish("未获取道号信息，请输入正确的道号！")
 
 
 # GM加灵石
@@ -775,10 +747,12 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 # editer:zyp981204
 @command.my_sect.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """查看所在宗门信息"""
-    user_id = event.get_user_id()
-    mess = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
 
     if mess:
         sect_id = mess.sect_id
@@ -809,10 +783,13 @@ async def _(event: GroupMessageEvent):
 
 
 @command.create_sect.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """创建宗门，对灵石、修为等级有要求，且需要当前状态无宗门"""
-    user_id = event.get_user_id()
-    mess = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     if mess:
         # 首先判断是否满足创建宗门的三大条件
         level = mess.level
@@ -845,10 +822,13 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.join_sect.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """加入宗门，后跟宗门ID，要求加入者当前状态无宗门，入门默认为外门弟子"""
-    user_id = event.get_user_id()
-    mess = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     if mess:
         if not mess.sect_id:
             sect_no = args.extract_plain_text().strip()
@@ -872,12 +852,13 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.sect_position_update.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """宗门职位变更，首先确认操作者的职位是长老及以上（宗主可以变更宗主及以下，长老可以变更长老以下），然后读取变更等级及艾特目标"""
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
-    if not user_message:
-        await sect_position_update.finish("修仙界没有你的信息！请输入我要修仙，踏入修行")
+    try:
+        user_id, group_id, user_message = await data_check(bot, event)
+    except MsgError:
+        return
+
     position_zhanglao = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "长老"]
     idx_position = int(position_zhanglao[0]) if len(position_zhanglao) == 1 else 1
     if user_message.sect_position > idx_position:
