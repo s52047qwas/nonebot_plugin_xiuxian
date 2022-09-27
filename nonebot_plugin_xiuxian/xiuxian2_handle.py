@@ -763,25 +763,29 @@ class OtherSet(XiuConfig):
             "COMBO": COMBO
         }
         """
-        msg1 = "{}发起攻击，造成了{}伤害"
-        msg2 = "{}发起攻击，造成了{}伤害"
+        msg1 = "{}发起攻击，造成了{}伤害\n"
+        msg2 = "{}发起攻击，造成了{}伤害\n"
+
+        play_list = []
 
         while True:
             player1_gj = int(round(random.uniform(0.95, 1), 2) * player1['ATK'])
             if random.randint(0, 100) <= player1['COMBO']:
                 player1_gj = int(player1_gj * 1.5)
-                msg1 = "{}发起会心一击，造成了{}伤害"
+                msg1 = "{}发起会心一击，造成了{}伤害\n"
 
             player2_gj = int(round(random.uniform(0.95, 1), 2) * player2['ATK'])
             if random.randint(0, 100) <= player2['COMBO']:
-                player1_gj = int(player2_gj * 1.5)
-                msg2 = "{}发起会心一击，造成了{}伤害"
+                player2_gj = int(player2_gj * 1.5)
+                msg2 = "{}发起会心一击，造成了{}伤害\n"
 
             # 造成的伤害
             play1_sh: int = int(player1_gj) - player2['AC']
             play2_sh: int = int(player2_gj) - player1['AC']
 
             print(msg1.format(player1['NAME'], play1_sh))
+
+            play_list.append(msg1.format(player1['NAME'], play1_sh))
             player2['HP'] = player2['HP'] - play1_sh
             print(f"{player2['NAME']}剩余血量{player2['HP']}")
 

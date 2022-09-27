@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 import yaml
 
-DATABASE = Path() / "xiuxian"
+DATABASE = Path() / "data" / "xiuxian"
 
 class XiuConfig:
 

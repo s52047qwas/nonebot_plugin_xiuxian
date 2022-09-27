@@ -43,3 +43,5 @@ sect_out = on_command("退出宗门", priority=5)
 sect_kick_out = on_command("踢出宗门", priority=5)
 sect_owner_change = on_command("宗主传位", priority=5)
 
+rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
+
