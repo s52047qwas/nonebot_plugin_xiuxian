@@ -1,4 +1,3 @@
-from json import JSONDecodeError, JSONDecoder
 from ..data_source import *
 import os
 
@@ -52,3 +51,30 @@ class reward(JsonDate):
             data = json.loads(file_data)
             return data
         
+
+PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
+def readf(user_id):
+    user_id = str(user_id)
+    
+    FILEPATH = PLAYERSDATA / user_id / "workinfo.json"
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
+
+def savef(user_id, data):
+    user_id = str(user_id)
+    
+    if not os.path.exists(PLAYERSDATA):
+        print("目录不存在，创建目录")
+        os.mkdir(PLAYERSDATA)
+    if not os.path.exists(PLAYERSDATA / user_id):
+        print("目录不存在，创建目录")
+        os.mkdir(PLAYERSDATA / user_id)
+    
+    FILEPATH = PLAYERSDATA / user_id / "workinfo.json"
+       
+    savemode = "w" if os.path.exists(FILEPATH) else "x"
+    with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
+        f.write(data)
+        f.close
+    return True

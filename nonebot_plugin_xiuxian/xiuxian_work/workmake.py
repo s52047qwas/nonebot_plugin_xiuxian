@@ -49,15 +49,3 @@ def countrate(exp, needexp):
     if rate >= 100:
         rate = 100
     return rate    
-
-def readf(user_id):
-    with open(os.path.join(readpath, f"{user_id}.json"), "r", encoding="UTF-8") as f:
-        data = f.read()
-    return json.loads(data)
-
-def savef(user_id, data):
-    savemode = "w" if os.path.exists(os.path.join(readpath, f"{user_id}.json")) else "x"
-    with open(os.path.join(readpath, f"{user_id}.json"), mode=savemode, encoding="UTF-8") as f:
-        f.write(data)
-        f.close
-    return True
