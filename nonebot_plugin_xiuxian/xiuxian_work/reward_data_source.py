@@ -64,12 +64,9 @@ def readf(user_id):
 def savef(user_id, data):
     user_id = str(user_id)
     
-    if not os.path.exists(PLAYERSDATA):
-        print("目录不存在，创建目录")
-        os.mkdir(PLAYERSDATA)
     if not os.path.exists(PLAYERSDATA / user_id):
         print("目录不存在，创建目录")
-        os.mkdir(PLAYERSDATA / user_id)
+        os.makedirs(PLAYERSDATA / user_id)
     
     FILEPATH = PLAYERSDATA / user_id / "workinfo.json"
        
