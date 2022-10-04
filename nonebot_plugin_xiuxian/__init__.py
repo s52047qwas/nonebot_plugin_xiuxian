@@ -15,7 +15,6 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.log import logger
 from nonebot.params import CommandArg
-from nonebot.params import State
 from nonebot.permission import SUPERUSER
 from nonebot.typing import T_State
 
@@ -115,7 +114,7 @@ async def _():
 
 
 @command.dufang.handle()
-async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
+async def _(bot: Bot, event: MessageEvent, state: T_State):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
@@ -744,7 +743,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await give_stone.finish("未获取道号信息，请输入正确的道号！")
 
 
-# editer:zyp981204
+# editor:zyp981204
 @command.my_sect.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """查看所在宗门信息"""
