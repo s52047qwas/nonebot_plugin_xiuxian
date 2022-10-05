@@ -14,10 +14,8 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
 )
 from nonebot.log import logger
-from nonebot.params import CommandArg
-from nonebot.params import State
-from nonebot.permission import SUPERUSER
-from nonebot.typing import T_State
+from typing import Any, Tuple
+from nonebot.params import CommandArg, RegexGroup
 
 from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
@@ -115,7 +113,7 @@ async def _():
 
 
 @command.dufang.handle()
-async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
+async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
@@ -129,7 +127,6 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
 
     add_cd(event)
 
-    args = list(state["_matched_groups"])
 
     if args[2] is None:
         await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
