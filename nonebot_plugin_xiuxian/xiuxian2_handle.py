@@ -16,7 +16,7 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 SectInfo = namedtuple("SectInfo",
@@ -132,12 +132,12 @@ class XiuxianDateManage:
     def _create_user(self, user_id: str, root: str, type: str, power: str, create_time, user_name) -> None:
         """在数据库中创建用户并初始化"""
         c = self.conn.cursor()
-        sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name) VALUES (?,0,?,?,'江湖好手',?,?,?)"
+        sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name,exp) VALUES (?,0,?,?,'江湖好手',?,?,?,100)"
         c.execute(sql, (user_id, root, type, power, create_time, user_name))
         self.conn.commit()
 
     def get_user_message(self, user_id):
-        '''根据USER_ID获取用户信息'''
+        """根据USER_ID获取用户信息"""
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
         cur.execute(sql, (user_id,))
@@ -553,6 +553,20 @@ class XiuxianDateManage:
         cur.execute(sql, (rate, user_id))
         self.conn.commit()
 
+    def update_user_attribute(self,user_id, hp, mp, atk):
+        """更新用户HP,MP,ATK信息"""
+        sql = f"UPDATE user_xiuxian SET hp=?,mp=?,atk=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (hp, mp, atk, user_id))
+        self.conn.commit()
+
+    def update_user_hp(self,user_id):
+        """重置用户状态信息"""
+        sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10 where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+
 
 class XiuxianJsonDate:
     def __init__(self):
@@ -750,58 +764,110 @@ class OtherSet(XiuConfig):
         else:
             return int(power_rate * 100)
 
-    def player_fight(self, player1: dict, player2, type_in: int):
+    def player_fight(self, player1: dict, player2: dict, type_in: 1):
         """
         回合制战斗
         type_in : 1 为完整返回战斗过程
         2：只返回战斗结果
         数据示例：
-        player1 = {
-            "NAME": player,
-            "HP": player,
-            "ATK": ATK,
-            "COMBO": COMBO
-        }
+        {"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None}
         """
         msg1 = "{}发起攻击，造成了{}伤害\n"
         msg2 = "{}发起攻击，造成了{}伤害\n"
 
         play_list = []
+        suc = None
 
         while True:
-            player1_gj = int(round(random.uniform(0.95, 1), 2) * player1['ATK'])
-            if random.randint(0, 100) <= player1['COMBO']:
+            player1_gj = int(round(random.uniform(0.95, 1.05), 2) * player1['气血'])
+            if random.randint(0, 100) <= player1['会心']:
                 player1_gj = int(player1_gj * 1.5)
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
 
-            player2_gj = int(round(random.uniform(0.95, 1), 2) * player2['ATK'])
-            if random.randint(0, 100) <= player2['COMBO']:
+            player2_gj = int(round(random.uniform(0.95, 1.05), 2) * player2['气血'])
+            if random.randint(0, 100) <= player2['会心']:
                 player2_gj = int(player2_gj * 1.5)
                 msg2 = "{}发起会心一击，造成了{}伤害\n"
 
             # 造成的伤害
-            play1_sh: int = int(player1_gj) - player2['AC']
-            play2_sh: int = int(player2_gj) - player1['AC']
+            play1_sh: int = int(player1_gj) - player2['防御']
+            play2_sh: int = int(player2_gj) - player1['防御']
 
-            print(msg1.format(player1['NAME'], play1_sh))
+            # print(msg1.format(player1['道号'], play1_sh))
+            play_list.append(msg1.format(player1['道号'], play1_sh))
 
-            play_list.append(msg1.format(player1['NAME'], play1_sh))
-            player2['HP'] = player2['HP'] - play1_sh
-            print(f"{player2['NAME']}剩余血量{player2['HP']}")
+            player2['气血'] = player2['气血'] - play1_sh
+            # print(f"{player2['道号']}剩余血量{player2['气血']}")
+            play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
+            XiuxianDateManage().update_user_attribute(player2['user_id'], player2['气血'], player2['真元'], player2['攻击'] )
 
-            if player2['HP'] <= 0:
-                print("{}胜利".format(player1['NAME']))
+            if player2['气血'] <= 0:
+                print("{}胜利".format(player1['道号']))
+                play_list.append("{}胜利".format(player1['道号']))
+                suc = f"{player1['道号']}"
+
+                XiuxianDateManage().update_user_attribute(player2['user_id'], 1, player2['真元'],
+                                                          player2['攻击'])
                 break
 
-            print(msg2.format(player2['NAME'], play2_sh))
-            player1['HP'] = player1['HP'] - play2_sh
-            print(f"{player1['NAME']}剩余血量{player1['HP']}\n")
-            if player1['HP'] <= 0:
-                print("{}胜利".format(player2['NAME']))
+            # print(msg2.format(player2['道号'], play2_sh))
+            play_list.append(msg2.format(player2['道号'], play2_sh))
+
+            player1['气血'] = player1['气血'] - play2_sh
+            # print(f"{player1['道号']}剩余血量{player1['气血']}\n")
+            play_list.append(f"{player1['道号']}剩余血量{player1['气血']}\n")
+            XiuxianDateManage().update_user_attribute(player1['user_id'], player1['气血'], player1['真元'], player1['攻击'] )
+
+            if player1['气血'] <= 0:
+                # print("{}胜利".format(player2['道号']))
+                play_list.append("{}胜利".format(player2['道号']))
+                suc = f"{player2['道号']}"
+
+                XiuxianDateManage().update_user_attribute(player1['user_id'], 1, player1['真元'],
+                                                          player1['攻击'])
                 break
 
-            if player1['HP'] <= 0 or player2['HP'] <= 0:
+            if player1['气血'] <= 0 or player2['气血'] <= 0:
+                play_list.append("逻辑错误！！！")
                 break
+
+        return play_list, suc
+
+    def send_hp_mp(self, user_id, hp, mp):
+        user_msg = XiuxianDateManage().get_user_message(user_id)
+        max_hp = int(user_msg.exp/2)
+        max_mp = int(user_msg.exp)
+
+        msg = []
+        hp_mp = []
+
+        if user_msg.hp < max_hp:
+            if user_msg.hp + hp < max_hp:
+                new_hp = user_msg.hp + hp
+                msg.append(',回复气血：{}'.format(new_hp))
+            else:
+                new_hp = max_hp
+                msg.append(',气血已回满！')
+        else:
+            new_hp = user_msg.hp
+            msg.append('')
+
+        if user_msg.mp < max_mp:
+            if user_msg.mp + mp < max_mp:
+                new_mp = user_msg.mp + mp
+                msg.append(',回复真元：{}'.format(new_mp))
+            else:
+                new_mp = max_mp
+                msg.append(',真元已回满！')
+        else:
+            new_mp = user_msg.mp
+            msg.append('')
+
+        hp_mp.append(new_hp)
+        hp_mp.append(new_mp)
+        hp_mp.append(user_msg.exp)
+
+        return msg, hp_mp
 
 
 if __name__ == '__main__':

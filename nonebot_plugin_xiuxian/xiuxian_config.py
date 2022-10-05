@@ -32,13 +32,14 @@ class XiuConfig:
         self.user_info_cd_msg = config_data['user_info_cd_msg']
         self.dufang_cd = config_data['dufang_cd']  # 金银阁cd
         self.dufang_cd_msg = config_data['dufang_cd_msg']
+        self.tou_cd = config_data['tou_cd']  # 偷灵石CD
 
         self.sql_table = config_data['sql_table']
         self.sql_user_xiuxian = config_data['sql_user_xiuxian']
 
 
     def _config_data(self):
-        """境界数据"""
+        """配置数据"""
         with open(self.config_jsonpath, 'r', encoding='utf-8') as e:
             a = e.read()
             data = yaml.safe_load(a)

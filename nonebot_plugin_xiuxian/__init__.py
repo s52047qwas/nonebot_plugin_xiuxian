@@ -14,10 +14,8 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
 )
 from nonebot.log import logger
-from nonebot.params import CommandArg
-from nonebot.params import State
-from nonebot.permission import SUPERUSER
-from nonebot.typing import T_State
+from typing import Any, Tuple
+from nonebot.params import CommandArg, RegexGroup
 
 from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
@@ -115,7 +113,7 @@ async def _():
 
 
 @command.dufang.handle()
-async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
+async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
@@ -127,9 +125,7 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
 
     user_message = sql_message.get_user_message(user_id)
 
-    add_cd(event)
-
-    args = list(state["_matched_groups"])
+    add_cd(event, XiuConfig().dufang_cd)
 
     if args[2] is None:
         await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
@@ -175,7 +171,7 @@ async def _(bot: Bot, event: MessageEvent, state: T_State = State()):
         )
 
 
-@command.remaker.handle()
+@command.restart.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """重置灵根信息"""
     try:
@@ -186,13 +182,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
     name, root_type = XiuxianJsonDate().linggen_get()
     result = sql_message.ramaker(name, root_type, user_id)
     sql_message.update_power2(user_id)  # 更新战力
-    await remaker.send(message=result, at_sender=True)
+    await restart.send(message=result, at_sender=True)
 
 
 @command.rank.handle()
 async def _(event: GroupMessageEvent):
     """排行榜"""
     message = str(event.message)
+
+    rank_msg = r'[\u4e00-\u9fa5]+'
+    message = re.findall(rank_msg, message)
+    if message:
+        message = message[0]
+
     if message == "排行榜" or message == "修仙排行榜" or message == "境界排行榜":
         p_rank = sql_message.realm_top()
         await rank.finish(message=p_rank)
@@ -325,8 +327,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.in_closing(user_id, user_type)
             sql_message.update_exp(user_id, user_get_exp_max)
             sql_message.update_power2(user_id)  # 更新战力
+
+            result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * 2), int(exp*10))
+            sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
             await out_closing.finish(
-                "闭关结束，本次闭关到达上限，共增加修为：{}".format(user_get_exp_max), at_sender=True
+                "闭关结束，本次闭关到达上限，共增加修为：{}{}{}".format(user_get_exp_max, result_msg[0], result_msg[1]), at_sender=True
             )
         else:
             # 用户获取的修为没有到达上限
@@ -339,8 +344,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     sql_message.update_exp(user_id, exp)
                     sql_message.update_ls(user_id, int(exp / 2), 2)
                     sql_message.update_power2(user_id)  # 更新战力
+
+                    result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * 2), int(exp * 10))
+                    sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1],
+                                                      int(result_hp_mp[2] / 10))
                     await out_closing.finish(
-                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, int(exp / 2)), at_sender=True
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, int(exp / 2),
+                                                                      result_msg[0], result_msg[1]), at_sender=True
                     )
                 else:
                     exp = exp + user_stone
@@ -348,15 +358,22 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     sql_message.update_exp(user_id, exp)
                     sql_message.update_ls(user_id, user_stone, 2)
                     sql_message.update_power2(user_id)  # 更新战力
+                    result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * 2), int(exp * 10))
+                    sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1],
+                                                      int(result_hp_mp[2] / 10))
                     await out_closing.finish(
-                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚".format(exp_time, exp, user_stone), at_sender=True
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, user_stone,
+                                                                  result_msg[0], result_msg[1]), at_sender=True
                     )
             else:
                 sql_message.in_closing(user_id, user_type)
                 sql_message.update_exp(user_id, exp)
                 sql_message.update_power2(user_id)  # 更新战力
+                result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * 2), int(exp * 10))
+                sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
                 await out_closing.finish(
-                    "闭关结束，共闭关{}分钟，本次闭关增加修为：{}".format(exp_time, exp), at_sender=True
+                    "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
+                                                          result_msg[1]), at_sender=True
                 )
 
     elif user_cd_message.type == 2:
@@ -424,9 +441,9 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         sql_message.updata_level(user_id, le[0])  # 更新境界
         sql_message.update_power2(user_id)  # 更新战力
         sql_message.updata_level_cd(user_id)  # 更新CD
-
+        sql_message.update_user_attribute(user_id, )
         sql_message.update_levelrate(user_id, 0)
-
+        sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
         await level_up.finish("恭喜道友突破{}成功".format(le[0]))
     else:
         # 最高境界
@@ -650,6 +667,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     except MsgError:
         return
 
+    if cd := check_cd(event):
+        # 如果 CD 还没到 则直接结束
+        await steal_stone.finish(cd_msg(cd), at_sender=True)
+
     steal_user = None
     steal_user_stone = None
 
@@ -681,20 +702,26 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(steal_success) > result:
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 sql_message.update_ls(steal_qq, coststone_num, 1)  # 增加被偷的人的灵石
+                add_cd(event, XiuConfig().tou_cd)
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！赔款{}灵石'.format(coststone_num))
+
 
             get_stone = random.randint(XiuConfig().tou_lower_limit, XiuConfig().tou_upper_limit)
 
             if int(get_stone) > int(steal_user_stone):
                 sql_message.update_ls(user_id, steal_user_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, steal_user_stone, 2)  # 减少被偷的人的灵石
+                add_cd(event, XiuConfig().tou_cd)
                 await steal_stone.finish(
                     "{}道友已经被榨干了~".format(steal_user.user_name))
+
             else:
                 sql_message.update_ls(user_id, get_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, get_stone, 2)  # 减少被偷的人的灵石
+                add_cd(event, XiuConfig().tou_cd)
                 await steal_stone.finish(
                     "共偷取{}道友{}枚灵石！".format(steal_user.user_name, get_stone))
+
         else:
             await steal_stone.finish(result)
 
@@ -1027,7 +1054,143 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await sect_owner_change.finish(f"请按照规范进行操作，ex:宗主传位@XXX，将XXX道友（需在自己管理下的宗门）升为宗主，自己则变为宗主下一等职位。")
 
 
+@command.rob_stone.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """抢灵石
+            player1 = {
+            "NAME": player,
+            "HP": player,
+            "ATK": ATK,
+            "COMBO": COMBO
+        }"""
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+
+    give_qq = None  # 艾特的时候存到这里
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+
+    player1 = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
+    player2 = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
+
+    if give_qq:
+        if give_qq == user_id:
+            await rob_stone.finish("请不要偷自己刷成就！")
+
+        user_2 = sql_message.get_user_message(give_qq)
+        if user_2:
+            if user_msg.hp is None:
+                sql_message.update_user_attribute(user_id, int(user_msg.exp / 2), int(user_msg.exp),
+                                                  int(user_msg.exp / 10))
+            if user_2.hp is None:
+                sql_message.update_user_attribute(give_qq, int(user_2.exp / 2), int(user_2.exp),
+                                                  int(user_2.exp / 10))
+
+            if user_2.hp <= 100:
+                await rob_stone.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
+
+            player1['user_id'] = user_msg.user_id
+            player1['道号'] = user_msg.user_name
+            player1['气血'] = user_msg.hp
+            player1['攻击'] = user_msg.atk
+            player1['真元'] = user_msg.mp
+            player1['会心'] = 1
+
+            player2['user_id'] = user_2.user_id
+            player2['道号'] = user_2.user_name
+            player2['气血'] = user_2.hp
+            player2['攻击'] = user_2.atk
+            player2['真元'] = user_2.mp
+            player2['会心'] = 1
+
+            # msg1 = ""
+            # msg2 = ""
+            #
+            # for i, v in player1.items():
+            #     msg1 += "{}:{}\n".format(i, v)
+            #
+            # for i, v in player2.items():
+            #     msg2 += "{}:{}\n".format(i, v)
+            #
+            # await rob_stone.send(msg1)
+            # await rob_stone.send(msg2)
+
+            result, victor = OtherSet().player_fight(player1, player2, 1)
+            await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
+            if victor == player1['道号']:
+                foe_stone = user_2.stone
+                if foe_stone > 0:
+                    sql_message.update_ls(user_id, int(foe_stone*0.3), 1)
+                    exps = random.randint(100, 5000)
+                    sql_message.update_exp(user_id, exps)
+                    await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}".format(int(foe_stone*0.3), exps), at_sender=True)
+                else:
+                    exps = random.randint(100, 5000)
+                    sql_message.update_exp(user_id, exps)
+                    await rob_stone.finish("大战一番，战胜对手，结果对方是个穷光蛋，修为增加{}".format(int(foe_stone*0.3), exps), at_sender=True)
+
+            elif victor == player2['道号']:
+                mind_stone = user_msg.stone
+                if mind_stone > 0:
+                    sql_message.update_ls(user_id, int(mind_stone * 0.3), 2)
+                    exps = random.randint(100, 5000)
+                    sql_message.update_j_exp(user_id, exps)
+                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}".format(int(mind_stone * 0.3), exps), at_sender=True)
+                else:
+                    exps = random.randint(100, 5000)
+                    sql_message.update_j_exp(user_id, exps)
+                    await rob_stone.finish("大战一番，被对手反杀，修为减少{}".format(int(mind_stone * 0.3), exps),
+                                           at_sender=True)
+
+            else:
+                await rob_stone.finish("发生错误！")
+
+        else:
+            await rob_stone.finish("没有对方的信息！")
+
+
+@command.mind_state.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+
+    if user_msg.hp is None:
+        sql_message.update_user_attribute(user_id, int(user_msg.exp/2), int(user_msg.exp), int(user_msg.exp/10))
+
+    user = f"""道号：{user_msg.user_name}
+气血：{user_msg.hp}/{int(user_msg.exp/2)}
+真元：{user_msg.mp}/{int(user_msg.exp)}
+攻击：{user_msg.atk}/{int(user_msg.exp/10)}"""
+
+    await mind_state.finish(user)
+
 # -----------------------------------------------------------------------------
+
+async def send_forward_msg(
+    bot: Bot,
+    event: MessageEvent,
+    name: str,  # 转发的用户名称
+    uin: str,  # qq
+    msgs: list  # 转发内容
+):
+    """合并消息转发"""
+    def to_json(msg):
+        return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
+
+    messages = [to_json(msg) for msg in msgs]
+    if isinstance(event, GroupMessageEvent):
+        await bot.call_api(
+            "send_group_forward_msg", group_id=event.group_id, messages=messages
+        )
+    else:
+        await bot.call_api(
+            "send_private_forward_msg", user_id=event.user_id, messages=messages
+        )
 
 
 async def data_check(bot, event):

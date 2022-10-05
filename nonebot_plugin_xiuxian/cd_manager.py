@@ -35,7 +35,7 @@ def check_cd(event: MessageEvent) -> int:
         return cd
     
     
-def add_cd(event: MessageEvent, times: int = 1):
+def add_cd(event: MessageEvent, config_time, times: int = 1):
     """
     :说明: `add_cd`
     > 添加cd, 到期时间 = 当前时间 + 设定的CD * 倍数
@@ -43,7 +43,7 @@ def add_cd(event: MessageEvent, times: int = 1):
       * `event: MessageEvent`: 事件
       * `times: int`: 倍数, 默认为 `1`
     """
-    cd_data[event.get_user_id()] = event.time + times * XiuConfig().dufang_cd
+    cd_data[event.get_user_id()] = event.time + times * config_time
     logger.debug("查询CD: {}".format(cd_data))
     
 def cd_msg(time_last) -> str:
