@@ -1101,6 +1101,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if user_2.hp <= 100:
                 await rob_stone.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
 
+            if user_msg.hp <= 100:
+                await rob_stone.finish("重伤未愈，动弹不得！", at_sender=True)
+
             player1['user_id'] = user_msg.user_id
             player1['道号'] = user_msg.user_name
             player1['气血'] = user_msg.hp
@@ -1177,6 +1180,21 @@ async def _(bot: Bot, event: GroupMessageEvent):
 攻击：{user_msg.atk}/{int(user_msg.exp/10)}"""
 
     await mind_state.finish(user)
+
+@command.restate.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    give_qq = None  # 艾特的时候存到这里
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+
+    if give_qq:
+        sql_message.restate(give_qq)
+        await restate.finish('{}用户信息重置成功！'.format(give_qq), at_sender=True)
+    else:
+        sql_message.restate()
+        await restate.finish('所有用户信息重置成功！', at_sender=True)
+
 
 # -----------------------------------------------------------------------------
 

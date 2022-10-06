@@ -567,6 +567,18 @@ class XiuxianDateManage:
         cur.execute(sql, (user_id,))
         self.conn.commit()
 
+    def restate(self, user_id=None):
+        if user_id is None:
+            sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10"
+            cur = self.conn.cursor()
+            cur.execute(sql,)
+            self.conn.commit()
+        else:
+            sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10 where user_id=?"
+            cur = self.conn.cursor()
+            cur.execute(sql, (user_id,))
+            self.conn.commit()
+
 
 class XiuxianJsonDate:
     def __init__(self):
@@ -611,6 +623,7 @@ class XiuxianJsonDate:
         else:
             root = random.choice(data[lgen]["type_list"])
             return root, lgen
+
 
     def do_work(self, key, work_list=None, name=None):
         """悬赏令获取"""

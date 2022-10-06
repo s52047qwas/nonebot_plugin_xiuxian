@@ -45,4 +45,6 @@ sect_owner_change = on_command("宗主传位", priority=5)
 rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 
+restate = on_command("重置状态", permission=SUPERUSER, priority=5)
+
 
