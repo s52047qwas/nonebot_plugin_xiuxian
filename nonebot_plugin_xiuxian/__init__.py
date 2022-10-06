@@ -1137,12 +1137,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 if foe_stone > 0:
                     sql_message.update_ls(user_id, int(foe_stone * 0.1), 1)
                     sql_message.update_ls(give_qq, int(foe_stone * 0.1), 2)
-                    exps = int(user_msg.exp * 0.005)
+                    exps = int(user_2.exp * 0.005)
                     sql_message.update_exp(user_id, exps)
                     sql_message.update_j_exp(give_qq, exps/2)
                     await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}，对手修为减少{}".format(int(foe_stone*0.1), exps,exps/2), at_sender=True)
                 else:
-                    exps = int(user_msg.exp * 0.01)
+                    exps = int(user_2.exp * 0.005)
                     sql_message.update_exp(user_id, exps)
                     sql_message.update_j_exp(give_qq, exps/2)
                     await rob_stone.finish("大战一番，战胜对手，结果对方是个穷光蛋，修为增加{}，对手修为减少{}".format(exps,exps/2), at_sender=True)
@@ -1157,7 +1157,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     sql_message.update_exp(give_qq, exps/2)
                     await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1), exps,int(mind_stone * 0.1),exps/2), at_sender=True)
                 else:
-                    exps = int(user_2.exp * 0.005)
+                    exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
                     sql_message.update_exp(give_qq, exps/2)
                     await rob_stone.finish("大战一番，被对手反杀，修为减少{}，对手修为增加{}".format(exps,exps/2),
