@@ -395,6 +395,10 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     except MsgError:
         return
 
+    if mess.hp is None:
+        # 判断用户气血是否为空
+        sql_message.update_user_hp(user_id)
+
     user_msg = sql_message.get_user_message(user_id)  # 用户信息
     user_leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
 
@@ -1068,6 +1072,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     except MsgError:
         return
 
+    if user_msg.hp is None:
+        # 判断用户气血是否为空
+        sql_message.update_user_hp(user_id)
+
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
         if arg.type == "at":
@@ -1083,11 +1091,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_2 = sql_message.get_user_message(give_qq)
         if user_2:
             if user_msg.hp is None:
-                sql_message.update_user_attribute(user_id, int(user_msg.exp / 2), int(user_msg.exp),
-                                                  int(user_msg.exp / 10))
+                #判断用户气血是否为None
+                sql_message.update_user_hp(user_id)
+                user_msg = sql_message.get_user_message(user_id)
             if user_2.hp is None:
-                sql_message.update_user_attribute(give_qq, int(user_2.exp / 2), int(user_2.exp),
-                                                  int(user_2.exp / 10))
+                sql_message.update_user_hp(give_qq)
+                user_2 = sql_message.get_user_message(give_qq)
 
             if user_2.hp <= 100:
                 await rob_stone.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
@@ -1106,17 +1115,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             player2['真元'] = user_2.mp
             player2['会心'] = 1
 
-            # msg1 = ""
-            # msg2 = ""
-            #
-            # for i, v in player1.items():
-            #     msg1 += "{}:{}\n".format(i, v)
-            #
-            # for i, v in player2.items():
-            #     msg2 += "{}:{}\n".format(i, v)
-            #
-            # await rob_stone.send(msg1)
-            # await rob_stone.send(msg2)
+            msg1 = ""
+            msg2 = ""
+
+            for i, v in player1.items():
+                msg1 += "{}:{}\n".format(i, v)
+
+            for i, v in player2.items():
+                msg2 += "{}:{}\n".format(i, v)
+
+            await rob_stone.send(msg1)
+            await rob_stone.send(msg2)
 
             result, victor = OtherSet().player_fight(player1, player2, 1)
             await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
@@ -1124,25 +1133,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 foe_stone = user_2.stone
                 if foe_stone > 0:
                     sql_message.update_ls(user_id, int(foe_stone*0.3), 1)
-                    exps = random.randint(100, 5000)
+                    exps = int(user_msg.exp * 0.01)
                     sql_message.update_exp(user_id, exps)
                     await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}".format(int(foe_stone*0.3), exps), at_sender=True)
                 else:
-                    exps = random.randint(100, 5000)
+                    exps = int(user_msg.exp * 0.01)
                     sql_message.update_exp(user_id, exps)
-                    await rob_stone.finish("大战一番，战胜对手，结果对方是个穷光蛋，修为增加{}".format(int(foe_stone*0.3), exps), at_sender=True)
+                    await rob_stone.finish("大战一番，战胜对手，结果对方是个穷光蛋，修为增加{}".format(exps), at_sender=True)
 
             elif victor == player2['道号']:
                 mind_stone = user_msg.stone
                 if mind_stone > 0:
                     sql_message.update_ls(user_id, int(mind_stone * 0.3), 2)
-                    exps = random.randint(100, 5000)
+                    exps = int(user_msg.exp * 0.01)
                     sql_message.update_j_exp(user_id, exps)
                     await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}".format(int(mind_stone * 0.3), exps), at_sender=True)
                 else:
-                    exps = random.randint(100, 5000)
+                    exps = int(user_2.exp * 0.01)
                     sql_message.update_j_exp(user_id, exps)
-                    await rob_stone.finish("大战一番，被对手反杀，修为减少{}".format(int(mind_stone * 0.3), exps),
+                    await rob_stone.finish("大战一番，被对手反杀，修为减少{}".format(exps),
                                            at_sender=True)
 
             else:

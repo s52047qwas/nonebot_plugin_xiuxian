@@ -767,7 +767,7 @@ class OtherSet(XiuConfig):
     def player_fight(self, player1: dict, player2: dict, type_in: 1):
         """
         回合制战斗
-        type_in : 1 为完整返回战斗过程
+        type_in : 1 为完整返回战斗过程（未加）
         2：只返回战斗结果
         数据示例：
         {"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None}
@@ -779,19 +779,21 @@ class OtherSet(XiuConfig):
         suc = None
 
         while True:
-            player1_gj = int(round(random.uniform(0.95, 1.05), 2) * player1['气血'])
+            player1_gj = int(round(random.uniform(0.95, 1.05), 2) * player1['攻击'])
             if random.randint(0, 100) <= player1['会心']:
                 player1_gj = int(player1_gj * 1.5)
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
 
-            player2_gj = int(round(random.uniform(0.95, 1.05), 2) * player2['气血'])
+            player2_gj = int(round(random.uniform(0.95, 1.05), 2) * player2['攻击'])
             if random.randint(0, 100) <= player2['会心']:
                 player2_gj = int(player2_gj * 1.5)
                 msg2 = "{}发起会心一击，造成了{}伤害\n"
 
             # 造成的伤害
-            play1_sh: int = int(player1_gj) - player2['防御']
-            play2_sh: int = int(player2_gj) - player1['防御']
+            # play1_sh: int = int(player1_gj) - player2['防御']
+            # play2_sh: int = int(player2_gj) - player1['防御']
+            play1_sh: int = int(player1_gj)
+            play2_sh: int = int(player2_gj)
 
             # print(msg1.format(player1['道号'], play1_sh))
             play_list.append(msg1.format(player1['道号'], play1_sh))
@@ -799,10 +801,10 @@ class OtherSet(XiuConfig):
             player2['气血'] = player2['气血'] - play1_sh
             # print(f"{player2['道号']}剩余血量{player2['气血']}")
             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-            XiuxianDateManage().update_user_attribute(player2['user_id'], player2['气血'], player2['真元'], player2['攻击'] )
+            XiuxianDateManage().update_user_attribute(player2['user_id'], player2['气血'], player2['真元'], player2['攻击'])
 
             if player2['气血'] <= 0:
-                print("{}胜利".format(player1['道号']))
+                # print("{}胜利".format(player1['道号']))
                 play_list.append("{}胜利".format(player1['道号']))
                 suc = f"{player1['道号']}"
 
@@ -816,7 +818,7 @@ class OtherSet(XiuConfig):
             player1['气血'] = player1['气血'] - play2_sh
             # print(f"{player1['道号']}剩余血量{player1['气血']}\n")
             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}\n")
-            XiuxianDateManage().update_user_attribute(player1['user_id'], player1['气血'], player1['真元'], player1['攻击'] )
+            XiuxianDateManage().update_user_attribute(player1['user_id'], player1['气血'], player1['真元'], player1['攻击'])
 
             if player1['气血'] <= 0:
                 # print("{}胜利".format(player2['道号']))
