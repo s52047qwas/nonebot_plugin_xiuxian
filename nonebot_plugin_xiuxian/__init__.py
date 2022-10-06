@@ -445,7 +445,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         sql_message.updata_level(user_id, le[0])  # 更新境界
         sql_message.update_power2(user_id)  # 更新战力
         sql_message.updata_level_cd(user_id)  # 更新CD
-        sql_message.update_user_attribute(user_id, )
+        # sql_message.update_user_attribute(user_id, )
         sql_message.update_levelrate(user_id, 0)
         sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
         await level_up.finish("恭喜道友突破{}成功".format(le[0]))
@@ -1072,7 +1072,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     except MsgError:
         return
 
-    if user_msg.hp is None:
+    if user_msg.hp is None or user_msg.hp == 0:
         # 判断用户气血是否为空
         sql_message.update_user_hp(user_id)
 
@@ -1090,7 +1090,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
         user_2 = sql_message.get_user_message(give_qq)
         if user_2:
-            if user_msg.hp is None:
+            if user_msg.hp is None or user_msg.hp == 0:
                 #判断用户气血是否为None
                 sql_message.update_user_hp(user_id)
                 user_msg = sql_message.get_user_message(user_id)
@@ -1135,7 +1135,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if victor == player1['道号']:
                 foe_stone = user_2.stone
                 if foe_stone > 0:
-                    sql_message.update_ls(user_id, int(foe_stone*0.1), 1)
+                    sql_message.update_ls(user_id, int(foe_stone * 0.1), 1)
                     sql_message.update_ls(give_qq, int(foe_stone * 0.1), 2)
                     exps = int(user_msg.exp * 0.001)
                     sql_message.update_exp(user_id, exps)
@@ -1172,8 +1172,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     except MsgError:
         return
 
-    if user_msg.hp is None:
-        sql_message.update_user_attribute(user_id, int(user_msg.exp/2), int(user_msg.exp), int(user_msg.exp/10))
+    if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
+        sql_message.update_user_hp(user_id)
 
     user = f"""道号：{user_msg.user_name}
 气血：{user_msg.hp}/{int(user_msg.exp/2)}
