@@ -1155,7 +1155,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
                     sql_message.update_exp(give_qq, exps/2)
-                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1), exps，int(mind_stone * 0.1)，exps/2), at_sender=True)
+                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1) exps,int(mind_stone * 0.1),exps/2), at_sender=True)
                 else:
                     exps = int(user_2.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
