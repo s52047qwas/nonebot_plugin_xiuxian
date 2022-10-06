@@ -1136,6 +1136,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 foe_stone = user_2.stone
                 if foe_stone > 0:
                     sql_message.update_ls(user_id, int(foe_stone*0.1), 1)
+                    sql_message.update_ls(give_qq, int(foe_stone * 0.1), 2)
                     exps = int(user_msg.exp * 0.001)
                     sql_message.update_exp(user_id, exps)
                     await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}".format(int(foe_stone*0.1), exps), at_sender=True)
