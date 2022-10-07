@@ -858,7 +858,7 @@ class OtherSet(XiuConfig):
 
         if user_msg.hp < max_hp:
             if user_msg.hp + hp < max_hp:
-                new_hp = user_msg.hp + hp
+                new_hp = hp
                 msg.append(',回复气血：{}'.format(new_hp))
             else:
                 new_hp = max_hp
