@@ -1135,12 +1135,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if victor == player1['道号']:
                 foe_stone = user_2.stone
                 if foe_stone > 0:
-                    sql_message.update_ls(user_id, int(foe_stone * 0.1), 1)
-                    sql_message.update_ls(give_qq, int(foe_stone * 0.1), 2)
+                    sql_message.update_ls(user_id, int(foe_stone * 0.01), 1)
+                    sql_message.update_ls(give_qq, int(foe_stone * 0.01), 2)
                     exps = int(user_2.exp * 0.005)
                     sql_message.update_exp(user_id, exps)
                     sql_message.update_j_exp(give_qq, exps/2)
-                    await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}，对手修为减少{}".format(int(foe_stone*0.1), exps,exps/2), at_sender=True)
+                    await rob_stone.finish("大战一番，战胜对手，获取灵石{}枚，修为增加{}，对手修为减少{}".format(int(foe_stone*0.01), exps,exps/2), at_sender=True)
                 else:
                     exps = int(user_2.exp * 0.005)
                     sql_message.update_exp(user_id, exps)
@@ -1150,12 +1150,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             elif victor == player2['道号']:
                 mind_stone = user_msg.stone
                 if mind_stone > 0:
-                    sql_message.update_ls(user_id, int(mind_stone * 0.1), 2)
-                    sql_message.update_ls(give_qq, int(mind_stone * 0.1), 1)
+                    sql_message.update_ls(user_id, int(mind_stone * 0.01), 2)
+                    sql_message.update_ls(give_qq, int(mind_stone * 0.01), 1)
                     exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
                     sql_message.update_exp(give_qq, exps/2)
-                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1), exps,int(mind_stone * 0.1),exps/2), at_sender=True)
+                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.01), exps,int(mind_stone * 0.01),exps/2), at_sender=True)
                 else:
                     exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
