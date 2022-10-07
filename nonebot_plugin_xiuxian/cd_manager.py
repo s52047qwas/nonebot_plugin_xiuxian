@@ -11,6 +11,13 @@ driver = get_driver()
 cd_data: Dict[str, int] = {}
 
 
+cdmsg = [
+    '你急啥呢？{cd_msg}后再来吧',
+    'CD:{cd_msg}',
+    '{cd_msg}后再来哦',
+    
+]
+
 def check_cd(event: MessageEvent) -> int:
     """
     :说明: `check_cd`
@@ -56,4 +63,4 @@ def cd_msg(time_last) -> str:
         seconds = time_last
     cd_msg = f"{str(hours) + '小时' if hours else ''}{str(minutes) + '分钟' if minutes else ''}{str(seconds) + '秒' if seconds else ''}"
 
-    return XiuConfig().dufang_cd_msg.format(cd_msg=cd_msg)
+    return choice(cdmsg).format(cd_msg=cd_msg)
