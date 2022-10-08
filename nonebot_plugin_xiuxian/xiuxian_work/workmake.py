@@ -1,8 +1,5 @@
-import os
 from .reward_data_source import *
 import random
-
-readpath  =os.path.join(os.path.dirname(os.path.realpath(__file__)), 'userworkdata') 
 
 def workmake(level, exp):
     jsondata = reward()
