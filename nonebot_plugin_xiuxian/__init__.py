@@ -1098,10 +1098,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.update_user_hp(give_qq)
                 user_2 = sql_message.get_user_message(give_qq)
 
-            if user_2.hp <= 100:
+            if user_2.hp <= user_2.exp/10:
                 await rob_stone.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
 
-            if user_msg.hp <= 100:
+            if user_msg.hp <= user_msg.exp/10:
                 await rob_stone.finish("重伤未愈，动弹不得！", at_sender=True)
 
             player1['user_id'] = user_msg.user_id
