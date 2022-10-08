@@ -158,10 +158,10 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
         )
     elif str(value) == str(mode_num) and str(mode) == "猜":
-        sql_message.update_ls(user_id, price_num * 6, 1)
+        sql_message.update_ls(user_id, price_num * 5, 1)
         await dufang.send(msg)
         await dufang.finish(
-            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 6), at_sender=True
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num * 5), at_sender=True
         )
     else:
         sql_message.update_ls(user_id, price_num, 2)
