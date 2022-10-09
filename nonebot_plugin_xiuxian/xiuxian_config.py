@@ -66,12 +66,13 @@ class JsonConfig:
         """
 
         json_data = self.read_data()
-        if key == 1:
-            json_data['抢灵石'] = True
-        if key == 2:
-            json_data['抢灵石'] = False
 
-        with open(self.config_jsonpath, 'w+') as f:
+        if key == 1:
+            json_data['qiang'] = True
+        if key == 2:
+            json_data['qiang'] = False
+
+        with open(self.config_jsonpath, 'w', encoding='utf-8') as f:
             json.dump(json_data, f)
 
 

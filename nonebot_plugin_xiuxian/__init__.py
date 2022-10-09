@@ -1072,11 +1072,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     # 验证是否开启抢灵石
     conf = JsonConfig().read_data()
     try:
-        if conf['抢灵石']:
+        if conf['qiang']:
             pass
         else:
-            await rob_stone.finish("'已关闭抢灵石，请联系管理员！")
-    except:
+            await rob_stone.finish("已关闭抢灵石，请联系管理员！")
+    except KeyError:
         pass
 
     try:
@@ -1215,8 +1215,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.open_robot.handle()
-async def _(args: Message = CommandArg()):
-    group_msg = args
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    group_msg = str(event.message)
+    print(group_msg)
+
     if "开启" in group_msg:
         JsonConfig().write_data(1)
         await open_robot.finish("抢灵石开启成功！")
