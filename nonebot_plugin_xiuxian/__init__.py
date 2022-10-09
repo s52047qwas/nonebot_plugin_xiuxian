@@ -1219,9 +1219,11 @@ async def _(args: Message = CommandArg()):
     group_msg = args
     if "开启" in group_msg:
         JsonConfig().write_data(1)
+        await open_robot.finish("抢灵石开启成功！")
 
     elif "关闭" in group_msg:
         JsonConfig().write_data(2)
+        await open_robot.finish("抢灵石关闭成功！")
 
     else:
         await open_robot.finish("指令错误，请输入：开启抢灵石/关闭抢灵石")
