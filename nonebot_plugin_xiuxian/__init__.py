@@ -21,7 +21,7 @@ from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
 from .data_source import jsondata
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
-from .xiuxian_config import XiuConfig
+from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 
 # 定时任务
@@ -1069,6 +1069,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             "ATK": ATK,
             "COMBO": COMBO
         }"""
+    # 验证是否开启抢灵石
+    conf = JsonConfig().read_data()
+    try:
+        if conf['抢灵石']:
+            pass
+        else:
+            await rob_stone.finish("'已关闭抢灵石，请联系管理员！")
+    except:
+        pass
+
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
@@ -1157,7 +1167,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
                     sql_message.update_exp(give_qq, exps/2)
-                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1), exps,int(mind_stone * 0.1),exps/2), at_sender=True)
+                    await rob_stone.finish("大战一番，被对手反杀，损失灵石{}枚，修为减少{}，对手获取灵石{}枚，修为增加{}".format(int(mind_stone * 0.1), exps, int(mind_stone * 0.1),exps/2), at_sender=True)
                 else:
                     exps = int(user_msg.exp * 0.005)
                     sql_message.update_j_exp(user_id, exps)
@@ -1202,6 +1212,19 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     else:
         sql_message.restate()
         await restate.finish('所有用户信息重置成功！', at_sender=True)
+
+
+@command.open_robot.handle()
+async def _(args: Message = CommandArg()):
+    group_msg = args
+    if "开启" in group_msg:
+        JsonConfig().write_data(1)
+
+    elif "关闭" in group_msg:
+        JsonConfig().write_data(2)
+
+    else:
+        await open_robot.finish("指令错误，请输入：开启抢灵石/关闭抢灵石")
 
 
 # -----------------------------------------------------------------------------

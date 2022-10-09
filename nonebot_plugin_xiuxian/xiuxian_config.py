@@ -8,7 +8,7 @@ DATABASE = Path() / "data" / "xiuxian"
 class XiuConfig:
 
     def __init__(self):
-        self.config_jsonpath = DATABASE / "config.yaml"
+        self.config_yamlpath = DATABASE / "config.yaml"
         config_data = self._config_data()
 
         self.level = config_data['level']
@@ -23,8 +23,8 @@ class XiuConfig:
         self.sign_in_xiuwei_lower_limit = config_data['sign_in_xiuwei_lower_limit']  # 每日签到修为下限
         self.sign_in_xiuwei_upper_limit = config_data['sign_in_xiuwei_upper_limit']  # 每日签到修为上限
         self.tou = config_data['tou']  # 偷灵石惩罚
-        self.tou_lower_limit = config_data['tou_lower_limit'] # 偷灵石下限
-        self.tou_upper_limit  = config_data['tou_upper_limit'] # 偷灵石上限
+        self.tou_lower_limit = config_data['tou_lower_limit']  # 偷灵石下限
+        self.tou_upper_limit = config_data['tou_upper_limit']  # 偷灵石上限
         self.remake = config_data['remake']  # 重入仙途的消费
         self.sect_min_level = config_data['sect_min_level']  # 创建宗门的最低修为等级要求
         self.sect_create_cost = config_data['sect_create_cost']  # 创建宗门的最低修为等级要求
@@ -33,6 +33,7 @@ class XiuConfig:
         self.dufang_cd = config_data['dufang_cd']  # 金银阁cd
         self.dufang_cd_msg = config_data['dufang_cd_msg']
         self.tou_cd = config_data['tou_cd']  # 偷灵石CD
+        # self.ggg = config_data['ggg']
 
         self.sql_table = config_data['sql_table']
         self.sql_user_xiuxian = config_data['sql_user_xiuxian']
@@ -40,11 +41,42 @@ class XiuConfig:
 
     def _config_data(self):
         """配置数据"""
-        with open(self.config_jsonpath, 'r', encoding='utf-8') as e:
+        with open(self.config_yamlpath, 'r', encoding='utf-8') as e:
             a = e.read()
             data = yaml.safe_load(a)
             return data
 
 
+class JsonConfig:
+    def __init__(self):
+        self.config_jsonpath = DATABASE / "config.json"
+
+
+    def read_data(self):
+        """配置数据"""
+        with open(self.config_jsonpath, 'r', encoding='utf-8') as e:
+            data = json.load(e)
+            return data
+
+    def write_data(self, key):
+        """
+        说明：设置抢灵石开启或关闭
+        参数：
+            key：1为开启，2为关闭
+        """
+
+        json_data = self.read_data()
+        if key == 1:
+            json_data['抢灵石'] = True
+        if key == 2:
+            json_data['抢灵石'] = False
+
+        with open(self.config_jsonpath, 'w+') as f:
+            json.dump(json_data, f)
+
+
+
 if __name__ == '__main__':
-    print(XiuConfig().user_info_cd_msg)
+    name = XiuConfig()._config_data()
+    for i in name:
+        print(i)
