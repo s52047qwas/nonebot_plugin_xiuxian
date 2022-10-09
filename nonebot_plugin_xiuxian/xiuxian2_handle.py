@@ -19,6 +19,7 @@ UserDate = namedtuple("UserDate",
                        "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
+
 SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
 
@@ -113,6 +114,19 @@ class XiuxianDateManage:
   "sect_scale" integer NOT NULL,
   "sect_used_stone" integer,
   "sect_fairyland" integer
+);""")
+            elif i == "back":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "back" (
+  "user_id" INTEGER NOT NULL,
+  "goods_id" INTEGER,
+  "name" TEXT,
+  "type" text,
+  "num" INTEGER,
+  "remake" TEXT,
+  PRIMARY KEY ("user_id")
 );""")
 
         for i in XiuConfig().sql_user_xiuxian:
@@ -568,6 +582,7 @@ class XiuxianDateManage:
         self.conn.commit()
 
     def restate(self, user_id=None):
+        """restate重置所有用户状态或重置对应人状态"""
         if user_id is None:
             sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10"
             cur = self.conn.cursor()
@@ -578,6 +593,24 @@ class XiuxianDateManage:
             cur = self.conn.cursor()
             cur.execute(sql, (user_id,))
             self.conn.commit()
+
+    def get_back_msg(self, user_id):
+        """获取用户背包信息"""
+        sql = f"SELECT name FROM back where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        msg = f"你的背包\n"
+        for i in result:
+            msg += f"{i},"
+        return result
+
+    def sned_back(self,user_id):
+        sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+
 
 
 class XiuxianJsonDate:
