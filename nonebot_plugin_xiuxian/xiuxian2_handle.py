@@ -605,10 +605,11 @@ class XiuxianDateManage:
             msg += f"{i},"
         return result
 
-    def sned_back(self,user_id):
-        sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,"
+    def sned_back(self, user_id, goods_id, name, type_n, remake):
+        # sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,type=?,num=?"
+        sql = f"INSERT INTO back(user_id, goods_id, name, type,num,remake) VALUES (?,?,?,?,1,?)"
         cur = self.conn.cursor()
-        cur.execute(sql, (user_id,))
+        cur.execute(sql, (user_id, goods_id, name, type_n, remake))
         self.conn.commit()
 
 

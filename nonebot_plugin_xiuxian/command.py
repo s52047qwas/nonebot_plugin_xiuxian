@@ -46,6 +46,7 @@ rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 
 restate = on_command("重置状态", permission=SUPERUSER, priority=5)
+shop = on_command("坊市", priority=5)
 
 world = on_command("世界BOSS", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5)

@@ -1231,6 +1231,17 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await open_robot.finish("指令错误，请输入：开启抢灵石/关闭抢灵石")
 
 
+@command.shop.handle()
+async def _(bot:Bot, event: GroupMessageEvent):
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+    data = jsondata.shop_data()
+
+    list_data = [i for i in data.values]
+    await send_forward_msg(bot, event, '坊市', bot.self_id, list_data)
+
 # -----------------------------------------------------------------------------
 
 async def send_forward_msg(
