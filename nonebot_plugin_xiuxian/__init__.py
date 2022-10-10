@@ -1233,14 +1233,63 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 @command.shop.handle()
 async def _(bot:Bot, event: GroupMessageEvent):
+    """坊市数据"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
         return
+
     data = jsondata.shop_data()
 
-    list_data = [i for i in data.values]
-    await send_forward_msg(bot, event, '坊市', bot.self_id, list_data)
+    def sends(s):
+        if s == 'hp':
+            return '回复气血'
+        if s == 'mp':
+            return "回复法术"
+        if s == "atk":
+            return "攻击增加"
+
+    msg = lambda i: f"{i['name']}\n效果：{sends(i['buff_type'])}{i['buff']}\n售价：{i['price']}\n描述：{i['desc']}"
+    name = list(set(i['type'] for i in data.values()))  # 判断物品类型
+    data_list = []
+    for i in range(len(name)):
+        data_list.append(name[i])
+        for j in data.values():
+            if j['type'] == name[i]:
+                data_list.append(msg(j) + '\n----------')
+
+    await send_forward_msg(bot, event, '坊市', bot.self_id, data_list)
+
+@command.buy.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """购买商品"""
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+
+    msg = str(args)
+    data = jsondata.shop_data()
+
+    for i,v in data.items():
+        if v['name'] == msg:
+            pass
+
+    await buy.finish(msg)
+
+
+@command.mind_back.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    """我的背包"""
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+
+    back_msg = sql_message.get_back_msg(user_id)
+    print(back_msg)
+
+    await buy.finish(back_msg)
 
 # -----------------------------------------------------------------------------
 

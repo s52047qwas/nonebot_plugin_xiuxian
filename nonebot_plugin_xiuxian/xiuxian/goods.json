@@ -1,22 +1,38 @@
 {
-    "1":{
-        "name": "test1",
-        "type": "丹药",
-        "buff_type": "hp",
-        "buff": 100,
-        "price": 1000,
-        "selling": 100,
-        "desc": "测试用的丹药",
-        "境界": "筑基期"
+    "1": {
+          "name": "test1",
+          "type": "丹药",
+          "buff_type": "hp",
+          "buff": 100,
+          "price": 1000,
+          "selling": 100,
+          "desc": "测试用的丹药",
+          "境界": "筑基期",
+          "status": 1,
+          "quantity": 1
     },
     "2":{
-        "name": "test2",
-        "type": "法宝",
-        "buff_type": "atk",
-        "buff": 100,
-        "price": 1000,
-        "selling": 100,
-        "desc": "测试用的法宝",
-        "境界": "筑基期"
+          "name": "test2",
+          "type": "法宝",
+          "buff_type": "atk",
+          "buff": 100,
+          "price": 1000,
+          "selling": 100,
+          "desc": "测试用的法宝",
+          "境界": "筑基期",
+          "status": 1,
+          "quantity": 1
+    },
+       "3":{
+          "name": "test3",
+          "type": "法宝",
+          "buff_type": "atk",
+          "buff": 1000,
+          "price": 1000,
+          "selling": 100,
+          "desc": "测试用的法宝",
+          "境界": "筑基期",
+          "status": 1,
+          "quantity": 1
     }
 }
