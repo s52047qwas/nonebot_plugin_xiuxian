@@ -139,8 +139,10 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
 
     price_num = int(price)
-    if int(user_message.stone) < int(price_num):
+    if int(user_message.stone) < price_num:
         await dufang.finish("道友的金额不足，请重新输入！")
+    elif price_num == 0:
+        await dufang.finish("走开走开，0块钱也赌！")
 
     value = random.randint(1, 6)
     msg = Message("[CQ:dice,value={}]".format(value))
