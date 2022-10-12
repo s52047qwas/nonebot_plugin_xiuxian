@@ -1248,7 +1248,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.shop.handle()
-async def _(bot:Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
@@ -1257,6 +1257,23 @@ async def _(bot:Bot, event: GroupMessageEvent):
 
     list_data = [i for i in data.values]
     await send_forward_msg(bot, event, '坊市', bot.self_id, list_data)
+
+@command.buy.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+    goods_data = jsondata.shop_data()
+    get_goods = str(args)
+
+    for i,v in goods_data.items():
+        try:
+            if v[get_goods]:
+                sql_message.send_back(user_id, i, get_goods, v['type'], 1, v['desc'])
+                await buy.finish('购买成功！')
+        except:
+            await buy.finish('没有获取道商品信息！')
 
 # -----------------------------------------------------------------------------
 

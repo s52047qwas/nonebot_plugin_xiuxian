@@ -605,11 +605,38 @@ class XiuxianDateManage:
             msg += f"{i},"
         return result
 
-    def sned_back(self, user_id, goods_id, name, type_n, remake):
-        # sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,type=?,num=?"
-        sql = f"INSERT INTO back(user_id, goods_id, name, type,num,remake) VALUES (?,?,?,?,1,?)"
+    def goods_num(self, user_id, goods_id):
+        """
+        判断用户物品数量
+        :param user_id: 用户qq
+        :param goods_id: 物品id
+        :return: 物品数量
+        """
+        sql = f"SELECT num FROM back where user_id=? and goods_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, (user_id, goods_id, name, type_n, remake))
+        cur.execute(sql, (user_id, goods_id))
+        result = cur.fetchone()
+        if result:
+            return result[0]
+        else:
+            return 0
+
+    def send_back(self, user_id, goods_id, name, type_n, num, remake):
+        """
+        插入物品至背包
+        :param user_id: 用户qq
+        :param goods_id: 物品id
+        :param name: 物品名称
+        :param type_n: 物品类型
+        :param num: 物品数量
+        :param remake: 备注
+        :return: None
+        """
+        # sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,type=?,num=?"
+
+        sql = f"INSERT INTO back(user_id, goods_id, name, type,num, remake) VALUES (?,?,?,?,?,?)"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id, goods_id, name, type_n, num, remake))
         self.conn.commit()
 
 
