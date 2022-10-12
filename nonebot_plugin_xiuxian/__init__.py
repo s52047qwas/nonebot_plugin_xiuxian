@@ -457,6 +457,20 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         # 最高境界
         await level_up.finish(le)
 
+@command.user_leveluprate.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+    
+    user_msg = sql_message.get_user_message(user_id)  # 用户信息
+    leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
+    
+    level_name = user_msg.level  # 用户境界
+    level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
+    await user_leveluprate.finish(f"道友下一次突破成功概率为{level_rate + leveluprate}%")
+
 
 @command.give_stone.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

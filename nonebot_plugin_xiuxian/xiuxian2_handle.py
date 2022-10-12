@@ -90,7 +90,7 @@ class XiuxianDateManage:
       "exp" integer DEFAULT 0,
       "user_name" TEXT DEFAULT NULL,
       "level_up_cd" integer DEFAULT NULL,
-      "level_up_rate" integer DEFAULT NULL
+      "level_up_rate" integer DEFAULT 0
     );""")
             elif i == "user_cd":
                 try:

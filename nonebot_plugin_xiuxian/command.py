@@ -52,3 +52,5 @@ world = on_command("世界BOSS", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5)
 open_robot = on_command("开启抢灵石", aliases={'关闭抢灵石'}, priority=5)
 
+user_leveluprate = on_command('我的突破概率', priority=5)
+
