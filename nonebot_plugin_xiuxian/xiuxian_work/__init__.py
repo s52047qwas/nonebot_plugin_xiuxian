@@ -185,7 +185,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
                 exps = int(userinfo.exp * 0.001)
                 sql_message.update_j_exp(user_id, exps)
                 sql_message.do_work(user_id, 0)
-                await do_work.finish("道友不讲诚信，被打了一顿修为减少{exps},悬赏令已终止！", at_sender=True)
+                await do_work.finish(f"道友不讲诚信，被打了一顿修为减少{exps},悬赏令已终止！", at_sender=True)
                 
             
             
