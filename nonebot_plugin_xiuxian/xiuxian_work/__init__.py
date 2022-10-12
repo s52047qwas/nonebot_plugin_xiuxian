@@ -1,5 +1,5 @@
-from typing import Any, Tuple
-from nonebot import on_regex
+from typing import Any, Tuple, Dict
+from nonebot import on_regex, require
 from nonebot.params import RegexGroup
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -12,15 +12,29 @@ from .work_handle import workhandle
 from datetime import datetime
 from ..xiuxian_opertion import do_is_work
 from ..cd_manager import add_cd, check_cd, cd_msg
+from nonebot.log import logger
+
+# 定时任务
+resetrefreshnum = require("nonebot_plugin_apscheduler").scheduler
+
 
 work = {}  # 悬赏令信息记录
+refreshnum : Dict[str, int] = {} #用户悬赏令刷新次数记录
 sql_message = XiuxianDateManage()  # sql类
+
+# 重置悬赏令刷新次数
+@resetrefreshnum.scheduled_job("cron",hour=0,minute=0)
+async def _():
+    global refreshnum
+    refreshnum = {}
+    logger.info("用户悬赏令刷新次数重置成功")
 
 do_work = on_regex(
     r"(江湖好手|练气境|筑基境|结丹境|元婴境|化神境|炼虚境|合体境|大乘境|渡劫境)?(悬赏令)+(接取|结算|刷新|终止)?(\d+)?",
     priority=5,
     permission=PRIVATE_FRIEND | GROUP,
 )
+
 
 class MsgError(ValueError):
     pass
@@ -128,12 +142,21 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
                         f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！",
                         at_sender=True,
                     )
-            
-            if cd := check_cd(event):
-            # 如果 CD 还没到 则直接结束
-                await do_work.finish(cd_msg(cd), at_sender=True)
-            
-            add_cd(event, 3600)
+                    
+            lscost = 100
+            if int(userinfo.stone) < lscost:    
+                await do_work.finish(f"道友的灵石不足以刷新，每次刷新消耗灵石：{lscost}枚")
+                
+            try:
+                usernums = refreshnum[user_id]
+            except KeyError:
+                usernums = 0
+                
+            count = 5
+            freenum = count - usernums
+            if freenum < 0:
+                freenum = 0
+             
             work_msg = workhandle().do_work(0, level=userlevel, exp=userinfo.exp, user_id=userinfo.user_id)
             n = 1
             work_msg_f = f"""     ✨道友的个人悬赏令✨"""
@@ -142,11 +165,15 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
                 work_msg_f += f"""
     {n}、{i[0]},完成机率{i[1]},基础报酬{i[2]}灵石,预计需{i[3]}分钟,可能获取额外物品：{i[4]}!"""
                 n += 1
-            work_msg_f += f"\n(悬赏令每小时更新一次)"
+            work_msg_f += f"\n(悬赏令每小时更新一次,悬赏令每日免费刷新次数：{count}，超过{count}次后，每次刷新消耗{lscost}灵石,今日可免费刷新次数：{freenum}次)"
             work[user_id] = do_is_work(user_id)
             work[user_id].time = datetime.now()
             work[user_id].msg = work_msg_f
             work[user_id].world = work_list
+            
+            refreshnum[user_id] = usernums + 1
+            sql_message.update_ls(user_id, lscost, 2)
+            
             await do_work.finish(work_msg_f)
         
         if mode == '终止':
@@ -155,8 +182,10 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             elif user_cd_message is None or user_cd_message.type == 0:
                 await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！", at_sender=True)
             elif user_cd_message.type == 2:
+                exps = int(userinfo.exp * 0.001)
+                sql_message.update_j_exp(user_id, exps)
                 sql_message.do_work(user_id, 0)
-                await do_work.finish("悬赏令已终止！", at_sender=True)
+                await do_work.finish("道友不讲诚信，被打了一顿修为减少{exps},悬赏令已终止！", at_sender=True)
                 
             
             
