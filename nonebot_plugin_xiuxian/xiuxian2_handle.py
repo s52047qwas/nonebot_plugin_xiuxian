@@ -117,17 +117,9 @@ class XiuxianDateManage:
 );""")
             elif i == "back":
                 try:
-                    c.execute(f"select count(1) from {i}")
+                    c.execute("""DROP TABLE BREAD_LOG;""")
                 except sqlite3.OperationalError:
-                    c.execute("""CREATE TABLE "back" (
-  "user_id" INTEGER NOT NULL,
-  "goods_id" INTEGER,
-  "name" TEXT,
-  "type" text,
-  "num" INTEGER,
-  "remake" TEXT,
-  PRIMARY KEY ("user_id")
-);""")
+                    pass
 
         for i in XiuConfig().sql_user_xiuxian:
             try:

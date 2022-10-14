@@ -1298,14 +1298,29 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         return
     goods_data = jsondata.shop_data()
     get_goods = str(args)
+    logger.info(f'商品名称：{get_goods}')
 
-    for i,v in goods_data.items():
-        try:
-            if v[get_goods]:
-                sql_message.send_back(user_id, i, get_goods, v['type'], 1, v['desc'])
-                await buy.finish('购买成功！')
-        except:
-            await buy.finish('没有获取道商品信息！')
+    for i, v in goods_data.items():
+        logger.info(f'商品列表：{v}')
+        if v['name'] == get_goods:
+            logger.info(f"sql字段：{user_id}, {i, get_goods}, {v['type']}, {1}, {v['desc']}")
+            sql_message.send_back(user_id, i, get_goods, v['type'], 1, v['desc'])
+            await buy.finish('购买成功！')
+        else:
+            continue
+            # await buy.finish('没有获取道商品信息！')
+    await buy.finish('没有获取道商品信息')
+
+@command.mind_back.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """我的背包"""
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except MsgError:
+        return
+    back_msg = sql_message.get_back_msg(user_id)
+    await mind_back.finish(back_msg)
+
 
 # -----------------------------------------------------------------------------
 
