@@ -8,6 +8,9 @@ from nonebot.adapters.onebot.v11 import (
     GROUP,
     Message,
     GroupMessageEvent,
+    GROUP_ADMIN,
+    GROUP_OWNER
+
 )
 from nonebot.permission import SUPERUSER
 from .boss_handle import BossDateManage, readf, savef
@@ -19,9 +22,9 @@ import json
 # 定时任务
 setboss = require("nonebot_plugin_apscheduler").scheduler
 
-create = on_command("生成世界boss", priority=5, permission= GROUP and SUPERUSER)
+create = on_command("生成世界boss", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 bossinfo = on_command("查询世界boss", priority=5, permission= GROUP)
-setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and SUPERUSER)
+setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 battle = on_command("讨伐boss", priority=5, permission= GROUP)
 bosshelp = on_command("世界boss帮助", priority=5)
 
