@@ -88,7 +88,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     index = len(groupboss[group_id])
     
-    if boss_num > index:
+    if not (0 < boss_num <= index):
         await battle.finish(f'请输入正确的世界Boss编号！')
     
     if userinfo.hp is None or userinfo.hp == 0:
