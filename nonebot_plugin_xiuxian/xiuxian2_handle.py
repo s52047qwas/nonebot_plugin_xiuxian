@@ -620,6 +620,14 @@ class XiuxianDateManage:
             return result[0]
         else:
             return 0
+        
+    def get_all_user_exp(self, level):
+        """查询所有对应大境界玩家的修为"""
+        sql = f"SELECT exp FROM user_xiuxian  WHERE level like '{level}%'"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        return result
 
     def send_back(self, user_id, goods_id, name, type_n, num, remake):
         """

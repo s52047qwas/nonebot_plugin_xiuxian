@@ -32,6 +32,14 @@ work = {}  # 悬赏令信息记录
 sect_out_check = {}  # 退出宗门或踢出宗门信息记录
 sql_message = XiuxianDateManage()  # sql类
 
+from nonebot import load_all_plugins
+load_all_plugins(
+        [
+            'nonebot_plugin_xiuxian.xiuxian_boss',
+        ],
+        [],
+    )
+
 
 @command.run_xiuxian.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
