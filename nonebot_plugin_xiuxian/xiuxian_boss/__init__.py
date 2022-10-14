@@ -1,19 +1,16 @@
-from pathlib import Path
 import re
-from typing import Any, Tuple, Dict
+from typing import Any, Tuple
 from nonebot import get_bot, on_command, on_regex, require
 from nonebot.params import RegexGroup, CommandArg
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
-    PRIVATE_FRIEND,
     GROUP,
     Message,
     GroupMessageEvent,
 )
 from nonebot.permission import SUPERUSER
 from .boss_handle import BossDateManage, readf, savef
-from ..cd_manager import add_cd, check_cd, cd_msg
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss

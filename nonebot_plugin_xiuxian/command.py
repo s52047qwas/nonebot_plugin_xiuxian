@@ -54,5 +54,3 @@ open_robot = on_command("开启抢灵石", aliases={'关闭抢灵石'}, priority
 
 user_leveluprate = on_command('我的突破概率', priority=5)
 
-user_leveluprate = on_command('我的突破概率', priority=5)
-

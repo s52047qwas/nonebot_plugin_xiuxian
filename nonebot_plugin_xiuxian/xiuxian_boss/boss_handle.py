@@ -39,6 +39,7 @@ class BossDateManage(OtherSet):
             # 造成的伤害
             # play1_sh: int = int(player1_gj) - player2['防御']
             # play2_sh: int = int(player2_gj) - player1['防御']
+            
             player_sh: int = int(player_gj)
             boss_sh: int = int(boss_gj)
 

@@ -34,7 +34,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     if mode == None:
         await bank.finish(f'钱庄服务，可以存钱、取钱，给与利息。利息取决于钱庄会员等级，会员等级可消耗灵石升级')
     
-    if mode != '信息' or mode !='升级会员':
+    if mode == '存钱' or mode == '取钱':
         try:
             num = int(num)
             if num <= 0:
@@ -92,6 +92,15 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
                         ''')
     
     
+BANKLEVEL = {
+    "普通会员":{"savemax":100000,"levelup":100000,'interest':0.001},
+    "小会员":{"savemax":200000,"levelup":200000,'interest':0.0012},
+    "大会员":{"savemax":300000,"levelup":300000,'interest':0.0014},
+    "优质会员":{"savemax":400000,"levelup":400000,'interest':0.0016},
+    "黄金会员":{"savemax":500000,"levelup":500000,'interest':0.0018},
+    "钻石会员":{"savemax":600000,"levelup":600000,'interest':0.002},
+}
+
 
 def readf(user_id):
     user_id = str(user_id)
