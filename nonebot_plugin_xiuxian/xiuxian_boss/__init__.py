@@ -56,7 +56,7 @@ async def _():
         
 @bosshelp.handle()
 async def _():
-    msg = "世界Boss帮助：\n1、超级管理员可以使用命令：生成世界boss来生成boss。\n2、超级管理员命令：世界boss开启、关闭来管理本群世界boss的自动生成\n3、其余命令：查询世界boss，讨伐boss+对应的boss编号"
+    msg = "世界Boss帮助：\n1、超级管理员可以使用命令：生成世界boss来生成boss。\n2、超级管理员命令：世界boss开启、关闭来管理本群世界boss的自动生成\n3、其余命令：查询世界boss、查询世界boss+对应的boss编号、讨伐boss+对应的boss编号"
     await bosshelp.finish(msg)
 
     
@@ -120,7 +120,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish(f"恭喜道击败{bossinfo['name']}，收获灵石{get_stone}枚")
 
 @bossinfo.handle()
-async def _(bot: Bot, event: MessageEvent):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -130,13 +130,36 @@ async def _(bot: Bot, event: MessageEvent):
         bosss = groupboss[group_id]
     except:
         await bossinfo.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
+        
+    msg = args.extract_plain_text().strip()
+    boss_num = re.findall("\d+", msg)  # boss编号
+    
+    Flag = False#True查对应Boss
+    if boss_num:
+        boss_num = int(boss_num[0])
+        index = len(groupboss[group_id])
+        if not (0 < boss_num <= index):
+            await bossinfo.finish(f'请输入正确的世界Boss编号！')
+            
+        Flag = True
     
     bossmsgs = ""
-    i = 1
-    for boss in bosss:
-        bossmsgs += f"编号{i}、{boss['jj']}Boss:{boss['name']} \n"
-        i += 1
-    await bossinfo.finish(bossmsgs)
+    if Flag:#查单个Boss信息
+        boss = groupboss[group_id][boss_num - 1]
+        bossmsgs = f'''
+世界Boss：{boss['name']}
+境界：{boss['jj']}
+剩余血量：{boss['气血']}
+攻击：{boss['攻击']}
+携带灵石：{boss['stone']}
+        '''
+        await bossinfo.finish(bossmsgs)
+    else:
+        i = 1
+        for boss in bosss:
+            bossmsgs += f"编号{i}、{boss['jj']}Boss:{boss['name']} \n"
+            i += 1
+        await bossinfo.finish(bossmsgs)
 
 @create.handle()
 async def _(bot: Bot, event: MessageEvent):

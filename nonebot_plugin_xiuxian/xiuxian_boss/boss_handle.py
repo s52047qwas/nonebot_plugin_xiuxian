@@ -57,7 +57,6 @@ class BossDateManage(OtherSet):
                 play_list.append("{}胜利".format(player['道号']))
                 suc = f"{player['道号']}"
                 get_stone = int(boss['stone'] * (sh / qx))
-                boss['stone'] = boss['stone'] - get_stone
                 
                 boss = None
                 # XiuxianDateManage().update_user_attribute(player2['user_id'], 1, player2['真元'],
