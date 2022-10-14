@@ -23,9 +23,9 @@ import json
 setboss = require("nonebot_plugin_apscheduler").scheduler
 
 create = on_command("生成世界boss", priority=5, permission= GROUP and SUPERUSER)
-bossinfo = on_command("查询世界boss", priority=5)
+bossinfo = on_command("查询世界boss", priority=5, permission= GROUP)
 setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and SUPERUSER)
-battle = on_command("讨伐boss", priority=5)
+battle = on_command("讨伐boss", priority=5, permission= GROUP)
 bosshelp = on_command("世界boss帮助", priority=5)
 
 groupboss = {}
