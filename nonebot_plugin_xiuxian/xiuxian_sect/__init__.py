@@ -61,6 +61,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         
         sql_message.update_ls(user_id, cost, 2)
         sql_message.update_sect_materials(sect_id, cost * 10, 2)
+        sql_message.update_user_atkpractice(user_id, useratkpractice + 1)
         await upatkpractice.finish(f"升级成功，道友当前攻击修炼等级：{useratkpractice + 1}，消耗灵石：{cost}枚，消耗宗门资材{cost * 10}！")
     else:
         await upatkpractice.finish(f"修炼逆天而行消耗巨大，请加入宗门再进行修炼！")
