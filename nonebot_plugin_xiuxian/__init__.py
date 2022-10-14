@@ -1200,6 +1200,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 @command.mind_state.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    """我的状态信息。"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
@@ -1217,6 +1218,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @command.restate.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """重置用户状态。
+    单用户：重置状态@xxx
+    多用户：重置状态"""
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
         if arg.type == "at":
@@ -1232,6 +1236,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 @command.open_robot.handle()
 async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """抢灵石开关配置"""
     group_msg = str(event.message)
     print(group_msg)
 
@@ -1249,7 +1254,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 @command.shop.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
-        """坊市数据"""
+    """坊市"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
@@ -1278,6 +1283,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @command.buy.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """购物"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
