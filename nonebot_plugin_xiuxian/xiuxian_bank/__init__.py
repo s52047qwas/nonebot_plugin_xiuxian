@@ -42,9 +42,9 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         try:
             num = int(num)
             if num <= 0:
-                await bank.finish(f'请输入正确的金额！')
+                await bank.finish(f'请输入正确的金额！', at_sender=True)
         except ValueError:
-            await bank.finish(f'请输入正确的金额！')
+            await bank.finish(f'请输入正确的金额！', at_sender=True)
         
     user_id = event.get_user_id()
     userinfo = sql_message.get_user_message(user_id)
@@ -63,45 +63,45 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     
     if mode == '存钱':#存钱逻辑
         if int(userinfo.stone) < num:
-            await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，金额不足，请重新输入！")
+            await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，金额不足，请重新输入！", at_sender=True)
 
         max = BANKLEVEL[bankinfo['banklevel']]['savemax']
         nowmax = max - bankinfo['savestone']
         
         if num > nowmax:
-            await bank.finish(f"道友当前钱庄会员等级为{BANKLEVEL[bankinfo['banklevel']]['level']}，可存储的最大灵石为{max}枚,当前已存{bankinfo['savestone']}枚灵石，可以继续存{nowmax}枚灵石！")
+            await bank.finish(f"道友当前钱庄会员等级为{BANKLEVEL[bankinfo['banklevel']]['level']}，可存储的最大灵石为{max}枚,当前已存{bankinfo['savestone']}枚灵石，可以继续存{nowmax}枚灵石！", at_sender=True)
         
         userinfonowstone = int(userinfo.stone) - num
         bankinfo['savestone'] += num
         sql_message.update_ls(user_id, num, 2)
         bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
-        await bank.finish(f"道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚")
+        await bank.finish(f"道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
 
     elif mode == '取钱':#取钱逻辑
         if int(bankinfo['savestone']) < num:
-            await bank.finish(f"道友当前钱庄所存有的灵石为{bankinfo['savestone']}枚，金额不足，请重新输入！")
+            await bank.finish(f"道友当前钱庄所存有的灵石为{bankinfo['savestone']}枚，金额不足，请重新输入！", at_sender=True)
         
         userinfonowstone = int(userinfo.stone) + num
         bankinfo['savestone'] -= num
         sql_message.update_ls(user_id, num, 1)
         bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
-        await bank.finish(f"道友取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚")
+        await bank.finish(f"道友取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
         
     elif mode == '升级会员':#升级会员逻辑
         userlevel = bankinfo["banklevel"]
         if userlevel == '7':
-            await bank.finish(f"道友已经是本钱庄最大的会员啦！")
+            await bank.finish(f"道友已经是本钱庄最大的会员啦！", at_sender=True)
         
         stonecost = BANKLEVEL[f'{int(userlevel)}']['levelup']
         if int(userinfo.stone) < stonecost:
-            await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，当前升级会员等级需求灵石{stonecost}枚金额不足，请重新输入！")
+            await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，当前升级会员等级需求灵石{stonecost}枚金额不足，请重新输入！", at_sender=True)
         
         sql_message.update_ls(user_id, stonecost, 2)
         bankinfo['banklevel'] = f'{int(userlevel) + 1}'
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
-        await bank.finish(f"道友成功升级钱庄会员等级，消耗灵石{stonecost}枚，当前为：{BANKLEVEL[f'{int(userlevel) + 1}']['level']}，钱庄可存有灵石上限{BANKLEVEL[f'{int(userlevel) + 1}']['savemax']}枚")
+        await bank.finish(f"道友成功升级钱庄会员等级，消耗灵石{stonecost}枚，当前为：{BANKLEVEL[f'{int(userlevel) + 1}']['level']}，钱庄可存有灵石上限{BANKLEVEL[f'{int(userlevel) + 1}']['savemax']}枚", at_sender=True)
     
     elif mode == '信息':#查询钱庄信息
         await bank.finish(f'''
@@ -111,7 +111,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
 钱庄会员等级：{BANKLEVEL[bankinfo['banklevel']]['level']}
 当前拥有灵石：{userinfo.stone}
 当前等级存储灵石上限：{BANKLEVEL[bankinfo['banklevel']]['savemax']}枚
-                        ''')
+                        ''', at_sender=True)
     
     elif mode == '结算':
         savetime = bankinfo['savetime'] #str
@@ -121,7 +121,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         sql_message.update_ls(user_id, give_stone, 1)
         bankinfo['savetime'] = nowtime
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
-        await bank.finish(f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！')
+        await bank.finish(f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！', at_sender=True)
 
 
 def readf(user_id):
