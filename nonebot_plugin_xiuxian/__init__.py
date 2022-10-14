@@ -36,6 +36,7 @@ from nonebot import load_all_plugins
 load_all_plugins(
         [
             'nonebot_plugin_xiuxian.xiuxian_boss',
+            'nonebot_plugin_xiuxian.xiuxian_bank',
         ],
         [],
     )

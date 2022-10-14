@@ -1,26 +1,29 @@
 from pathlib import Path
-from typing import Any, Tuple, Dict
-from nonebot import on_regex, require
+from typing import Any, Tuple
+from nonebot import on_regex
 from nonebot.params import RegexGroup
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
-    PRIVATE_FRIEND,
-    GROUP,
 )
 import json
 import os
-
-from numpy import save
 from ..xiuxian2_handle import XiuxianDateManage
 from datetime import datetime
-from ..cd_manager import add_cd, check_cd, cd_msg
-from nonebot.log import logger
 
 bank = on_regex(
-    r'^钱庄(存钱|取钱|升级会员|信息)?(.*)?',
+    r'^钱庄(存钱|取钱|升级会员|信息|结算)?(.*)?',
     priority=5,
 )
+
+BANKLEVEL = {
+    "1":{"savemax":100000,"levelup":100000,'interest':0.002,"level":"普通会员"},
+    "2":{"savemax":200000,"levelup":200000,'interest':0.0021,"level":"小会员"},
+    "3":{"savemax":400000,"levelup":400000,'interest':0.0022,"level":"大会员"},
+    "4":{"savemax":800000,"levelup":800000,'interest':0.0023,"level":"优质会员"},
+    "5":{"savemax":1600000,"levelup":1600000,'interest':0.0024,"level":"黄金会员"},
+    "6":{"savemax":32000000,"levelup":3200000,'interest':0.0025,"level":"钻石会员"},
+}
 
 sql_message = XiuxianDateManage()  # sql类
 
@@ -32,7 +35,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     mode = args[0] #存钱、取钱、升级会员、信息查看
     num = args[1] #数值
     if mode == None:
-        await bank.finish(f'钱庄服务，可以存钱、取钱，给与利息。利息取决于钱庄会员等级，会员等级可消耗灵石升级')
+        await bank.finish(f'钱庄服务，可以存钱、取钱，给与利息。利息取决于钱庄会员等级，会员等级可消耗灵石升级！\n命令：钱庄+存钱、取钱、升级会员、信息、结算，存取需要加数值')
     
     if mode == '存钱' or mode == '取钱':
         try:
@@ -47,24 +50,30 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     
     if sql_message.get_user_message(user_id) is None:
         await bank.finish("修仙界没有道友的信息，请输入【我要修仙】加入！")
-        
+    
     try:
         bankinfo = readf(user_id)
     except:
         bankinfo = {
             'savestone':0,
             'savetime': '',
-            'banklevel':1
+            'banklevel':'1',
         }
     
     if mode == '存钱':#存钱逻辑
         if int(userinfo.stone) < num:
             await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，金额不足，请重新输入！")
+
+        max = BANKLEVEL[bankinfo['banklevel']]['savemax']
+        nowmax = max - bankinfo['savestone']
+        
+        if num > nowmax:
+            await bank.finish(f"道友当前钱庄会员等级为{BANKLEVEL[bankinfo['banklevel']]['level']}，可存储的最大灵石为{max}枚,当前已存{bankinfo['savestone']}枚灵石，可以继续存{nowmax}枚灵石！")
         
         userinfonowstone = int(userinfo.stone) - num
         bankinfo['savestone'] += num
         sql_message.update_ls(user_id, num, 2)
-        bankinfo['savetime'] = str(datetime.now())
+        bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
         await bank.finish(f"道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚")
 
@@ -75,31 +84,43 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         userinfonowstone = int(userinfo.stone) + num
         bankinfo['savestone'] -= num
         sql_message.update_ls(user_id, num, 1)
-        bankinfo['savetime'] = str(datetime.now())
+        bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
         await bank.finish(f"道友取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚")
         
     elif mode == '升级会员':#升级会员逻辑
-        await bank.finish('没想好')
+        userlevel = bankinfo["banklevel"]
+        if userlevel == '6':
+            await bank.finish(f"道友已经是本钱庄最大的会员啦！")
+        
+        stonecost = BANKLEVEL[f'{int(userlevel)}']['levelup']
+        if int(userinfo.stone) < stonecost:
+            await bank.finish(f"道友所拥有的灵石为{userinfo.stone}枚，当前升级会员等级需求灵石{stonecost}枚金额不足，请重新输入！")
+        
+        sql_message.update_ls(user_id, stonecost, 2)
+        bankinfo['banklevel'] = f'{int(userlevel) + 1}'
+        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        await bank.finish(f"道友成功升级钱庄会员等级，消耗灵石{stonecost}枚，当前为：{BANKLEVEL[f'{int(userlevel) + 1}']['level']}，钱庄可存有灵石上限{BANKLEVEL[f'{int(userlevel) + 1}']['savemax']}枚")
     
     elif mode == '信息':#查询钱庄信息
         await bank.finish(f'''
 道友的钱庄信息：
-已存:{bankinfo['savestone']}灵石
+已存：{bankinfo['savestone']}灵石
 存入时间：{bankinfo['savetime']}
-钱庄会员等级:{bankinfo['banklevel']}
+钱庄会员等级：{BANKLEVEL[bankinfo['banklevel']]['level']}
 当前拥有灵石：{userinfo.stone}
+当前等级存储灵石上限：{BANKLEVEL[bankinfo['banklevel']]['savemax']}枚
                         ''')
     
-    
-BANKLEVEL = {
-    "普通会员":{"savemax":100000,"levelup":100000,'interest':0.001},
-    "小会员":{"savemax":200000,"levelup":200000,'interest':0.0012},
-    "大会员":{"savemax":300000,"levelup":300000,'interest':0.0014},
-    "优质会员":{"savemax":400000,"levelup":400000,'interest':0.0016},
-    "黄金会员":{"savemax":500000,"levelup":500000,'interest':0.0018},
-    "钻石会员":{"savemax":600000,"levelup":600000,'interest':0.002},
-}
+    elif mode == '结算':
+        savetime = bankinfo['savetime'] #str
+        nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
+        timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(savetime, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
+        give_stone = int(bankinfo['savestone'] * timedeff * BANKLEVEL[bankinfo['banklevel']]['interest'])
+        sql_message.update_ls(user_id, give_stone, 1)
+        bankinfo['savetime'] = nowtime
+        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        await bank.finish(f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！')
 
 
 def readf(user_id):
