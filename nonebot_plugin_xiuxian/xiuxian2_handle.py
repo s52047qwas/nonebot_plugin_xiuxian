@@ -16,12 +16,12 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
 SectInfo = namedtuple("SectInfo",
-                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland"])
+                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials"])
 
 num = '578043031'
 
@@ -126,6 +126,14 @@ class XiuxianDateManage:
                 c.execute(f"select {i} from user_xiuxian")
             except sqlite3.OperationalError:
                 sql = f"ALTER TABLE user_xiuxian ADD COLUMN {i} INTEGER DEFAULT 0;"
+                print(sql)
+                c.execute(sql)
+        
+        for s in XiuConfig().sql_sects:
+            try:
+                c.execute(f"select {s} from sects")
+            except sqlite3.OperationalError:
+                sql = f"ALTER TABLE sects ADD COLUMN {s} INTEGER DEFAULT 0;"
                 print(sql)
                 c.execute(sql)
 
@@ -529,6 +537,30 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (stone_num, stone_num * 10, sect_id))
         self.conn.commit()
+    
+    def update_sect_materials(self, sect_id, sect_materials, key):
+        """更新资材  1为增加，2为减少"""
+        cur = self.conn.cursor()
+
+        if key == 1:
+            sql = f"UPDATE sects SET sect_materials=sect_materials+? WHERE sect_id=?"
+            cur.execute(sql, (sect_materials, sect_id))
+            self.conn.commit()
+        elif key == 2:
+            sql = f"UPDATE sects SET sect_materials=sect_materials-? WHERE sect_id=?"
+            cur.execute(sql, (sect_materials, sect_id))
+            self.conn.commit()
+
+    def get_all_sects(self):
+        """
+        获取所有宗门信息
+        :return: result[0] = sect_id   result[1]=建设度sect_scale
+        """
+        sql = f"SELECT sect_id, sect_scale FROM sects WHERE sect_owner is NOT NULL ORDER BY sect_scale DESC"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        return result
 
     def do_work(self, user_id, the_type, sc_time=None):
         """
@@ -620,6 +652,14 @@ class XiuxianDateManage:
         cur.execute(sql, )
         result = cur.fetchall()
         return result
+
+    def update_user_atkpractice(self,user_id, atkpractice):
+        """更新用户攻击修炼等级"""
+        sql = f"UPDATE user_xiuxian SET atkpractice={atkpractice} where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+    
 
     def send_back(self, user_id, goods_id, name, type_n, num, remake):
         """

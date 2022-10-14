@@ -37,6 +37,7 @@ class XiuConfig:
 
         self.sql_table = config_data['sql_table']
         self.sql_user_xiuxian = config_data['sql_user_xiuxian']
+        self.sql_sects = config_data['sql_sects']
 
 
     def _config_data(self):

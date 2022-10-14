@@ -33,15 +33,6 @@ dufang = on_regex(
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 
-my_sect = on_command("我的宗门", aliases={"宗门信息"}, priority=5)
-create_sect = on_command("创建宗门", priority=5)
-join_sect = on_command("加入宗门", priority=5)
-sect_position_update = on_command("宗门职位变更", priority=5)
-sect_donate = on_command("宗门捐献", priority=5)
-sect_out = on_command("退出宗门", priority=5)
-sect_kick_out = on_command("踢出宗门", priority=5)
-sect_owner_change = on_command("宗主传位", priority=5)
-
 rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 
