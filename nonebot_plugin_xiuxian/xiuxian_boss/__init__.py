@@ -38,7 +38,7 @@ except:
 
 
 # 定时任务生成世界boss
-@setboss.scheduled_job("cron",hour=12,minute=3,)
+@setboss.scheduled_job("cron",hour='9-22')
 async def _():
     bot = get_bot()
     if groups['open'] != []:
