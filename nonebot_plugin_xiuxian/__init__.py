@@ -139,8 +139,10 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
 
     price_num = int(price)
-    if int(user_message.stone) < int(price_num):
+    if int(user_message.stone) < price_num:
         await dufang.finish("道友的金额不足，请重新输入！")
+    elif price_num == 0:
+        await dufang.finish("走开走开，0块钱也赌！")
 
     value = random.randint(1, 6)
     msg = Message("[CQ:dice,value={}]".format(value))
@@ -454,6 +456,20 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     else:
         # 最高境界
         await level_up.finish(le)
+
+@command.user_leveluprate.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+    
+    user_msg = sql_message.get_user_message(user_id)  # 用户信息
+    leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
+    
+    level_name = user_msg.level  # 用户境界
+    level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
+    await user_leveluprate.finish(f"道友下一次突破成功概率为{level_rate + leveluprate}%")
 
 
 @command.give_stone.handle()
@@ -1232,8 +1248,8 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.shop.handle()
-async def _(bot:Bot, event: GroupMessageEvent):
-    """坊市数据"""
+async def _(bot: Bot, event: GroupMessageEvent):
+        """坊市数据"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
@@ -1262,34 +1278,20 @@ async def _(bot:Bot, event: GroupMessageEvent):
 
 @command.buy.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """购买商品"""
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
         return
+    goods_data = jsondata.shop_data()
+    get_goods = str(args)
 
-    msg = str(args)
-    data = jsondata.shop_data()
-
-    for i,v in data.items():
-        if v['name'] == msg:
-            pass
-
-    await buy.finish(msg)
-
-
-@command.mind_back.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    """我的背包"""
-    try:
-        user_id, group_id, user_msg = await data_check(bot, event)
-    except MsgError:
-        return
-
-    back_msg = sql_message.get_back_msg(user_id)
-    print(back_msg)
-
-    await buy.finish(back_msg)
+    for i,v in goods_data.items():
+        try:
+            if v[get_goods]:
+                sql_message.send_back(user_id, i, get_goods, v['type'], 1, v['desc'])
+                await buy.finish('购买成功！')
+        except:
+            await buy.finish('没有获取道商品信息！')
 
 # -----------------------------------------------------------------------------
 

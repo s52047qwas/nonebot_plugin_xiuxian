@@ -90,7 +90,7 @@ class XiuxianDateManage:
       "exp" integer DEFAULT 0,
       "user_name" TEXT DEFAULT NULL,
       "level_up_cd" integer DEFAULT NULL,
-      "level_up_rate" integer DEFAULT NULL
+      "level_up_rate" integer DEFAULT 0
     );""")
             elif i == "user_cd":
                 try:
@@ -596,27 +596,45 @@ class XiuxianDateManage:
 
     def get_back_msg(self, user_id):
         """获取用户背包信息"""
-        sql = f"SELECT name,num FROM back where user_id=?"
+        sql = f"SELECT name FROM back where user_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql,(user_id,) )
+        cur.execute(sql, )
         result = cur.fetchall()
-        print(result)
         msg = f"你的背包\n"
         for i in result:
             msg += f"{i},"
         return result
 
-    def sned_back(self, user_id, goods_id, name, type_n, num, remake):
-        """物品插入背包表
-        参数：
-            user_id：user_id,
-            goods_id: 物品id,
-            name: 物品名称,
-            type_n: 物品类型,
-            remake：备注
+    def goods_num(self, user_id, goods_id):
+        """
+        判断用户物品数量
+        :param user_id: 用户qq
+        :param goods_id: 物品id
+        :return: 物品数量
+        """
+        sql = f"SELECT num FROM back where user_id=? and goods_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id, goods_id))
+        result = cur.fetchone()
+        if result:
+            return result[0]
+        else:
+            return 0
+
+    def send_back(self, user_id, goods_id, name, type_n, num, remake):
+        """
+        插入物品至背包
+        :param user_id: 用户qq
+        :param goods_id: 物品id
+        :param name: 物品名称
+        :param type_n: 物品类型
+        :param num: 物品数量
+        :param remake: 备注
+        :return: None
         """
         # sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,type=?,num=?"
-        sql = f"INSERT INTO back(user_id, goods_id, name, type,num,remake) VALUES (?,?,?,?,?,?)"
+
+        sql = f"INSERT INTO back(user_id, goods_id, name, type,num, remake) VALUES (?,?,?,?,?,?)"
         cur = self.conn.cursor()
         cur.execute(sql, (user_id, goods_id, name, type_n, num, remake))
         self.conn.commit()
