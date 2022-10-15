@@ -45,6 +45,8 @@ __sect_help__ = f"""
 8、宗门传位：宗主可以传位宗门成员
 9、升级攻击修炼：升级道友的攻击修炼等级，每级修炼等级提升10%攻击力
 10、宗门列表：查看所有宗门列表
+非指令：
+1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
 
 @sect_help.handle()
@@ -55,11 +57,11 @@ async def _():
 
 sql_message = XiuxianDateManage()  # sql类
 # 定时任务每1小时按照宗门贡献度增加资材
-@materialsupdate.scheduled_job("cron",hour='11-12')
+@materialsupdate.scheduled_job("cron",hour=config["发放宗门资材"]["时间"])
 async def _():
     all_sects = sql_message.get_all_sects_id_scale()
     for s in all_sects:
-        sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1], key=1)
+        sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1] * config["发放宗门资材"]["倍率"], key=1)
     
     logger.info('已更新所有宗门的资材')
 

@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-configkey = ["LEVLECOST"]
+configkey = ["LEVLECOST", "等级建设度", "发放宗门资材"]
 CONFIG = {
     "LEVLECOST" : {
     #攻击修炼的灵石消耗
@@ -34,6 +34,10 @@ CONFIG = {
     25:0,
     },
     "等级建设度":5000000,#决定宗门修炼上限等级的参数，500万贡献度每级
+    "发放宗门资材":{
+        "时间":"11-12",#定时任务发放宗门资材，每日11-12点根据 对应宗门贡献度的 * 倍率 发放资材
+        "倍率":1,#倍率
+    },
 }
 
 def get_config():
