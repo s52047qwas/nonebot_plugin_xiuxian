@@ -117,7 +117,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     elif victor == player['道号']:
         groupboss[group_id].remove(groupboss[group_id][boss_num - 1])
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
-        await battle.finish(f"恭喜道击败{bossinfo['name']}，收获灵石{get_stone}枚")
+        await battle.finish(f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚")
 
 @bossinfo.handle()
 async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
@@ -133,6 +133,9 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         
     msg = args.extract_plain_text().strip()
     boss_num = re.findall("\d+", msg)  # boss编号
+
+    if bosss == []:
+        await bossinfo.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
     
     Flag = False#True查对应Boss
     if boss_num:
