@@ -1,4 +1,9 @@
-config = {
+import json
+import os
+from pathlib import Path
+
+configkey = ["Boss灵石", "Boss名字", "生成时间", "Boss倍率"]
+CONFIG = {
     "Boss灵石" : {
     #生成Boss给的灵石
     '练气境':20000,
@@ -21,3 +26,30 @@ config = {
         "攻击":0.2
     }
 }
+
+def get_config():
+    try:
+        config = readf()
+        for key in configkey:
+            if key not in config:
+                config[key] = CONFIG[key]
+        savef(json.dumps(config, ensure_ascii=False, indent=3))
+    except:
+        config = CONFIG
+        savef(json.dumps(config, ensure_ascii=False, indent=3))
+    return config
+
+CONFIGJSONPATH = Path(__file__).parent
+FILEPATH = CONFIGJSONPATH / 'config.json'
+def readf():
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
+
+
+def savef(data):
+    savemode = "w" if os.path.exists(FILEPATH) else "x"
+    with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
+        f.write(data)
+        f.close
+    return True

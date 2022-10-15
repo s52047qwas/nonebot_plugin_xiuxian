@@ -18,7 +18,7 @@ from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss
 import json
-from .bossconfig import config
+from .bossconfig import get_config
 
 # 定时任务
 setboss = require("nonebot_plugin_apscheduler").scheduler
@@ -36,7 +36,7 @@ try:
 except:
     groups['open'] = []
 
-
+config = get_config()
 
 # 定时任务生成世界boss
 @setboss.scheduled_job("cron",hour=config["生成时间"])

@@ -2,8 +2,9 @@ from pathlib import Path
 import json
 import random
 from ..xiuxian2_handle import XiuxianDateManage
-from .bossconfig import config
+from .bossconfig import get_config
 
+config = get_config()
 DATEPATH = Path() / "data" / "xiuxian"
 jingjie = ['练气境', '筑基境', '结丹境', '元婴境', '化神境', '炼虚境', '合体境', '大乘境', '渡劫境']
 sql_message = XiuxianDateManage()  # sql类
