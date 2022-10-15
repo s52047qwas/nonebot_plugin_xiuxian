@@ -28,7 +28,7 @@ sect_owner_change = on_command("宗主传位", priority=5)
 
 sql_message = XiuxianDateManage()  # sql类
 # 定时任务每1小时按照宗门贡献度增加资材
-@materialsupdate.scheduled_job('interval', hours=1)
+@materialsupdate.scheduled_job("cron",hour='11-12')
 async def _():
     all_sects = sql_message.get_all_sects()
     for s in all_sects:
