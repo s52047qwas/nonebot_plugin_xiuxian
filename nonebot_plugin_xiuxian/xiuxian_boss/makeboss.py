@@ -36,7 +36,7 @@ def get_boss_exp(alluserexp):
     bossinfo['气血'] = bossexp * 30
     bossinfo['真元'] = bossexp * 10
     bossinfo['攻击'] = bossexp / 10
-    bossinfo['stone'] = bossexp * /50
+    bossinfo['stone'] = bossexp /50
     print(bossinfo)
     return bossinfo
 
