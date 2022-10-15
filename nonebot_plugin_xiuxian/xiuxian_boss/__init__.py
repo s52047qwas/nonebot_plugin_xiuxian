@@ -18,15 +18,16 @@ from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss
 import json
+from .bossconfig import config
 
 # 定时任务
 setboss = require("nonebot_plugin_apscheduler").scheduler
 
-create = on_command("生成世界boss", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-bossinfo = on_command("查询世界boss", priority=5, permission= GROUP)
+create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+bossinfo = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP)
 setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-battle = on_command("讨伐boss", aliases={"讨伐世界boss"}, priority=5, permission= GROUP)
-bosshelp = on_command("世界boss帮助", priority=4, block=True)
+battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
+bosshelp = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
 
 groupboss = {}
 groups = {}
@@ -38,7 +39,7 @@ except:
 
 
 # 定时任务生成世界boss
-@setboss.scheduled_job("cron",hour='9-22')
+@setboss.scheduled_job("cron",hour=config["生成时间"])
 async def _():
     bot = get_bot()
     if groups['open'] != []:
