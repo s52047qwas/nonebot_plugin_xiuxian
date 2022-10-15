@@ -606,7 +606,7 @@ class XiuxianDateManage:
         cur.execute(sql, (hp, mp, atk, user_id))
         self.conn.commit()
 
-    def update_user_hp_mp(self,user_id, hp, mp, atk):
+    def update_user_hp_mp(self,user_id, hp, mp):
         """更新用户HP,MP信息"""
         sql = f"UPDATE user_xiuxian SET hp=?,mp=? where user_id=?"
         cur = self.conn.cursor()
