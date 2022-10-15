@@ -32,7 +32,7 @@ sql_message = XiuxianDateManage()  # sql类
 async def _():
     all_sects = sql_message.get_all_sects()
     for s in all_sects:
-        sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1] * 10, key=1)
+        sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1], key=1)
     
     logger.info('已更新所有宗门的资材')
 
