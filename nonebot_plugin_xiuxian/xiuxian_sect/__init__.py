@@ -28,7 +28,7 @@ sect_owner_change = on_command("宗主传位", priority=5)
 sect_list = on_command("宗门列表", priority=5)
 sect_help = on_command("宗门帮助", priority=5)
 
-
+jsd = jsondata.sect_config_data()['sect_scale']
 __sect_help__ = f"""
 宗门帮助信息:
 指令：
@@ -36,7 +36,7 @@ __sect_help__ = f"""
 2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
 3、加入宗门：加入一个宗门
 4、宗门职位变更：宗主可以改变宗门成员的职位等级
-5、宗门捐献：建设宗门，提高宗门建设度，每500万建设度会提高1级攻击修炼等级上限
+5、宗门捐献：建设宗门，提高宗门建设度，每{jsd}建设度会提高1级攻击修炼等级上限
 6、退出宗门：退出当前宗门
 7、踢出宗门：踢出对应宗门成员
 8、宗门传位：宗主可以传位宗门成员
@@ -392,7 +392,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 def get_sect_level(sect_id):
     sect = sql_message.get_sect_info(sect_id)
-    return divmod(sect.sect_scale, 5000000)
+    return divmod(sect.sect_scale, jsd)
 
 LEVLECOST = {
     0:10000,
