@@ -33,10 +33,10 @@ def get_config():
         for key in configkey:
             if key not in list(config.keys()):
                 config[key] = CONFIG[key]
-        savef(json.dumps(config, ensure_ascii=False, indent=3))
+        savef(config)
     except:
         config = CONFIG
-        savef(json.dumps(config, ensure_ascii=False, indent=3))
+        savef(config)
     return config
 
 CONFIGJSONPATH = Path(__file__).parent
@@ -48,6 +48,7 @@ def readf():
 
 
 def savef(data):
+    data = json.dumps(data, ensure_ascii=False, indent=3)
     savemode = "w" if os.path.exists(FILEPATH) else "x"
     with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
         f.write(data)

@@ -10,21 +10,16 @@ import json
 import os
 from ..xiuxian2_handle import XiuxianDateManage
 from datetime import datetime
+from .bankconfig import get_config
+
+config = get_config()
 
 bank = on_regex(
     r'^钱庄(存钱|取钱|升级会员|信息|结算)?(.*)?',
     priority=5,
 )
 
-BANKLEVEL = {
-    "1":{"savemax":100000,"levelup":100000,'interest':0.002,"level":"普通会员"},
-    "2":{"savemax":200000,"levelup":200000,'interest':0.0021,"level":"小会员"},
-    "3":{"savemax":400000,"levelup":400000,'interest':0.0022,"level":"大会员"},
-    "4":{"savemax":800000,"levelup":800000,'interest':0.0023,"level":"优质会员"},
-    "5":{"savemax":1600000,"levelup":1600000,'interest':0.0024,"level":"黄金会员"},
-    "6":{"savemax":3200000,"levelup":3200000,'interest':0.0025,"level":"钻石会员"},
-    "7":{"savemax":6400000,"levelup":0,'interest':0.0028,"level":"终极会员"},
-}
+BANKLEVEL = config["BANKLEVEL"]
 
 sql_message = XiuxianDateManage()  # sql类
 
@@ -75,7 +70,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         bankinfo['savestone'] += num
         sql_message.update_ls(user_id, num, 2)
         bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        savef(user_id, bankinfo)
         await bank.finish(f"道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
 
     elif mode == '取钱':#取钱逻辑
@@ -88,7 +83,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         userinfonowstone = int(userinfo.stone) + num + give_stone
         bankinfo['savestone'] -= num
         sql_message.update_ls(user_id, num + give_stone, 1)
-        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        savef(user_id, bankinfo)
         await bank.finish(f"道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚!\n取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚!", at_sender=True)
         
     elif mode == '升级会员':#升级会员逻辑
@@ -102,7 +97,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         
         sql_message.update_ls(user_id, stonecost, 2)
         bankinfo['banklevel'] = f'{int(userlevel) + 1}'
-        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        savef(user_id, bankinfo)
         await bank.finish(f"道友成功升级钱庄会员等级，消耗灵石{stonecost}枚，当前为：{BANKLEVEL[f'{int(userlevel) + 1}']['level']}，钱庄可存有灵石上限{BANKLEVEL[f'{int(userlevel) + 1}']['savemax']}枚", at_sender=True)
     
     elif mode == '信息':#查询钱庄信息
@@ -119,7 +114,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
 
         bankinfo, give_stone, timedeff = get_give_stone(bankinfo)
         sql_message.update_ls(user_id, give_stone, 1)
-        savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
+        savef(user_id, bankinfo)
         await bank.finish(f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！', at_sender=True)
 
 
@@ -150,7 +145,7 @@ def savef(user_id, data):
         os.makedirs(PLAYERSDATA / user_id)
     
     FILEPATH = PLAYERSDATA / user_id / "bankinfo.json"
-       
+    data = json.dumps(data, ensure_ascii=False, indent=3)
     savemode = "w" if os.path.exists(FILEPATH) else "x"
     with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
         f.write(data)

@@ -13,6 +13,10 @@ from nonebot.params import CommandArg, RegexGroup
 from ..data_source import jsondata
 from ..xiuxian_config import XiuConfig
 import re
+from .sectconfig import get_config
+
+config = get_config()
+LEVLECOST = config["LEVLECOST"]
 
 # 定时任务
 materialsupdate = require("nonebot_plugin_apscheduler").scheduler
@@ -28,7 +32,6 @@ sect_owner_change = on_command("宗主传位", priority=5)
 sect_list = on_command("宗门列表", priority=5)
 sect_help = on_command("宗门帮助", priority=5)
 
-jsd = 5000000
 __sect_help__ = f"""
 宗门帮助信息:
 指令：
@@ -36,7 +39,7 @@ __sect_help__ = f"""
 2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
 3、加入宗门：加入一个宗门
 4、宗门职位变更：宗主可以改变宗门成员的职位等级
-5、宗门捐献：建设宗门，提高宗门建设度，每{jsd}建设度会提高1级攻击修炼等级上限
+5、宗门捐献：建设宗门，提高宗门建设度，每{config["等级建设度"]}建设度会提高1级攻击修炼等级上限
 6、退出宗门：退出当前宗门
 7、踢出宗门：踢出对应宗门成员
 8、宗门传位：宗主可以传位宗门成员
@@ -392,37 +395,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 def get_sect_level(sect_id):
     sect = sql_message.get_sect_info(sect_id)
-    return divmod(sect.sect_scale, jsd)
-
-LEVLECOST = {
-    0:10000,
-    1:20000,
-    2:40000,
-    3:80000,
-    4:160000,
-    5:320000,
-    6:500000,
-    7:500000,
-    8:500000,
-    9:500000,
-    10:500000,
-    11:500000,
-    12:500000,
-    13:500000,
-    14:500000,
-    15:500000,
-    16:500000,
-    17:500000,
-    18:500000,
-    19:500000,
-    20:500000,
-    21:500000,
-    22:500000,
-    23:500000,
-    24:500000,
-    25:0,
-}
-
+    return divmod(sect.sect_scale, config["等级建设度"])
 
 async def data_check(bot, event):
     """
