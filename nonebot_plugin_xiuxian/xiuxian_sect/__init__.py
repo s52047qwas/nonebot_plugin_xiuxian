@@ -26,6 +26,29 @@ sect_out = on_command("退出宗门", priority=5)
 sect_kick_out = on_command("踢出宗门", priority=5)
 sect_owner_change = on_command("宗主传位", priority=5)
 sect_list = on_command("宗门列表", priority=5)
+sect_help = on_command("宗门帮助", priority=5)
+
+
+__sect_help__ = f"""
+宗门帮助信息:
+指令：
+1、我的宗门：查看当前所处宗门信息
+2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
+3、加入宗门：加入一个宗门
+4、宗门职位变更：宗主可以改变宗门成员的职位等级
+5、宗门捐献：建设宗门，提高宗门建设度，每500万建设度会提高1级攻击修炼等级上限
+6、退出宗门：退出当前宗门
+7、踢出宗门：踢出对应宗门成员
+8、宗门传位：宗主可以传位宗门成员
+9、升级攻击修炼：升级道友的攻击修炼等级，每级修炼等级提升10%攻击力
+10、宗门列表：查看所有宗门列表
+""".strip()
+
+@sect_help.handle()
+async def _():
+    """修仙帮助"""
+    msg = __sect_help__
+    await sect_help.finish(msg)
 
 sql_message = XiuxianDateManage()  # sql类
 # 定时任务每1小时按照宗门贡献度增加资材
@@ -50,8 +73,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
         sect_materials = int(sql_message.get_sect_info(sect_id).sect_materials)#当前资材
         useratkpractice = int(userinfo.atkpractice) #当前等级
         if useratkpractice == 25:
-            await upatkpractice.finish(f"道友攻击修炼等级已达到最高等级!")
+            await upatkpractice.finish(f"道友的攻击修炼等级已达到最高等级!")
         
+        sect_level = get_sect_level(sect_id)[0] if get_sect_level(sect_id)[0] <= 25 else 25#获取当前宗门修炼等级上限，500w建设度1级,上限25级
+
+        if useratkpractice >= sect_level:
+            await upatkpractice.finish(f"道友的攻击修炼等级已达到当前宗门修炼等级的最高等级：{sect_level}，请捐献灵石提升贡献度吧！")
+
         cost = LEVLECOST[useratkpractice]
 
         sect_position = userinfo.sect_position
@@ -362,6 +390,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
 
     await my_sect.finish(msg, at_sender=True)
+
+def get_sect_level(sect_id):
+    sect = sql_message.get_sect_info(sect_id)
+    return divmod(sect.sect_scale, 5000000)
 
 LEVLECOST = {
     0:10000,
