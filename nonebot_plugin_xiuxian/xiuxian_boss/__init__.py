@@ -88,7 +88,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
     
     if bosss == []:
-        await bossinfo.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
+        await battle.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
     
     index = len(groupboss[group_id])
     
