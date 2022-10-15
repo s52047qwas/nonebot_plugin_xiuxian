@@ -77,15 +77,14 @@ async def _(bot: Bot, event: GroupMessageEvent):
         
         sect_level = get_sect_level(sect_id)[0] if get_sect_level(sect_id)[0] <= 25 else 25#获取当前宗门修炼等级上限，500w建设度1级,上限25级
 
-        if useratkpractice >= sect_level:
-            await upatkpractice.finish(f"道友的攻击修炼等级已达到当前宗门修炼等级的最高等级：{sect_level}，请捐献灵石提升贡献度吧！")
-
-        cost = LEVLECOST[useratkpractice]
-
         sect_position = userinfo.sect_position
         if sect_position == 4:
             await upatkpractice.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足使用资材的条件!")
 
+        if useratkpractice >= sect_level:
+            await upatkpractice.finish(f"道友的攻击修炼等级已达到当前宗门修炼等级的最高等级：{sect_level}，请捐献灵石提升贡献度吧！")
+
+        cost = LEVLECOST[useratkpractice]
         if int(userinfo.stone) < cost:
             await upatkpractice.finish(f"道友的灵石不够，还需{cost - int(userinfo.stone)}灵石!")
         
