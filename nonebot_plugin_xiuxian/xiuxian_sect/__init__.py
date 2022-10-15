@@ -25,12 +25,13 @@ sect_donate = on_command("宗门捐献", priority=5)
 sect_out = on_command("退出宗门", priority=5)
 sect_kick_out = on_command("踢出宗门", priority=5)
 sect_owner_change = on_command("宗主传位", priority=5)
+sect_list = on_command("宗门列表", priority=5)
 
 sql_message = XiuxianDateManage()  # sql类
 # 定时任务每1小时按照宗门贡献度增加资材
 @materialsupdate.scheduled_job("cron",hour='11-12')
 async def _():
-    all_sects = sql_message.get_all_sects()
+    all_sects = sql_message.get_all_sects_id_scale()
     for s in all_sects:
         sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1], key=1)
     
@@ -53,6 +54,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         
         cost = LEVLECOST[useratkpractice]
 
+        sect_position = userinfo.sect_position
+        if sect_position == 4:
+            await upatkpractice.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足使用资材的条件!")
+
         if int(userinfo.stone) < cost:
             await upatkpractice.finish(f"道友的灵石不够，还需{cost - int(userinfo.stone)}灵石!")
         
@@ -66,6 +71,17 @@ async def _(bot: Bot, event: GroupMessageEvent):
     else:
         await upatkpractice.finish(f"修炼逆天而行消耗巨大，请加入宗门再进行修炼！")
 
+
+@sect_list.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    sectlists = sql_message.get_all_scale()
+    msg = ''
+    for sect in sectlists:
+        print(sect)
+        user_name = sql_message.get_user_message(sect.sect_owner).user_name
+        msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
+    
+    await sect_list.finish(msg)
 
 @sect_owner_change.handle()
 async def _(event: GroupMessageEvent, args: Message = CommandArg()):

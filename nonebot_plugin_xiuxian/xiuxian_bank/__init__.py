@@ -57,7 +57,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     except:
         bankinfo = {
             'savestone':0,
-            'savetime': '',
+            'savetime': str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
             'banklevel':'1',
         }
     

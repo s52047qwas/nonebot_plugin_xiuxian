@@ -539,6 +539,20 @@ class XiuxianDateManage:
                 break
         return mess, result
 
+    def get_all_scale(self):
+        """
+        获取所有宗门信息
+        :return:
+        """
+        sql = f"SELECT * FROM sects WHERE sect_owner is NOT NULL"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        result = cur.fetchall()
+        results = []
+        for r in result:
+            results.append(SectInfo(*r))
+        return results
+
     def donate_update(self, sect_id, stone_num):
         """宗门捐献更新建设度及可用灵石"""
         sql = f"UPDATE sects SET sect_used_stone=sect_used_stone+?,sect_scale=sect_scale+? where sect_id=?"
@@ -559,7 +573,7 @@ class XiuxianDateManage:
             cur.execute(sql, (sect_materials, sect_id))
             self.conn.commit()
 
-    def get_all_sects(self):
+    def get_all_sects_id_scale(self):
         """
         获取所有宗门信息
         :return: result[0] = sect_id   result[1]=建设度sect_scale
@@ -972,8 +986,8 @@ class OtherSet(XiuConfig):
 
         if user_msg.hp < max_hp:
             if user_msg.hp + hp < max_hp:
-                new_hp = hp
-                msg.append(',回复气血：{}'.format(new_hp))
+                new_hp = new_hp + hp
+                msg.append(',回复气血：{}'.format(hp))
             else:
                 new_hp = max_hp
                 msg.append(',气血已回满！')
