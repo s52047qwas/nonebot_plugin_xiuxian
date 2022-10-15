@@ -25,7 +25,7 @@ setboss = require("nonebot_plugin_apscheduler").scheduler
 create = on_command("生成世界boss", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 bossinfo = on_command("查询世界boss", priority=5, permission= GROUP)
 setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-battle = on_command("讨伐boss", priority=5, permission= GROUP)
+battle = on_command("讨伐boss", aliases={"讨伐世界boss"}, priority=5, permission= GROUP)
 bosshelp = on_command("世界boss帮助", priority=4, block=True)
 
 groupboss = {}
@@ -42,12 +42,13 @@ except:
 async def _():
     bot = get_bot()
     if groups['open'] != []:
-        bossinfo = createboss()
         for g in groups['open']:
             try:
                 groupboss[g]
             except:
                 groupboss[g] = []
+
+            bossinfo = createboss()
             groupboss[g].append(bossinfo)
             msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
             await bot.send_group_msg(group_id=int(g), message=msg)
@@ -82,9 +83,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish(f'请输入正确的世界Boss编号！')
     
     try:
-        groupboss[group_id]
+        bosss = groupboss[group_id]
     except:
         await battle.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
+    
+    if bosss == []:
+        await bossinfo.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
     
     index = len(groupboss[group_id])
     
@@ -95,7 +99,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         # 判断用户气血是否为空
         XiuxianDateManage().update_user_hp(user_id)
     
-    if userinfo.hp <= userinfo.exp/10:
+    if userinfo.hp <= userinfo.exp/2:
         await battle.finish("重伤未愈，动弹不得！", at_sender=True)
         
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
@@ -166,7 +170,6 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
 
 @create.handle()
 async def _(bot: Bot, event: MessageEvent):
-    global groupboss
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内

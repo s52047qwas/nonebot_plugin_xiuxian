@@ -25,6 +25,7 @@ class BossDateManage(OtherSet):
         get_stone = 0
         sh = 0
         qx = boss['气血']
+        bossnowstone = boss['stone']
         while True:
             player_gj = int(round(random.uniform(0.95, 1.05), 2) * player['攻击'])
             if random.randint(0, 100) <= player['会心']:
@@ -57,9 +58,8 @@ class BossDateManage(OtherSet):
                 # print("{}胜利".format(player1['道号']))
                 play_list.append("{}胜利".format(player['道号']))
                 suc = f"{player['道号']}"
-                get_stone = int(boss['stone'] * (sh / qx))
+                get_stone = bossnowstone
                 
-                boss = None
                 # XiuxianDateManage().update_user_attribute(player2['user_id'], 1, player2['真元'],
                 #                                             player2['攻击'])
                 break
@@ -77,8 +77,8 @@ class BossDateManage(OtherSet):
                 play_list.append("{}胜利".format(boss['name']))
                 suc = f"{boss['name']}"
                 
-                get_stone = int(boss['stone'] * (sh / qx))
-                boss['stone'] = boss['stone'] - get_stone
+                get_stone = int(bossnowstone * (sh / qx))
+                boss['stone'] = bossnowstone - get_stone
                 
                 XiuxianDateManage().update_user_hp_mp(player['user_id'], 1, player['真元'])
                 break
