@@ -99,7 +99,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         # 判断用户气血是否为空
         XiuxianDateManage().update_user_hp(user_id)
     
-    if userinfo.hp <= userinfo.exp / 4:
+    if userinfo.hp <= userinfo.exp / 10:
         await battle.finish("重伤未愈，动弹不得！", at_sender=True)
         
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
