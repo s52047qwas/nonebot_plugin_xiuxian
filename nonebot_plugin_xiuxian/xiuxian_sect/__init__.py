@@ -28,7 +28,7 @@ sect_owner_change = on_command("宗主传位", priority=5)
 sect_list = on_command("宗门列表", priority=5)
 sect_help = on_command("宗门帮助", priority=5)
 
-jsd = jsondata.sect_config_data()['sect_scale']
+jsd = 5000000
 __sect_help__ = f"""
 宗门帮助信息:
 指令：
