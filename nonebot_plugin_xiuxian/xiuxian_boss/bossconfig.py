@@ -31,7 +31,7 @@ def get_config():
     try:
         config = readf()
         for key in configkey:
-            if key not in config:
+            if key not in list(config.keys()):
                 config[key] = CONFIG[key]
         savef(json.dumps(config, ensure_ascii=False, indent=3))
     except:
