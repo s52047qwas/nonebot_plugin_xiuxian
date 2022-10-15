@@ -70,7 +70,7 @@ class BossDateManage(OtherSet):
             player['气血'] = player['气血'] - boss_sh
             # print(f"{player1['道号']}剩余血量{player1['气血']}\n")
             play_list.append(f"{player['道号']}剩余血量{player['气血']}\n")
-            XiuxianDateManage().update_user_attribute(player['user_id'], player['气血'], player['真元'], player['攻击'])
+            XiuxianDateManage().update_user_hp_mp(player['user_id'], player['气血'], player['真元'])
 
             if player['气血'] <= 0:
                 # print("{}胜利".format(player2['道号']))
@@ -80,8 +80,7 @@ class BossDateManage(OtherSet):
                 get_stone = int(boss['stone'] * (sh / qx))
                 boss['stone'] = boss['stone'] - get_stone
                 
-                XiuxianDateManage().update_user_attribute(player['user_id'], 1, player['真元'],
-                                                            player['攻击'])
+                XiuxianDateManage().update_user_hp_mp(player['user_id'], 1, player['真元'])
                 break
 
             if player['气血'] <= 0 or boss['气血'] <= 0:

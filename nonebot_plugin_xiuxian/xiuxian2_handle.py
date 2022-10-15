@@ -606,6 +606,13 @@ class XiuxianDateManage:
         cur.execute(sql, (hp, mp, atk, user_id))
         self.conn.commit()
 
+    def update_user_hp_mp(self,user_id, hp, mp, atk):
+        """更新用户HP,MP信息"""
+        sql = f"UPDATE user_xiuxian SET hp=?,mp=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (hp, mp, user_id))
+        self.conn.commit()
+
     def update_user_hp(self,user_id):
         """重置用户状态信息"""
         sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10 where user_id=?"
@@ -923,15 +930,14 @@ class OtherSet(XiuConfig):
             player2['气血'] = player2['气血'] - play1_sh
             # print(f"{player2['道号']}剩余血量{player2['气血']}")
             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-            XiuxianDateManage().update_user_attribute(player2['user_id'], player2['气血'], player2['真元'], player2['攻击'])
+            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
             if player2['气血'] <= 0:
                 # print("{}胜利".format(player1['道号']))
                 play_list.append("{}胜利".format(player1['道号']))
                 suc = f"{player1['道号']}"
 
-                XiuxianDateManage().update_user_attribute(player2['user_id'], 1, player2['真元'],
-                                                          player2['攻击'])
+                XiuxianDateManage().update_user_hp_mp(player2['user_id'], 1, player2['真元'])
                 break
 
             # print(msg2.format(player2['道号'], play2_sh))
@@ -940,15 +946,14 @@ class OtherSet(XiuConfig):
             player1['气血'] = player1['气血'] - play2_sh
             # print(f"{player1['道号']}剩余血量{player1['气血']}\n")
             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}\n")
-            XiuxianDateManage().update_user_attribute(player1['user_id'], player1['气血'], player1['真元'], player1['攻击'])
+            XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
 
             if player1['气血'] <= 0:
                 # print("{}胜利".format(player2['道号']))
                 play_list.append("{}胜利".format(player2['道号']))
                 suc = f"{player2['道号']}"
 
-                XiuxianDateManage().update_user_attribute(player1['user_id'], 1, player1['真元'],
-                                                          player1['攻击'])
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, player1['真元'])
                 break
 
             if player1['气血'] <= 0 or player2['气血'] <= 0:

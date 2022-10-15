@@ -940,7 +940,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 气血：{user_msg.hp}/{int(user_msg.exp/2)}
 真元：{user_msg.mp}/{int(user_msg.exp)}
 攻击：{user_msg.atk}
-攻击修炼：{user_msg.atkpractice}级
+攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
 """
 
     await mind_state.finish(user)
