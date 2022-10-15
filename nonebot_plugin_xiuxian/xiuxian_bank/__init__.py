@@ -82,12 +82,14 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         if int(bankinfo['savestone']) < num:
             await bank.finish(f"道友当前钱庄所存有的灵石为{bankinfo['savestone']}枚，金额不足，请重新输入！", at_sender=True)
         
-        userinfonowstone = int(userinfo.stone) + num
+        #先结算利息
+        bankinfo, give_stone, timedeff = get_give_stone(bankinfo)
+
+        userinfonowstone = int(userinfo.stone) + num + give_stone
         bankinfo['savestone'] -= num
-        sql_message.update_ls(user_id, num, 1)
-        bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        sql_message.update_ls(user_id, num + give_stone, 1)
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
-        await bank.finish(f"道友取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
+        await bank.finish(f"道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚!\n取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚!", at_sender=True)
         
     elif mode == '升级会员':#升级会员逻辑
         userlevel = bankinfo["banklevel"]
@@ -114,14 +116,22 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
                         ''', at_sender=True)
     
     elif mode == '结算':
-        savetime = bankinfo['savetime'] #str
-        nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
-        timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(savetime, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
-        give_stone = int(bankinfo['savestone'] * timedeff * BANKLEVEL[bankinfo['banklevel']]['interest'])
+
+        bankinfo, give_stone, timedeff = get_give_stone(bankinfo)
         sql_message.update_ls(user_id, give_stone, 1)
-        bankinfo['savetime'] = nowtime
         savef(user_id, json.dumps(bankinfo, ensure_ascii=False))
         await bank.finish(f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！', at_sender=True)
+
+
+def get_give_stone(bankinfo):
+    "获取利息：利息=give_stone，结算时间=timedeff"
+    savetime = bankinfo['savetime'] #str
+    nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
+    timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(savetime, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
+    give_stone = int(bankinfo['savestone'] * timedeff * BANKLEVEL[bankinfo['banklevel']]['interest'])
+    bankinfo['savetime'] = nowtime
+
+    return bankinfo, give_stone, timedeff
 
 
 def readf(user_id):
