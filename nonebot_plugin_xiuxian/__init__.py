@@ -939,7 +939,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     user = f"""道号：{user_msg.user_name}
 气血：{user_msg.hp}/{int(user_msg.exp/2)}
 真元：{user_msg.mp}/{int(user_msg.exp)}
-攻击：{user_msg.atk}/{int(user_msg.exp/10)}
+攻击：{user_msg.atk}
 攻击修炼：{user_msg.atkpractice}级
 """
 

@@ -159,9 +159,9 @@ class XiuxianDateManage:
         if not result:
             return None
         else:
-            #atk--[9],gx--[18]
+            #atk--[17],gx--[18]
             result = list(result)
-            result[9] = result[9] * (result[18] * 0.1 + 1)#每级+10%攻击
+            result[17] = int(result[17] * (result[18] * 0.1 + 1))#每级+10%攻击
             result = tuple(result)
             return UserDate(*result)
 
@@ -191,7 +191,7 @@ class XiuxianDateManage:
         else:
             #atk--[9],gx--[18]
             result = list(result)
-            result[9] = result[9] * (result[18] * 0.1 + 1)#每级+10%攻击
+            result[17] = int(result[17] * (result[18] * 0.1 + 1))#每级+10%攻击
             result = tuple(result)
             return UserDate(*result)
 
