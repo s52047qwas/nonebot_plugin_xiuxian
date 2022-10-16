@@ -89,7 +89,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if useratkpractice >= sect_level:
             await upatkpractice.finish(f"道友的攻击修炼等级已达到当前宗门修炼等级的最高等级：{sect_level}，请捐献灵石提升贡献度吧！")
 
-        cost = LEVLECOST[useratkpractice]
+        cost = LEVLECOST[f'useratkpractice']
         if int(userinfo.stone) < cost:
             await upatkpractice.finish(f"道友的灵石不够，还需{cost - int(userinfo.stone)}灵石!")
         
