@@ -20,14 +20,27 @@ from .makeboss import createboss
 import json
 from .bossconfig import get_config
 
+config = get_config()
 # 定时任务
 setboss = require("nonebot_plugin_apscheduler").scheduler
 
 create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 bossinfo = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP)
-setgroupboss = on_regex(r"^世界boss(开启|关闭)?", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+setgroupboss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
 bosshelp = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
+
+__boss_help__ = f"""
+世界Boss帮助信息:
+指令：
+1、生成世界boss：生成一只随机大境界的世界Boss,管理员权限
+2、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
+3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
+4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
+5、世界boss帮助、世界boss：获取世界Boss帮助信息
+非指令：
+1、拥有定时任务：每日{config["生成时间"]}点生成一只随机大境界的世界Boss
+""".strip()
 
 groupboss = {}
 groups = {}
@@ -36,7 +49,6 @@ try:
 except:
     groups['open'] = []
 
-config = get_config()
 
 # 定时任务生成世界boss
 @setboss.scheduled_job("cron",hour=config["生成时间"])
@@ -58,8 +70,7 @@ async def _():
         
 @bosshelp.handle()
 async def _():
-    msg = "世界Boss帮助：\n1、超级管理员可以使用命令：生成世界boss来生成boss。\n2、超级管理员命令：世界boss开启、关闭来管理本群世界boss的自动生成\n3、其余命令：查询世界boss、查询世界boss+对应的boss编号、讨伐boss+对应的boss编号"
-    await bosshelp.finish(msg)
+    await bosshelp.finish(__boss_help__)
 
     
 
@@ -187,10 +198,8 @@ async def _(bot: Bot, event: MessageEvent):
 
 
 @setgroupboss.handle()
-async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
-    mode = args[0]
-    if mode == None:
-        await setgroupboss.finish(f'请输入正确的指令：世界boss开启或关闭!')
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
+    mode = args.extract_plain_text().strip()
     group_id = event.group_id
     isInGroup = isInGroups(event) #True在，False不在
 
@@ -202,13 +211,18 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             savef(json.dumps(groups, ensure_ascii=False))
             await setgroupboss.finish(f'已开启本群世界Boss!')
 
-    if mode == '关闭':
+    elif mode == '关闭':
         if isInGroup:
             groups['open'].remove(group_id)
             savef(json.dumps(groups, ensure_ascii=False))
             await setgroupboss.finish(f'已关闭本群世界Boss!')
         else:
             await setgroupboss.finish(f'本群未开启世界Boss!')
+    
+    elif mode == '':
+        await setgroupboss.finish(__boss_help__)
+    else:
+        await setgroupboss.finish(f'请输入正确的指令：世界boss开启或关闭!')
 
 
 async def data_check(bot, event):
