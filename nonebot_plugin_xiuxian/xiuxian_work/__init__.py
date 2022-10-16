@@ -13,6 +13,8 @@ from datetime import datetime
 from ..xiuxian_opertion import do_is_work
 from ..cd_manager import add_cd, check_cd, cd_msg
 from nonebot.log import logger
+from .reward_data_source import PLAYERSDATA
+import os
 
 # 定时任务
 resetrefreshnum = require("nonebot_plugin_apscheduler").scheduler
@@ -54,6 +56,11 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
         
     user_cd_message = sql_message.get_user_cd(user_id)
     userinfo = sql_message.get_user_message(user_id)
+
+    if not os.path.exists(PLAYERSDATA / str(user_id) / "workinfo.json") and user_cd_message.type == 2:
+        sql_message.do_work(user_id, 0)
+        await do_work.finish(f"悬赏令已更新，已重置道友的状态！")
+
     userlevel = ''
     if level == None:
         if userinfo.level == '江湖好手':
