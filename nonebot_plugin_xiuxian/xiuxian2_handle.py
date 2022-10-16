@@ -16,7 +16,7 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
@@ -687,6 +687,20 @@ class XiuxianDateManage:
         sql = f"UPDATE user_xiuxian SET atkpractice={atkpractice} where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (user_id,))
+        self.conn.commit()
+
+    def update_user_sect_task(self,user_id, sect_task):
+        """更新用户宗门任务次数"""
+        sql = f"UPDATE user_xiuxian SET sect_task={sect_task} where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+    
+    def sect_task_reset(self):
+        """重置宗门任务次数"""
+        sql = f"UPDATE user_xiuxian SET sect_task=0"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
         self.conn.commit()
     
 

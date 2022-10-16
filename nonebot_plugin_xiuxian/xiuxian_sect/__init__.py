@@ -14,12 +14,15 @@ from ..data_source import jsondata
 from ..xiuxian_config import XiuConfig
 import re
 from .sectconfig import get_config
+import random
+from ..cd_manager import add_cd, check_cd, cd_msg
 
 config = get_config()
 LEVLECOST = config["LEVLECOST"]
 
 # 定时任务
 materialsupdate = require("nonebot_plugin_apscheduler").scheduler
+resetusertask = require("nonebot_plugin_apscheduler").scheduler
 upatkpractice = on_command("升级攻击修炼", priority=5)
 my_sect = on_command("我的宗门", aliases={"宗门信息"}, priority=5)
 create_sect = on_command("创建宗门", priority=5)
@@ -31,6 +34,8 @@ sect_kick_out = on_command("踢出宗门", priority=5)
 sect_owner_change = on_command("宗主传位", priority=5)
 sect_list = on_command("宗门列表", priority=5)
 sect_help = on_command("宗门帮助", priority=5)
+sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, priority=5)
+sect_task_complete = on_command("宗门任务完成", priority=5)
 
 __sect_help__ = f"""
 宗门帮助信息:
@@ -45,9 +50,13 @@ __sect_help__ = f"""
 8、宗门传位：宗主可以传位宗门成员
 9、升级攻击修炼：升级道友的攻击修炼等级，每级修炼等级提升10%攻击力
 10、宗门列表：查看所有宗门列表
+11、宗门任务接取、我的宗门任务：接取宗门任务，可以增加宗门建设度和资材，每日上限：{config["每日宗门任务次上限"]}次
+12、宗门任务完成：完成所接取的宗门任务，完成间隔时间：{config["宗门任务完成cd"]}秒
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
+
+userstask = {}
 
 @sect_help.handle()
 async def _():
@@ -56,6 +65,7 @@ async def _():
     await sect_help.finish(msg)
 
 sql_message = XiuxianDateManage()  # sql类
+
 # 定时任务每1小时按照宗门贡献度增加资材
 @materialsupdate.scheduled_job("cron",hour=config["发放宗门资材"]["时间"])
 async def _():
@@ -64,6 +74,14 @@ async def _():
         sql_message.update_sect_materials(sect_id=s[0], sect_materials=s[1] * config["发放宗门资材"]["倍率"], key=1)
     
     logger.info('已更新所有宗门的资材')
+
+
+#每日0点重置用户宗门任务次数
+@resetusertask.scheduled_job("cron", hour=0, minute=0)
+async def _():
+    sql_message.sect_task_reset()
+    logger.info('已重置用户宗门任务次数')
+
 
 @upatkpractice.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -114,6 +132,80 @@ async def _(bot: Bot, event: GroupMessageEvent):
         msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
     
     await sect_list.finish(msg)
+
+@sect_task.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    try:
+        user_id, group_id, userinfo = await data_check(bot, event)
+    except MsgError:
+        return
+    
+    sect_id = userinfo.sect_id
+    if sect_id:
+        user_now_num = int(userinfo.sect_task)
+        if user_now_num >= config["每日宗门任务次上限"]:
+            await sect_task.finish(f"道友已完成{user_now_num}次，今日无法再获取宗门任务了！")
+        
+        if isUserTask(user_id): #已有任务
+            await sect_task.finish(f"道友当前已接取了任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+
+        create_user_sect_task(user_id)
+        await sect_task.finish(f"{userstask[user_id]['任务内容']['desc']}")
+    else:
+        await sect_task.finish(f"道友尚未加入宗门，请加入宗门后再获取任务！")
+
+
+@sect_task_complete.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    try:
+        user_id, group_id, userinfo = await data_check(bot, event)
+    except MsgError:
+        return
+
+    
+    sect_id = userinfo.sect_id
+    if sect_id:
+        if not isUserTask(user_id):
+            await sect_task_complete.finish(f"道友当前没有接取宗门任务")
+        
+        if cd := check_cd(event):
+            # 如果 CD 还没到 则直接结束
+            await sect_task_complete.finish(cd_msg(cd), at_sender=True)
+        
+        if userstask[user_id]['任务内容']['type'] == 1:#type=1：需要扣气血，type=2：需要扣灵石
+            costhp = int(userinfo.hp * userstask[user_id]['任务内容']['cost'])
+            if userinfo.hp < userinfo.exp / 10 or costhp >= userinfo.hp:
+                await sect_task_complete.finish("重伤未愈，动弹不得！", at_sender=True)
+            
+            get_exp = int(userinfo.exp * userstask[user_id]['任务内容']['give'])
+            sect_stone = int(userstask[user_id]['任务内容']['sect'])
+            sql_message.update_user_hp_mp(user_id, userinfo.hp - costhp, userinfo.mp)
+            sql_message.update_exp(user_id, get_exp)
+            sql_message.donate_update(userinfo.sect_id, sect_stone)
+            sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
+            sql_message.update_user_sect_task(user_id, 1)
+            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            add_cd(event, config['宗门任务完成cd'])
+            await sect_task_complete.finish(msg)
+
+        elif userstask[user_id]['任务内容']['type'] == 2:#type=1：需要扣气血，type=2：需要扣灵石
+            costls = userstask[user_id]['任务内容']['cost']
+
+            if costls > int(userinfo.stone):
+                await sect_task_complete.finish(f"道友的灵石不足以完成宗门任务，当前任务所需灵石：{costls}")
+
+            get_exp = int(userinfo.exp * userstask[user_id]['任务内容']['give'])
+            sect_stone = int(userstask[user_id]['任务内容']['sect'])
+            sql_message.update_ls(user_id, costls, 2)
+            sql_message.update_exp(user_id, get_exp)
+            sql_message.donate_update(userinfo.sect_id, sect_stone)
+            sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
+            sql_message.update_user_sect_task(user_id, 1)
+            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            add_cd(event, config['宗门任务完成cd'])
+            await sect_task_complete.finish(msg)
+    else:
+        await sect_task_complete.finish(f"道友尚未加入宗门，请加入宗门后再完成任务！")
 
 @sect_owner_change.handle()
 async def _(event: GroupMessageEvent, args: Message = CommandArg()):
@@ -394,6 +486,26 @@ async def _(bot: Bot, event: GroupMessageEvent):
         msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
 
     await my_sect.finish(msg, at_sender=True)
+
+def create_user_sect_task(user_id):
+    tasklist = config["宗门任务"]
+    key = random.choices(list(tasklist))[0]
+    userstask[user_id]['任务名称'] = key
+    userstask[user_id]['任务内容'] = tasklist[key]
+
+def isUserTask(user_id):
+    "判断用户是否已有任务 True：有任务"
+    Flag = False
+    try:
+        userstask[user_id]
+    except:
+        userstask[user_id] = {}
+
+    if userstask[user_id] != {}:
+        Flag = True
+
+    return Flag
+
 
 def get_sect_level(sect_id):
     sect = sql_message.get_sect_info(sect_id)
