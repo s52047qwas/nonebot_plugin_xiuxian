@@ -691,9 +691,9 @@ class XiuxianDateManage:
 
     def update_user_sect_task(self,user_id, sect_task):
         """更新用户宗门任务次数"""
-        sql = f"UPDATE user_xiuxian SET sect_task={sect_task} where user_id=?"
+        sql = f"UPDATE user_xiuxian SET sect_task=sect_task+? where user_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, (user_id,))
+        cur.execute(sql, (sect_task, user_id))
         self.conn.commit()
     
     def sect_task_reset(self):
