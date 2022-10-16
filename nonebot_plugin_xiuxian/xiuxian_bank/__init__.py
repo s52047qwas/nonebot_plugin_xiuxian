@@ -21,6 +21,17 @@ bank = on_regex(
 
 BANKLEVEL = config["BANKLEVEL"]
 
+__bank_help__ = f"""
+钱庄帮助信息:
+指令：
+1、钱庄：查看钱庄帮助信息
+2、钱庄存钱：指令后加存入的金额，获取利息
+3、钱庄取钱：指令后加取出的金额，会先结算利息，再取出灵石
+4、钱庄升级会员：钱庄利息倍率与钱庄会员等级有关，升级会员会提升利息倍率
+5、钱庄信息：查询自己当前的钱庄信息
+6、钱庄结算：结算利息
+""".strip()
+
 sql_message = XiuxianDateManage()  # sql类
 
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
@@ -31,7 +42,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     mode = args[0] #存钱、取钱、升级会员、信息查看
     num = args[1] #数值
     if mode == None:
-        await bank.finish(f'钱庄服务，可以存钱、取钱，给与利息。利息取决于钱庄会员等级，会员等级可消耗灵石升级！\n命令：钱庄+存钱、取钱、升级会员、信息、结算，存取需要加数值')
+        await bank.finish(__bank_help__)
     
     if mode == '存钱' or mode == '取钱':
         try:
