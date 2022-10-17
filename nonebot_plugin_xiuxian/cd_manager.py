@@ -3,12 +3,12 @@ from typing import Dict, Any
 
 from nonebot import get_driver
 from nonebot.log import logger
-from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
-from .xiuxian_config import XiuConfig
+from nonebot.adapters.onebot.v11 import MessageEvent
+from .xiuxian2_handle import XiuxianDateManage
 
 driver = get_driver()
-cdtype = {}
-cd_data = {}
+cdtype :Dict[str, int] = {}
+cd_data :Dict[str, Any] = {}
 
 
 cdmsg = [
@@ -54,6 +54,33 @@ def add_cd(event: MessageEvent, config_time, cdtype, times: int = 1):
     cd_data[event.get_user_id()] = {}
     cd_data[event.get_user_id()][cdtype] = event.time + times * config_time
     logger.debug("查询CD: {}".format(cd_data))
+    
+def check_user_type(user_id, need_type):
+    """
+    :说明: `check_user_type`
+    > 匹配用户状态，返回是否状态一致
+    :返回参数:
+      * `isType: 是否一致
+      * `msg: 消息体
+    """
+    isType = False
+    user_cd_message = XiuxianDateManage().get_user_cd(user_id)
+    if user_cd_message == None:
+        user_type = 0
+    else:
+        user_type = user_cd_message.type
+    
+    if user_type == need_type:#状态一致
+        isType = True
+        msg = ''
+        return isType, msg
+    
+    if need_type == 1:
+        msg = "道友现在在闭关呢，小心走火入魔！"
+        return isType, msg
+    elif need_type == 2:
+        msg = "道友现在在做悬赏令呢，小心走火入魔！"
+        return isType, msg
     
 def cd_msg(time_last) -> str:
     """获取CD提示信息"""
