@@ -168,7 +168,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if not isUserTask(user_id):
             await sect_task_complete.finish(f"道友当前没有接取宗门任务")
         
-        if cd := check_cd(event):
+        if cd := check_cd(event, '宗门任务'):
             # 如果 CD 还没到 则直接结束
             await sect_task_complete.finish(cd_msg(cd), at_sender=True)
         
@@ -185,7 +185,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
             msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
-            add_cd(event, config['宗门任务完成cd'])
+            add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg)
 
         elif userstask[user_id]['任务内容']['type'] == 2:#type=1：需要扣气血，type=2：需要扣灵石
@@ -202,7 +202,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
             msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
-            add_cd(event, config['宗门任务完成cd'])
+            add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg)
     else:
         await sect_task_complete.finish(f"道友尚未加入宗门，请加入宗门后再完成任务！")

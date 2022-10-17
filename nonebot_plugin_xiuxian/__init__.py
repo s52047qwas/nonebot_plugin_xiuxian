@@ -129,13 +129,13 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     except MsgError:
         return
 
-    if cd := check_cd(event):
+    if cd := check_cd(event, '金银阁'):
         # 如果 CD 还没到 则直接结束
         await dufang.finish(cd_msg(cd), at_sender=True)
 
     user_message = sql_message.get_user_message(user_id)
 
-    add_cd(event, XiuConfig().dufang_cd)
+    add_cd(event, XiuConfig().dufang_cd, '金银阁')
 
     if args[2] is None:
         await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
@@ -699,7 +699,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     except MsgError:
         return
 
-    if cd := check_cd(event):
+    if cd := check_cd(event, '偷灵石'):
         # 如果 CD 还没到 则直接结束
         await steal_stone.finish(cd_msg(cd), at_sender=True)
 
@@ -734,7 +734,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(steal_success) > result:
                 sql_message.update_ls(user_id, coststone_num, 2)  # 减少手续费
                 sql_message.update_ls(steal_qq, coststone_num, 1)  # 增加被偷的人的灵石
-                add_cd(event, XiuConfig().tou_cd)
+                add_cd(event, XiuConfig().tou_cd, '偷灵石')
                 await steal_stone.finish('道友偷窃失手了，被对方发现并被派去华哥厕所义务劳工！赔款{}灵石'.format(coststone_num))
 
 
@@ -743,14 +743,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(get_stone) > int(steal_user_stone):
                 sql_message.update_ls(user_id, steal_user_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, steal_user_stone, 2)  # 减少被偷的人的灵石
-                add_cd(event, XiuConfig().tou_cd)
+                add_cd(event, XiuConfig().tou_cd, '偷灵石')
                 await steal_stone.finish(
                     "{}道友已经被榨干了~".format(steal_user.user_name))
 
             else:
                 sql_message.update_ls(user_id, get_stone, 1)  # 增加偷到的灵石
                 sql_message.update_ls(steal_qq, get_stone, 2)  # 减少被偷的人的灵石
-                add_cd(event, XiuConfig().tou_cd)
+                add_cd(event, XiuConfig().tou_cd, '偷灵石')
                 await steal_stone.finish(
                     "共偷取{}道友{}枚灵石！".format(steal_user.user_name, get_stone))
 
