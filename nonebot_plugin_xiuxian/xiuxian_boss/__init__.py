@@ -60,6 +60,9 @@ async def _():
                 groupboss[g]
             except:
                 groupboss[g] = []
+                
+            if len(groupboss[g]) >= config['Boss个数上限']:
+                continue
 
             bossinfo = createboss()
             groupboss[g].append(bossinfo)
@@ -192,6 +195,9 @@ async def _(bot: Bot, event: MessageEvent):
         groupboss[group_id]
     except:
         groupboss[group_id] = []
+        
+    if len(groupboss[group_id]) >= config['Boss个数上限']:
+        await create.finish(f"本群世界Boss已达到上限{config['Boss个数上限']}个，无法继续生成")
     groupboss[group_id].append(bossinfo)
     await create.finish(f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！")
 
