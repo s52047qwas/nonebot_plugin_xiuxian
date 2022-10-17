@@ -185,6 +185,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
             msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg)
 
@@ -202,6 +203,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
             msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg)
     else:
