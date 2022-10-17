@@ -117,7 +117,7 @@ class XiuxianDateManage:
 );""")
             elif i == "back":
                 try:
-                    c.execute("""DROP TABLE BREAD_LOG;""")
+                    c.execute("""DROP TABLE back;""")
                 except sqlite3.OperationalError:
                     pass
 
