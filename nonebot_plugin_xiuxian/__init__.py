@@ -62,46 +62,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await run_xiuxian.finish(msg, at_sender=True)
 
 
-@command.xiuxian_message.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    """我的修仙信息"""
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except MsgError:
-        return
-
-    user_name = mess.user_name
-    if user_name:
-        pass
-    else:
-        user_name = "无名氏(发送改名+道号更新)"
-    level_rate = sql_message.get_root_rate(mess.root_type)  # 灵根倍率
-    realm_rate = jsondata.level_data()[mess.level]["spend"]  # 境界倍率
-
-    # 判断突破的修为
-    list_all = len(OtherSet().level) - 1
-    now_index = OtherSet().level.index(mess.level)
-    if list_all == now_index:
-        get_exp = "位面至高"
-    else:
-        is_updata_level = OtherSet().level[now_index + 1]
-        need_exp = sql_message.get_level_power(is_updata_level)
-        if need_exp - mess.exp > 0:
-            get_exp = "还需{}修为可突破".format(need_exp - mess.exp)
-        else:
-            get_exp = "可突破！"
-
-    msg = f"""{user_name}道友的信息
-灵根为：{mess.root}({mess.root_type}+{int(level_rate * 100)}%)
-当前境界：{mess.level}(境界+{int(realm_rate * 100)}%)
-当前灵石：{mess.stone}
-当前修为：{mess.exp}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
-突破状态：{get_exp}
-你的战力为：{int(mess.exp * level_rate * realm_rate)}"""
-
-    await run_xiuxian.finish(msg, at_sender=True)
-
-
 @sign_in.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """修仙签到"""

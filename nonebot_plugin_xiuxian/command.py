@@ -8,7 +8,6 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.permission import SUPERUSER
 
 run_xiuxian = on_command("我要修仙", priority=5)
-xiuxian_message = on_command("我的修仙信息", aliases={"我的存档"}, priority=5)
 restart = on_command("再入仙途", aliases={"重新修仙", "重入仙途"}, priority=5)
 package = on_command("我的纳戒", aliases={"升级纳戒"}, priority=5)
 sign_in = on_command("修仙签到", priority=5)
