@@ -16,6 +16,7 @@ import re
 from .sectconfig import get_config
 import random
 from ..cd_manager import add_cd, check_cd, cd_msg
+from ..utils import check_user
 
 config = get_config()
 LEVLECOST = config["LEVLECOST"]
@@ -36,6 +37,7 @@ sect_list = on_command("宗门列表", priority=5)
 sect_help = on_command("宗门帮助", priority=5)
 sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, priority=5)
 sect_task_complete = on_command("宗门任务完成", priority=5)
+sect_task_refresh = on_command("宗门任务刷新", priority=5)
 
 __sect_help__ = f"""
 宗门帮助信息:
@@ -121,6 +123,26 @@ async def _(bot: Bot, event: GroupMessageEvent):
     else:
         await upatkpractice.finish(f"修炼逆天而行消耗巨大，请加入宗门再进行修炼！")
 
+@sect_task_refresh.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_task_refresh.finish(msg)
+    user_id = str(user_info.user_id)
+    sect_id = user_info.sect_id
+    if sect_id:
+        if isUserTask(user_id):
+            if cd := check_cd(event, '宗门任务刷新'):
+            # 如果 CD 还没到 则直接结束
+                await sect_task_refresh.finish(cd_msg(cd), at_sender=True)
+            create_user_sect_task(user_id)
+            add_cd(event, config['宗门任务刷新cd'], '宗门任务刷新')
+            await sect_task_refresh.finish(f"已刷新，道友当前接取的任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+        else:
+            await sect_task_refresh.finish(f"道友目前还没有宗门任务，请发送指令宗门任务接取来获取吧", at_sender=True)
+
+    else:
+        await sect_task_refresh.finish(f"道友尚未加入宗门，请加入宗门后再发送该指令！")
 
 @sect_list.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
