@@ -100,7 +100,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         
     elif mode == '升级会员':#升级会员逻辑
         userlevel = bankinfo["banklevel"]
-        if userlevel == '7':
+        if userlevel == str(len(BANKLEVEL)):
             await bank.finish(f"道友已经是本钱庄最大的会员啦！", at_sender=True)
         
         stonecost = BANKLEVEL[f'{int(userlevel)}']['levelup']

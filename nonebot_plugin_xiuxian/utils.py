@@ -36,7 +36,7 @@ def check_user(event: GroupMessageEvent):
     """
     判断用户信息是否存在
     :返回参数:
-      * `isUser: 是否一致
+      * `isUser: 是否存在
       * `user_info: 用户
       * `msg: 消息体
     """
