@@ -78,12 +78,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if num > nowmax:
             await bank.finish(f"道友当前钱庄会员等级为{BANKLEVEL[bankinfo['banklevel']]['level']}，可存储的最大灵石为{max}枚,当前已存{bankinfo['savestone']}枚灵石，可以继续存{nowmax}枚灵石！", at_sender=True)
         
+        bankinfo, give_stone, timedeff = get_give_stone(bankinfo)
         userinfonowstone = int(userinfo.stone) - num
         bankinfo['savestone'] += num
-        sql_message.update_ls(user_id, num, 2)
+        sql_message.update_ls(user_id, num , 2)
+        sql_message.update_ls(user_id, give_stone , 1)
         bankinfo['savetime'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         savef(user_id, bankinfo)
-        await bank.finish(f"道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
+        await bank.finish(f"道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚!\n道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone + give_stone}枚，钱庄存有灵石{bankinfo['savestone']}枚", at_sender=True)
 
     elif mode == '取钱':#取钱逻辑
         if int(bankinfo['savestone']) < num:
