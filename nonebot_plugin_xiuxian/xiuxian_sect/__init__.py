@@ -173,7 +173,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_task_complete.finish(cd_msg(cd), at_sender=True)
         
         if userstask[user_id]['任务内容']['type'] == 1:#type=1：需要扣气血，type=2：需要扣灵石
-            costhp = int(userinfo.hp * userstask[user_id]['任务内容']['cost'])
+            costhp = int((userinfo.exp / 2) * userstask[user_id]['任务内容']['cost'])
             if userinfo.hp < userinfo.exp / 10 or costhp >= userinfo.hp:
                 await sect_task_complete.finish("重伤未愈，动弹不得！", at_sender=True)
             
