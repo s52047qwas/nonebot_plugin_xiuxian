@@ -54,8 +54,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if sect_id:
         sect_info = sql_message.get_sect_info(sect_id)
         sectmsg = sect_info.sect_name
+        sectzw = jsondata.sect_config_data()[f"{mess.sect_position}"]["title"]
     else:
         sectmsg = '无宗门'
+        sectzw = '无'
 
     # 判断突破的修为
     list_all = len(OtherSet().level) - 1
@@ -85,7 +87,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '突破状态': f'{exp_meg}，概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
     '攻击力': f'{mess.atk}，攻修等级{mess.atkpractice}级',
     '所在宗门':sectmsg,
-    '宗门职位':f'{jsondata.sect_config_data()[f"{mess.sect_position}"]["title"]}',
+    '宗门职位':sectzw,
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
