@@ -139,7 +139,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish(f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚")
 
 @bossinfo.handle()
-async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -184,7 +184,7 @@ async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
         await bossinfo.finish(bossmsgs)
 
 @create.handle()
-async def _(bot: Bot, event: MessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -204,7 +204,7 @@ async def _(bot: Bot, event: MessageEvent):
 
 
 @setgroupboss.handle()
-async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     mode = args.extract_plain_text().strip()
     group_id = event.group_id
     isInGroup = isInGroups(event) #True在，False不在
@@ -271,5 +271,5 @@ async def send_forward_msg(
             "send_private_forward_msg", user_id=event.user_id, messages=messages
         )
 
-def isInGroups(event: MessageEvent):
+def isInGroups(event: GroupMessageEvent):
     return event.group_id in groups['open']

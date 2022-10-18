@@ -6,6 +6,7 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     PRIVATE_FRIEND,
     GROUP,
+    GroupMessageEvent,
 )
 from ..xiuxian2_handle import XiuxianDateManage
 from .work_handle import workhandle
@@ -42,7 +43,7 @@ class MsgError(ValueError):
     pass
 
 @do_work.handle()
-async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     level = args[0] #境界
     mode = args[2] #接取、结算、刷新、终止
     num = args[3] #1、2、3

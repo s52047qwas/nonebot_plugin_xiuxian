@@ -5,6 +5,7 @@ from nonebot.params import RegexGroup
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
+    GroupMessageEvent,
 )
 import json
 import os
@@ -37,7 +38,7 @@ sql_message = XiuxianDateManage()  # sql类
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 
 @bank.handle()
-async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     
     mode = args[0] #存钱、取钱、升级会员、信息查看
     num = args[1] #数值
