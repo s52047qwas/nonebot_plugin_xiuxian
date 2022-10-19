@@ -16,7 +16,7 @@ import re
 from .sectconfig import get_config
 import random
 from ..cd_manager import add_cd, check_cd, cd_msg
-from ..utils import check_user
+from ..utils import check_user,send_forward_msg
 
 config = get_config()
 LEVLECOST = config["LEVLECOST"]
@@ -147,14 +147,18 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @sect_list.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    """宗门列表：当前为返回转发内容"""
     sectlists = sql_message.get_all_scale()
     msg = ''
+    msg_list = []
     for sect in sectlists:
-        print(sect)
+        # print(sect)
         user_name = sql_message.get_user_message(sect.sect_owner).user_name
         msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
-    
-    await sect_list.finish(msg)
+        msg_list.append(f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
+
+    await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
+    # await sect_list.finish(msg)
 
 @sect_task.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
