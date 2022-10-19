@@ -149,6 +149,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 1):
             if player2turncost < 0:#休息为负数，如果休息，则跳过回合，正常是0
                 user2turnskip = False
                 player2turncost += 1
+                user1turnskip = True
             
             if user2turnskip:#无需跳过回合             
                 if player2_skil_open:
@@ -256,6 +257,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 1):
             if player1turncost < 0:#休息为负数，如果休息，则跳过回合，正常是0
                 user1turnskip = False
                 player1turncost += 1
+                user2turnskip = True
                 
             if player1['气血'] <= 0 or player2['气血'] <= 0:
                 play_list.append("逻辑错误！！！")
