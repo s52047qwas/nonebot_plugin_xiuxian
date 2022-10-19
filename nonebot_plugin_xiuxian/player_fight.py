@@ -258,6 +258,11 @@ def Player_fight(player1: dict, player2: dict, type_in: 1):
                 user1turnskip = False
                 player1turncost += 1
                 user2turnskip = True
+            
+            if user1turnskip == False and user2turnskip == False:
+                play_list.append('双方都动弹不得！')
+                user1turnskip = True
+                user2turnskip = True
                 
             if player1['气血'] <= 0 or player2['气血'] <= 0:
                 play_list.append("逻辑错误！！！")
