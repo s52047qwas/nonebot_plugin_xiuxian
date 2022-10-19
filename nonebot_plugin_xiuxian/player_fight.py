@@ -548,7 +548,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
         else:
             msg2 = "{}发起攻击，造成了{}伤害\n"
         play_list.append(msg2.format(boss['name'], boss_sh))
-        player1['气血'] = player1['气血'] - boss_sh
+        player1['气血'] = player1['气血'] - (boss_sh * player1js)
         play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
