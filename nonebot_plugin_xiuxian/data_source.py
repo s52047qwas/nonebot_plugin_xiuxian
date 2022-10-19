@@ -52,7 +52,7 @@ class JsonDate:
             return data
 
     def shop_data(self):
-        """获取坊市信息"""
+        """获取物品信息"""
         with open(self.shop_jsonpath, 'r', encoding='utf-8') as e:
             file_data = e.read()
             data = json.loads(file_data)

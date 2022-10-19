@@ -23,6 +23,9 @@ UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time
 SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials"])
 
+back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
+                           "remake", "day_num", "all_num", "action_time", "state"])
+
 num = '578043031'
 
 
@@ -120,16 +123,20 @@ class XiuxianDateManage:
                     c.execute(f"select count(1) from {i}")
                 except sqlite3.OperationalError:
                     pass
-                    # c.execute("""CREATE TABLE "back" (
-                    #   "user_id" INTEGER NOT NULL,
-                    #   "goods_id" INTEGER NOT NULL,
-                    #   "goods_name" TEXT,
-                    #   "goods_type" TEXT,
-                    #   "goods_num" INTEGER,
-                    #   "create_time" TEXT,
-                    #   "update_time" TEXT,
-                    #   "remake" TEXT DEFAULT NULL
-                    # );""")
+                    c.execute("""CREATE TABLE "back" (
+  "user_id" INTEGER NOT NULL,
+  "goods_id" INTEGER NOT NULL,
+  "goods_name" TEXT,
+  "goods_type" TEXT,
+  "goods_num" INTEGER,
+  "create_time" TEXT,
+  "update_time" TEXT,
+  "remake" TEXT,
+  "day_num" INTEGER DEFAULT 0,
+  "all_num" INTEGER DEFAULT 0,
+  "action_time" TEXT,
+  "state" INTEGER DEFAULT 0
+);""")
 
         for i in XiuConfig().sql_user_xiuxian:
             try:
@@ -659,13 +666,13 @@ class XiuxianDateManage:
 
     def get_back_msg(self, user_id):
         """获取用户背包信息"""
-        sql = f"SELECT name FROM back where user_id=?"
+        sql = f"SELECT * FROM back where user_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, )
+        cur.execute(sql, (user_id,))
         result = cur.fetchall()
-        msg = f"你的背包\n"
-        for i in result:
-            msg += f"{i},"
+        # msg = f"你的背包\n"
+        # for i in result:
+        #     msg += f"{i},"
         return result
 
     def goods_num(self, user_id, goods_id):
@@ -739,11 +746,17 @@ class XiuxianDateManage:
         else:
             # 判断是否存在，不存在则INSERT
             sql = """
-                    INSERT INTO user_back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time)
+                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time)
             VALUES (?,?,?,?,?,?,?)"""
             cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time))
             self.conn.commit()
 
+    def update_back(self, user_id, goods_id, msg):
+        """使用物品"""
+        check_sql = f"select goods_num from back where user_id=? and goods_id=?"
+        cur = self.conn.cursor()
+        cur.execute(check_sql, (user_id, goods_id))
+        result = cur.fetchone()
 
 
 class XiuxianJsonDate:
