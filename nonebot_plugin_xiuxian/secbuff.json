@@ -1,0 +1,36 @@
+{
+    "1":{
+        "name":"横扫千军",
+        "type":1,
+        "atkvalue":[0.8, 1, 1.5],
+        "hpcost":0.1,
+        "mpcost":0.3,
+        "turncost":1
+    },
+    "2":{
+        "name":"紧箍咒",
+        "type":2,
+        "atkvalue":1.2,
+        "hpcost":0,
+        "mpcost":0.3,
+        "turncost":3
+    },
+    "3":{
+        "name":"金刚经",
+        "type":3,
+        "bufftype":1,
+        "buffvalue":1.5,
+        "hpcost":0,
+        "mpcost":0.3,
+        "turncost":3
+    },
+    "4":{
+        "name":"憋住",
+        "type":3,
+        "bufftype":2,
+        "buffvalue":0.5,
+        "hpcost":0,
+        "mpcost":0.3,
+        "turncost":3
+    }
+}

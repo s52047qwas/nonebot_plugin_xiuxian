@@ -22,6 +22,8 @@ UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time
 
 SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials"])
+BuffInfo = namedtuple("BuffInfo",
+                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon"])
 
 num = '578043031'
 
@@ -120,6 +122,20 @@ class XiuxianDateManage:
                     c.execute("""DROP TABLE back;""")
                 except sqlite3.OperationalError:
                     pass
+            
+            elif i == "BuffInfo":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "BuffInfo" (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "user_id" integer DEFAULT 0,
+  "main_buff" integer DEFAULT 0,
+  "sec_buff" integer DEFAULT 0,
+  "faqi_buff" integer DEFAULT 0,
+  "fabao_weapon" integer DEFAULT 0
+);""")
+                    
 
         for i in XiuConfig().sql_user_xiuxian:
             try:
@@ -159,11 +175,7 @@ class XiuxianDateManage:
         if not result:
             return None
         else:
-            #atk--[17],gx--[18]
-            result = list(result)
-            result[17] = int(result[17] * (result[18] * 0.1 + 1))#每级+10%攻击
-            result = tuple(result)
-            return UserDate(*result)
+            return UserDate(*final_user_data(result))
 
     def get_sect_info(self, sect_id):
         """
@@ -189,11 +201,7 @@ class XiuxianDateManage:
         if not result:
             return None
         else:
-            #atk--[9],gx--[18]
-            result = list(result)
-            result[17] = int(result[17] * (result[18] * 0.1 + 1))#每级+10%攻击
-            result = tuple(result)
-            return UserDate(*result)
+            return UserDate(*final_user_data(result))
 
     def create_user(self, user_id, *args):
         """校验用户是否存在"""
@@ -703,6 +711,53 @@ class XiuxianDateManage:
         cur.execute(sql, )
         self.conn.commit()
     
+    def initialize_user_buff_info(self, user_id):
+        """初始化用户buff信息"""
+        sql = f"INSERT INTO BuffInfo (user_id,main_buff,sec_buff,faqi_buff,fabao_weapon) VALUES (?,0,0,0,0)"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+        
+    def get_user_buff_info(self, user_id):
+        """获取用户buff信息"""
+        sql = f"select * from BuffInfo where user_id =?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return BuffInfo(*result)
+    
+    def updata_user_main_buff(self, user_id, id):
+        """更新用户主功法信息"""
+        sql = f"UPDATE BuffInfo SET main_buff = ? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id,))
+        self.conn.commit()
+    
+    def updata_user_sec_buff(self, user_id, id):
+        """更新用户副功法信息"""
+        sql = f"UPDATE BuffInfo SET sec_buff = ? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id,))
+        self.conn.commit()
+        
+    def updata_user_faqi_buff(self, user_id, id):
+        """更新用户法器信息"""
+        sql = f"UPDATE BuffInfo SET faqi_buff = ? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id,))
+        self.conn.commit()
+    
+    def updata_user_fabao_weapon(self, user_id, id):
+        """更新用户法宝信息"""
+        sql = f"UPDATE BuffInfo SET fabao_weapon = ? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id,))
+        self.conn.commit()
+    
+    
 
     def send_back(self, user_id, goods_id, name, type_n, num, remake):
         """
@@ -1026,7 +1081,21 @@ class OtherSet(XiuConfig):
 
         return msg, hp_mp
 
-
+from .read_buff import UserBuffDate
+def final_user_data(userdata):
+    """传入用户当前信息、buff信息，返回最终信息"""
+    userdata = list(userdata)
+    mainbuffdata = UserBuffDate(userdata[1]).get_user_main_buff_data()
+    mainhpbuff = mainbuffdata['hpbuff'] if mainbuffdata != None else 0
+    mainmpbuff = mainbuffdata['mpbuff'] if mainbuffdata != None else 0
+    mainatkbuff = mainbuffdata['atkbuff'] if mainbuffdata != None else 0
+    userdata[15] = int(userdata[15] * (1 + mainhpbuff))#hp 
+    userdata[16] = int(userdata[16] * (1 + mainmpbuff))#mp
+    userdata[17] = int(userdata[17] * (userdata[18] * 0.1 + 1) * (1 + mainatkbuff))#每级+10%攻击
+    userdata = tuple(userdata)
+    return userdata
+    
+    
 if __name__ == '__main__':
     print(OtherSet().date_diff("2022-09-08 00:42:56.740255", "2022-09-08 00:42:56.740255"))
 

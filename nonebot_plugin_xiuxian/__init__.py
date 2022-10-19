@@ -23,6 +23,9 @@ from .data_source import jsondata
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
+from .read_buff import UserBuffDate
+
+
 
 # 定时任务
 scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -39,9 +42,11 @@ load_all_plugins(
             'nonebot_plugin_xiuxian.xiuxian_bank',
             'nonebot_plugin_xiuxian.xiuxian_sect',
             'nonebot_plugin_xiuxian.xiuxian_info',
+            'nonebot_plugin_xiuxian.xiuxian_buff',
         ],
         [],
     )
+
 
 
 @command.run_xiuxian.handle()
@@ -293,8 +298,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         )  # 闭关时长计算(分钟) = second // 60
         level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
         realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+        mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+        mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0
         exp = int(
-            exp_time * XiuConfig().closing_exp * level_rate * realm_rate
+            exp_time * XiuConfig().closing_exp * level_rate * realm_rate * (1 + mainbuffratebuff)
         )  # 本次闭关获取的修为
 
         if exp >= user_get_exp_max:
@@ -896,12 +903,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
     if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
         sql_message.update_user_hp(user_id)
-
+    
+    level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
+    mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+    mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0
+    mainhpbuff = mainbuffdata['hpbuff'] if mainbuffdata != None else 0
+    mainmpbuff = mainbuffdata['mpbuff'] if mainbuffdata != None else 0
     user = f"""道号：{user_msg.user_name}
-气血：{user_msg.hp}/{int(user_msg.exp/2)}
-真元：{user_msg.mp}/{int(user_msg.exp)}
+气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + mainhpbuff))}
+真元：{user_msg.mp}/{int((user_msg.exp) * (1 + mainmpbuff))}
 攻击：{user_msg.atk}
 攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
+修炼效率：{int((level_rate * realm_rate) * (1 + mainbuffratebuff)  * 100)}%
 """
 
     await mind_state.finish(user)

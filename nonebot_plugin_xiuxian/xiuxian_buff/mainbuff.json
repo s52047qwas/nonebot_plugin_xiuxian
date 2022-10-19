@@ -1,0 +1,16 @@
+{
+    "1":{
+        "name":"万尘归灵决",
+        "hpbuff":0.5,
+        "mpbuff":0.5,
+        "atkbuff":0.4,
+        "ratebuff":1.3
+    },
+    "2":{
+        "name":"太上化龙诀",
+        "hpbuff":0.5,
+        "mpbuff":0.5,
+        "atkbuff":0.4,
+        "ratebuff":1.3
+    }
+}

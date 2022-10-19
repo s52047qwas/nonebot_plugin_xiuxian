@@ -50,6 +50,6 @@ dufang_cd : 5  # 金银阁cd
 tou_cd : 15  # 偷灵石cd
 dufang_cd_msg : '你急啥呢？{cd_msg}后再来吧'
 
-sql_table : ["user_xiuxian", "user_cd", "sects","back"]    # 数据库表校验
+sql_table : ["user_xiuxian", "user_cd", "sects","back", "BuffInfo"]    # 数据库表校验
 sql_user_xiuxian : ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task"]   # 数据库字段校验
 sql_sects : ["sect_materials"]
