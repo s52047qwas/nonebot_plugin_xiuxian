@@ -19,6 +19,7 @@ from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss
 import json
 from .bossconfig import get_config
+from ..player_fight import Boss_fight
 
 config = get_config()
 # 定时任务
@@ -125,9 +126,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['攻击'] = userinfo.atk
     player['真元'] = userinfo.mp
     player['会心'] = 1
+    player['exp'] = userinfo.exp
     
     bossinfo = groupboss[group_id][boss_num - 1]
-    result, victor, bossinfo_new, get_stone = BossDateManage().player_fight(player, bossinfo, 1)
+    result, victor, bossinfo_new, get_stone = Boss_fight(player, bossinfo)
     await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
     if victor == bossinfo['name']:
         groupboss[group_id][boss_num - 1] = bossinfo_new

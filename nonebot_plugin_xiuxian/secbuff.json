@@ -5,7 +5,8 @@
         "atkvalue":[0.8, 1, 1.5],
         "hpcost":0.1,
         "mpcost":0.3,
-        "turncost":1
+        "turncost":1,
+        "desc":"呃呃啊啊啊啊啊，吃我3拳！"
     },
     "2":{
         "name":"紧箍咒",
@@ -13,7 +14,8 @@
         "atkvalue":1.2,
         "hpcost":0,
         "mpcost":0.3,
-        "turncost":3
+        "turncost":3,
+        "desc":"妈咪妈咪哄!"
     },
     "3":{
         "name":"金刚经",
@@ -22,15 +24,17 @@
         "buffvalue":1.5,
         "hpcost":0,
         "mpcost":0.3,
-        "turncost":3
+        "turncost":3,
+        "desc":"你被强化了，快去送!"
     },
     "4":{
-        "name":"憋住",
+        "name":"鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
-        "turncost":3
+        "turncost":3,
+        "desc":"不说了，开鳖!"
     }
 }
