@@ -16,6 +16,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.log import logger
 from typing import Any, Tuple
 from nonebot.params import CommandArg, RegexGroup
+from nonebot_plugin_txt2img import Txt2Img
 
 from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
@@ -79,8 +80,14 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @command.help_in.handle()
 async def _():
     """修仙帮助"""
+    font_size = 30
+    title = '修仙模拟器帮助信息'
     msg = help.__xiuxian_notes__
-    await help_in.send(msg, at_sender=True)
+    img = Txt2Img(font_size)
+    pic = img.save(title, msg)
+    await help_in.send(MessageSegment.image(pic))
+#     msg = help.__xiuxian_notes__
+#     await help_in.send(msg, at_sender=True)
 
 
 @command.dufang.handle()
