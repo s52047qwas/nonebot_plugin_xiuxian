@@ -42,7 +42,6 @@ sect_task_complete = on_command("宗门任务完成", priority=5)
 sect_task_refresh = on_command("宗门任务刷新", priority=5)
 
 __sect_help__ = f"""
-宗门帮助信息:
 指令：
 1、我的宗门：查看当前所处宗门信息
 2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
