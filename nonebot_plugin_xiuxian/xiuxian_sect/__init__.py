@@ -8,10 +8,12 @@ from nonebot.adapters.onebot.v11 import (
     Message,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment,
 )
 from nonebot.params import CommandArg, RegexGroup
 from ..data_source import jsondata
 from ..xiuxian_config import XiuConfig
+from nonebot_plugin_txt2img import Txt2Img
 import re
 from .sectconfig import get_config
 import random
@@ -64,8 +66,14 @@ userstask = {}
 @sect_help.handle()
 async def _():
     """修仙帮助"""
+    font_size = 26
+    title = "宗门帮助信息"
     msg = __sect_help__
-    await sect_help.finish(msg)
+    img = Txt2Img(font_size)
+    pic = img.save(title, msg)
+    await sect_help.finish(MessageSegment.image(pic))
+#     msg = __sect_help__
+#     await sect_help.finish(msg)
 
 sql_message = XiuxianDateManage()  # sql类
 
