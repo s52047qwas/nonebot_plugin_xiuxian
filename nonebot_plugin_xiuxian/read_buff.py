@@ -12,13 +12,16 @@ class BuffJsonDate:
         """json文件路径"""
         self.mainbuff_jsonpath = READPATH / "主功法.json"
         self.secbuff_jsonpath = READPATH / "神通.json"
-        
+        self.gfpeizhi_jsonpath = READPATH / "功法概率设置.json"
     
     def get_main_buff(self, id):
         return readf(self.mainbuff_jsonpath)[id]
     
     def get_sec_buff(self, id):
         return readf(self.secbuff_jsonpath)[id]
+    
+    def get_gfpeizhi(self):
+        return readf(self.gfpeizhi_jsonpath)
     
     
 class UserBuffDate:
@@ -45,6 +48,14 @@ class UserBuffDate:
         return secbuffdata
 
 
+def get_main_info_msg(id):
+    mainbuff = BuffJsonDate().get_main_buff(id)
+    hpmsg = f"提升{mainbuff['hpbuff'] * 100}%气血" if mainbuff['hpbuff'] != 0 else ''
+    mpmsg = f"提升{mainbuff['mpbuff'] * 100}%真元" if mainbuff['mpbuff'] != 0 else ''
+    atkmsg = f"提升{mainbuff['atkbuff'] * 100}%攻击力" if mainbuff['atkbuff'] != 0 else ''
+    ratemsg = f"提升{mainbuff['ratebuff'] * 100}%修炼速度" if mainbuff['ratebuff'] != 0 else ''
+    msg = f"{mainbuff['name']}:{hpmsg}{mpmsg}{atkmsg}{ratemsg}。"
+    return mainbuff, msg
 
 
 def get_user_buff(user_id):

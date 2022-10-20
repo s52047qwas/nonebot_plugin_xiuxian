@@ -1,0 +1,7 @@
+get_sect_info(self, sect_id):   通过宗门编号获取宗门信息
+update_sect_materials(self, sect_id, sect_materials, key):"""更新资材  1为增加，2为减少"""
+updata_user_sec_buff(self, user_id, id):  """更新用户副功法信息"""
+updata_user_main_buff(self, user_id, id):  """更新用户主功法信息"""
+update_sect_scale_and_used_stone(self, sect_id, sect_used_stone, sect_scale):  """更新宗门灵石、建设度"""
+update_sect_mainbuff(self, sect_id, mainfbuffid):  """更新宗门当前的主修功法"""
+update_sect_secbuff(self, sect_id, secbuffid): """更新宗门当前的神通"""

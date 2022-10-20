@@ -21,7 +21,7 @@ UserDate = namedtuple("UserDate",
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
 SectInfo = namedtuple("SectInfo",
-                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials"])
+                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials", "mainbuff", "secbuff"])
 BuffInfo = namedtuple("BuffInfo",
                       ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon"])
 
@@ -710,6 +710,28 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, )
         self.conn.commit()
+    
+    def update_sect_scale_and_used_stone(self, sect_id, sect_used_stone, sect_scale):
+        """更新宗门灵石、建设度"""
+        sql = f"UPDATE sects SET sect_used_stone=?,sect_scale=? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_used_stone, sect_scale, sect_id))
+        self.conn.commit()
+
+    def update_sect_mainbuff(self, sect_id, mainbuffid):
+        """更新宗门当前的主修功法"""
+        sql = f"UPDATE sects SET mainbuff=? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (mainbuffid, sect_id))
+        self.conn.commit()
+    
+    def update_sect_secbuff(self, sect_id, secbuffid):
+        """更新宗门当前的神通"""
+        sql = f"UPDATE sects SET secbuff=? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (secbuffid, sect_id))
+        self.conn.commit()
+        
     
     def initialize_user_buff_info(self, user_id):
         """初始化用户buff信息"""

@@ -17,6 +17,7 @@ from .sectconfig import get_config
 import random
 from ..cd_manager import add_cd, check_cd, cd_msg
 from ..utils import check_user
+from ..read_buff import BuffJsonDate, get_main_info_msg
 
 config = get_config()
 LEVLECOST = config["LEVLECOST"]
@@ -38,6 +39,7 @@ sect_help = on_command("宗门帮助", priority=5)
 sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, priority=5)
 sect_task_complete = on_command("宗门任务完成", priority=5)
 sect_task_refresh = on_command("宗门任务刷新", priority=5)
+sect_mainbuff_get = on_command("宗门功法搜寻", aliases={"搜寻宗门功法"}, priority=5)
 
 __sect_help__ = f"""
 宗门帮助信息:
@@ -55,6 +57,7 @@ __sect_help__ = f"""
 11、宗门任务接取、我的宗门任务：接取宗门任务，可以增加宗门建设度和资材，每日上限：{config["每日宗门任务次上限"]}次
 12、宗门任务完成：完成所接取的宗门任务，完成间隔时间：{config["宗门任务完成cd"]}秒
 13、宗门任务刷新：刷新当前所接取的宗门任务，刷新间隔时间：{config["宗门任务刷新cd"]}秒
+14、宗门功法搜寻：
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
@@ -84,6 +87,47 @@ async def _():
 async def _():
     sql_message.sect_task_reset()
     logger.info('已重置用户宗门任务次数')
+
+mainbufftxt = {1:'人阶下品',2:'人阶上品',3:'黄阶下品',4:'黄阶上品',5:'玄阶下品',6:'玄阶上品',7:'地阶下品',8:'地阶上品',9:'天阶下品',10:'天阶上品'}
+@sect_mainbuff_get.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_mainbuff_get.finish(msg)
+    sect_id = user_info.sect_id
+    if sect_id:
+        sect_position = user_info.sect_position
+        owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+        owner_position = int(owner_idx[0]) if len(owner_idx) == 1 else 0
+        if sect_position == owner_position:
+            mainbuffconfig = config['宗门主功法参数']
+            sect_info = sql_message.get_sect_info(sect_id)
+            mainbuffgear = divmod(sect_info.sect_scale, mainbuffconfig['建设度'])[0]
+            if mainbuffgear > 10:
+                mainbuffgear = 10
+            elif mainbuffgear == 0:
+                mainbuffgear = 1
+            #获取逻辑
+            mainbufftype = mainbufftxt[mainbuffgear]
+            stonecost = mainbuffgear * mainbuffconfig['获取消耗的灵石']
+            materialscost = mainbuffgear * mainbuffconfig['获取消耗的资材']
+            if sect_info.sect_used_stone >= stonecost and sect_info.sect_materials >= materialscost:
+                mainbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[mainbufftype]['gf_list'])
+                if random.randint(0, 100) <= mainbuffconfig['获取到功法的概率']:
+                    sql_message.update_sect_mainbuff(sect_id, mainbuffid)
+                    mainbuff, mainbuffmsg = get_main_info_msg(mainbuffid)
+                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}")
+                else:
+                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，可惜失败了！")
+
+            else:
+                await sect_mainbuff_get.finish(f"本次搜寻需要消耗{stonecost}宗门灵石，{materialscost}宗门资材，不满足条件！")
+        else:
+            await sect_mainbuff_get.finish(f"道友不是宗主，无法使用该命令！")
+    else:
+        await sect_mainbuff_get.finish(f"道友尚未加入宗门！")
+
+
 
 
 @upatkpractice.handle()
@@ -561,3 +605,4 @@ async def get_group_id(session_id):
 
 class MsgError(ValueError):
     pass
+
