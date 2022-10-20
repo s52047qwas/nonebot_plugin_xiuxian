@@ -152,6 +152,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
+                            print("玩家1减伤" + str(player1js))
                             isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
                             if isCrit:
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -174,6 +175,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                     user1turnskip = True
 
         else:  # 没有技能的derB
+            play_list.append(f"☆------{player1['道号']}的回合------☆")
             isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
             if isCrit:
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -306,6 +308,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user2buff_type == 2:  # 减伤类buff,需要在player2处判断
+                            print("玩家2减伤" + str(player2js))
                             isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
                             if isCrit:
                                 msg2 = "{}发起会心一击，造成了{}伤害\n"
@@ -327,6 +330,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                 if player2turncost == 0:
                     user2turnskip = True
         else:  # 没有技能的derB
+            play_list.append(f"☆------{player2['道号']}的回合------☆")
             isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
             if isCrit:
                 msg2 = "{}发起会心一击，造成了{}伤害\n"
@@ -400,6 +404,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
         msg2 = "{}发起攻击，造成了{}伤害\n"
         if player1_skil_open:  # 是否开启技能
             if user1turnskip:  # 无需跳过回合
+                play_list.append(f"☆------{player1['道号']}的回合------☆")
                 user1hpconst, user1mpcost, user1skill_type, skillrate = get_skill_hp_mp_data(player1, user1skilldate)
                 if player1turncost == 0:  # 没有持续性技能生效
                     player1js = 1  # 没有持续性技能生效,减伤恢复
@@ -520,11 +525,12 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
 
 
             else:  # 休息回合-1
-                play_list.append(f"{player1['道号']}动弹不得！")
+                play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
                 if player1turncost == 0:
                     user1turnskip = True
 
         else:  # 没有技能的derB
+            play_list.append(f"☆------{player1['道号']}的回合------☆")
             isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
             if isCrit:
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -550,7 +556,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
 
         
         # 没有技能的derB
-        play_list.append(f"{boss['name']}的回合！")
+        play_list.append(f"☆------{boss['name']}的回合------☆")
         isCrit, boss_sh = get_turnatk(boss)  # 判定是否暴击
         if isCrit:
             msg2 = "{}发起会心一击，造成了{}伤害\n"

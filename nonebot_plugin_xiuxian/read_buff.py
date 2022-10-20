@@ -5,13 +5,13 @@ from pathlib import Path
 from .xiuxian2_handle import XiuxianDateManage
 
 
-READPATH = Path(__file__).parent
+READPATH = Path() / "data" / "xiuxian" / "功法"
 class BuffJsonDate:
 
     def __init__(self):
         """json文件路径"""
-        self.mainbuff_jsonpath = READPATH / "mainbuff.json"
-        self.secbuff_jsonpath = READPATH / "secbuff.json"
+        self.mainbuff_jsonpath = READPATH / "主功法.json"
+        self.secbuff_jsonpath = READPATH / "神通.json"
         
     
     def get_main_buff(self, id):
