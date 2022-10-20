@@ -12,6 +12,7 @@ from nonebot.adapters.onebot.v11 import (
     Message,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment,
 )
 from nonebot.log import logger
 from typing import Any, Tuple
