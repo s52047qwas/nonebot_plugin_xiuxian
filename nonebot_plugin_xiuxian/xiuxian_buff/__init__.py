@@ -17,7 +17,7 @@ from ..utils import send_forward_msg
 
 buffinfo = on_command("我的buff", aliases={"我的Buff", "我的BUFF"}, priority=5)
 
-qc = on_command("切磋", permission=SUPERUSER, priority=5)
+qc = on_command("切磋", priority=5)
 
 
 @qc.handle()

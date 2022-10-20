@@ -6,7 +6,8 @@
         "hpcost":0.1,
         "mpcost":0.3,
         "turncost":1,
-        "desc":"呃呃啊啊啊啊啊，吃我3拳！"
+        "desc":"呃呃啊啊啊啊啊，吃我3拳！",
+        "rate":70
     },
     "2":{
         "name":"紧箍咒",
@@ -15,7 +16,8 @@
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
-        "desc":"妈咪妈咪哄!"
+        "desc":"妈咪妈咪哄!",
+        "rate":70
     },
     "3":{
         "name":"金刚经",
@@ -25,7 +27,8 @@
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
-        "desc":"你被强化了，快去送!"
+        "desc":"你被强化了，快去送!",
+        "rate":70
     },
     "4":{
         "name":"鳖住",
@@ -35,6 +38,7 @@
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
-        "desc":"不说了，开鳖!"
+        "desc":"不说了，开鳖!",
+        "rate":70
     }
 }
