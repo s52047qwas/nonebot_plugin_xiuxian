@@ -92,7 +92,7 @@ def get_sec_msg(secbuffdata):
         for value in secbuffdata['atkvalue']:
             shmsg += f"{value}倍、"
         if secbuffdata['turncost'] == 0:
-            msg = f"攻击{len(secbuffdata['atkvalue'])}次，造成{shmsg}伤害{hpmsg}{mpmsg}，释放概率：{secbuffdata['rate']}%"
+            msg = f"攻击{len(secbuffdata['atkvalue'])}次，造成{shmsg[:-1]}伤害{hpmsg}{mpmsg}，释放概率：{secbuffdata['rate']}%"
         else:
             msg = f"连续攻击{len(secbuffdata['atkvalue'])}次，造成{shmsg[:-1]}伤害{hpmsg}{mpmsg}，休息{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
     elif secbuffdata['type'] == 2:
