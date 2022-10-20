@@ -44,7 +44,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
         msg2 = "{}发起攻击，造成了{}伤害\n"
         if player1_skil_open:  # 是否开启技能
             if user1turnskip:  # 无需跳过回合
-                play_list.append(f"{player1['道号']}的回合")
+                play_list.append(f"☆------{player1['道号']}的回合------☆")
                 user1hpconst, user1mpcost, user1skill_type, skillrate = get_skill_hp_mp_data(player1, user1skilldate)
                 if player1turncost == 0:  # 没有持续性技能生效
                     player1js = 1  # 没有持续性技能生效,减伤恢复
@@ -169,7 +169,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
             else:  # 休息回合-1
-                play_list.append(f"{player1['道号']}动弹不得！")
+                play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
                 if player1turncost == 0:
                     user1turnskip = True
 
@@ -200,7 +200,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
 
         if player2_skil_open:  # 有技能
             if user2turnskip:  # 玩家2无需跳过回合
-                play_list.append(f"{player2['道号']}的回合")
+                play_list.append(f"☆------{player2['道号']}的回合------☆")
                 user2hpconst, user2mpcost, user2skill_type, skillrate = get_skill_hp_mp_data(player2, user2skilldate)
                 if player2turncost == 0:  # 没有持续性技能生效
                     player2js = 1
@@ -323,7 +323,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
             else:  # 休息回合-1
-                play_list.append(f"{player2['道号']}动弹不得！")
+                play_list.append(f"☆------{player2['道号']}动弹不得！------☆")
                 if player2turncost == 0:
                     user2turnskip = True
         else:  # 没有技能的derB
