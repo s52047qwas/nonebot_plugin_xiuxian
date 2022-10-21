@@ -159,7 +159,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             mainbuffid = get_mainnameid(msg, sectmainbuffidlist)
-            if userbuffinfo.main_buff == mainbuffid:
+            if str(userbuffinfo.main_buff) == str(mainbuffid):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
         
             mainbuffconfig = config['宗门主功法参数']
@@ -282,7 +282,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             secbuffid = get_secnameid(msg, sectsecbuffidlist)
-            if userbuffinfo.main_buff == secbuffid:
+            if str(userbuffinfo.main_buff) == str(secbuffid):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
 
             secbuffconfig = config['宗门神通参数']
