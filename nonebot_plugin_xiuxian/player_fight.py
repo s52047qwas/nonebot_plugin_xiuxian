@@ -643,7 +643,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             suc = f"{player1['道号']}"
             get_stone = bossnowstone
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1mainbuffdata['hpbuff'])), int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'])))
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1mainbuffdata['hpbuff'] if user1mainbuffdata != None else 0)), int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0)))
 
             break
 
@@ -676,7 +676,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             boss['stone'] = bossnowstone - get_stone
 
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'])))
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0)))
             
             break
 
