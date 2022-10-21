@@ -8,10 +8,12 @@ from nonebot.adapters.onebot.v11 import (
     Message,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment,
 )
 from nonebot.params import CommandArg, RegexGroup
 from ..data_source import jsondata
 from ..xiuxian_config import XiuConfig
+from nonebot_plugin_txt2img import Txt2Img
 import re
 from .sectconfig import get_config
 import random
@@ -40,7 +42,6 @@ sect_task_complete = on_command("宗门任务完成", priority=5)
 sect_task_refresh = on_command("宗门任务刷新", priority=5)
 
 __sect_help__ = f"""
-宗门帮助信息:
 指令：
 1、我的宗门：查看当前所处宗门信息
 2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
@@ -64,8 +65,14 @@ userstask = {}
 @sect_help.handle()
 async def _():
     """修仙帮助"""
+    font_size = 26
+    title = "宗门帮助信息"
     msg = __sect_help__
-    await sect_help.finish(msg)
+    img = Txt2Img(font_size)
+    pic = img.save(title, msg)
+    await sect_help.finish(MessageSegment.image(pic))
+#     msg = __sect_help__
+#     await sect_help.finish(msg)
 
 sql_message = XiuxianDateManage()  # sql类
 
