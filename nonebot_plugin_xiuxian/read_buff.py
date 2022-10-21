@@ -54,7 +54,7 @@ def get_main_info_msg(id):
     mpmsg = f"提升{mainbuff['mpbuff'] * 100}%真元" if mainbuff['mpbuff'] != 0 else ''
     atkmsg = f"提升{mainbuff['atkbuff'] * 100}%攻击力" if mainbuff['atkbuff'] != 0 else ''
     ratemsg = f"提升{mainbuff['ratebuff'] * 100}%修炼速度" if mainbuff['ratebuff'] != 0 else ''
-    msg = f"{mainbuff['name']}:{hpmsg}{mpmsg}{atkmsg}{ratemsg}。"
+    msg = f"{mainbuff['name']}:{hpmsg},{mpmsg},{atkmsg},{ratemsg}。"
     return mainbuff, msg
 
 

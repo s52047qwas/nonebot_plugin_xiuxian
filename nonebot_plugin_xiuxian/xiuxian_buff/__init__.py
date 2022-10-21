@@ -9,7 +9,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot import get_bot, on_command, on_regex, require
 from ..xiuxian2_handle import XiuxianDateManage
 from ..utils import check_user
-from ..read_buff import BuffJsonDate, UserBuffDate
+from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_buff
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
@@ -69,11 +69,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
         await buffinfo.finish(msg)
     user_id = user_info.user_id
     mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+    if mainbuffdata != None:
+        s, mainbuffmsg = get_main_info_msg(str(get_user_buff(user_id).main_buff))
+    else:
+        s, mainbuffmsg = ''
     secbuffdata = UserBuffDate(user_id).get_user_sec_buff_data()
-    secbuffmsg = get_sec_msg(secbuffdata) if get_sec_msg(
-        secbuffdata) != '无' else ''
+    secbuffmsg = get_sec_msg(secbuffdata) if get_sec_msg(secbuffdata) != '无' else ''
     msg = f"""
 道友的主功法：{mainbuffdata["name"] if mainbuffdata != None else '无'}
+{mainbuffmsg}
 道友的神通：{secbuffdata["name"] if secbuffdata != None else '无'}
 {secbuffmsg}
 """

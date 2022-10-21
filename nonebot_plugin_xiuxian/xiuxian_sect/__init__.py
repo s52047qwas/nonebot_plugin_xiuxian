@@ -40,6 +40,7 @@ sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, pri
 sect_task_complete = on_command("宗门任务完成", priority=5)
 sect_task_refresh = on_command("宗门任务刷新", priority=5)
 sect_mainbuff_get = on_command("宗门功法搜寻", aliases={"搜寻宗门功法"}, priority=5)
+sect_mainbuff_learn = on_command("宗门功法学习", aliases={"学习宗门功法"}, priority=5)
 
 __sect_help__ = f"""
 宗门帮助信息:
@@ -88,7 +89,35 @@ async def _():
     sql_message.sect_task_reset()
     logger.info('已重置用户宗门任务次数')
 
-mainbufftxt = {1:'人阶下品',2:'人阶上品',3:'黄阶下品',4:'黄阶上品',5:'玄阶下品',6:'玄阶上品',7:'地阶下品',8:'地阶上品',9:'天阶下品',10:'天阶上品'}
+
+@sect_mainbuff_learn.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_mainbuff_learn.finish(msg)
+    sect_id = user_info.sect_id
+    if sect_id:
+        sect_position = user_info.sect_position
+        if sect_position == 4:
+            await sect_mainbuff_learn.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!")
+        else:
+            sect_info = sql_message.get_sect_info(sect_id)
+            if sect_info.mainbuff == 0:
+                await sect_mainbuff_learn.finish(f"本宗尚未获得宗门功法，请宗主发送宗门功法搜寻来获得宗门功法！")
+            mainbuffconfig = config['宗门主功法参数']
+            mainbuffgear, mainbufftype = get_sectmainbufftxt(sect_info.sect_scale, mainbuffconfig)
+            #获取逻辑
+            materialscost = mainbuffgear * mainbuffconfig['学习资材消耗']
+            if sect_info.sect_materials >= materialscost:
+                sql_message.update_sect_materials(sect_id, materialscost, 2)
+                sql_message.updata_user_main_buff(user_info.user_id, sect_info.mainbuff)
+                mainbuff, mainbuffmsg = get_main_info_msg(str(sect_info.mainbuff))
+                await sect_mainbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}")
+            else:
+                await sect_mainbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！")
+    else:
+        await sect_mainbuff_learn.finish(f"道友尚未加入宗门！")
+
 @sect_mainbuff_get.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
@@ -102,18 +131,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if sect_position == owner_position:
             mainbuffconfig = config['宗门主功法参数']
             sect_info = sql_message.get_sect_info(sect_id)
-            mainbuffgear = divmod(sect_info.sect_scale, mainbuffconfig['建设度'])[0]
-            if mainbuffgear > 10:
-                mainbuffgear = 10
-            elif mainbuffgear == 0:
-                mainbuffgear = 1
+            mainbuffgear, mainbufftype = get_sectmainbufftxt(sect_info.sect_scale, mainbuffconfig)
             #获取逻辑
-            mainbufftype = mainbufftxt[mainbuffgear]
             stonecost = mainbuffgear * mainbuffconfig['获取消耗的灵石']
             materialscost = mainbuffgear * mainbuffconfig['获取消耗的资材']
             if sect_info.sect_used_stone >= stonecost and sect_info.sect_materials >= materialscost:
-                mainbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[mainbufftype]['gf_list'])
+                sql_message.update_sect_materials(sect_id, materialscost, 2)
+                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - stonecost, sect_info.sect_scale)
                 if random.randint(0, 100) <= mainbuffconfig['获取到功法的概率']:
+                    mainbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[mainbufftype]['gf_list'])
                     sql_message.update_sect_mainbuff(sect_id, mainbuffid)
                     mainbuff, mainbuffmsg = get_main_info_msg(mainbuffid)
                     await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}")
@@ -575,6 +601,20 @@ def isUserTask(user_id):
 
     return Flag
 
+
+def get_sectmainbufftxt(sect_scale, config):
+    """
+    获取宗门当前获取功法的品阶
+    参数：sect_scale=宗门建设度
+    config=宗门主功法参数
+    """
+    mainbufftxt = {1:'人阶下品',2:'人阶上品',3:'黄阶下品',4:'黄阶上品',5:'玄阶下品',6:'玄阶上品',7:'地阶下品',8:'地阶上品',9:'天阶下品',10:'天阶上品'}
+    mainbuffgear = divmod(sect_scale, config['建设度'])[0]
+    if mainbuffgear > 10:
+        mainbuffgear = 10
+    elif mainbuffgear == 0:
+        mainbuffgear = 1
+    return mainbuffgear, mainbufftxt[mainbuffgear]
 
 def get_sect_level(sect_id):
     sect = sql_message.get_sect_info(sect_id)
