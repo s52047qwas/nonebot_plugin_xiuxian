@@ -518,5 +518,15 @@
         "turncost":2,
         "desc":"不说了，开鳖!",
         "rate":100
+    },
+    "8906":{
+        "name":"日月乾坤",
+        "type":4,
+        "hpcost":0,
+        "mpcost":0.3,
+        "turncost":3,
+        "desc":"吔屎啦!",
+        "rate":100,
+        "success":100
     }
 }

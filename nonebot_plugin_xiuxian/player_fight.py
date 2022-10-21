@@ -39,6 +39,8 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
     player2js = 1  # 减伤率
     user1skillsh = 0
     user2skillsh = 0
+    user1buffturn = True
+    user2buffturn = True
     while True:
         msg1 = "{}发起攻击，造成了{}伤害\n"
         msg2 = "{}发起攻击，造成了{}伤害\n"
@@ -102,6 +104,14 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 if isSql:
                                     XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
                                     XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                        elif user1skill_type == 4:#封印类技能
+                            play_list.append(skillmsg)
+                            player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
+                            if isSql:
+                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                            if user1skillsh:#命中
+                                user2turnskip = False
+                                user2buffturn = False
 
                     else:  # 没放技能，打一拳
                         isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
@@ -168,24 +178,46 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             
                             if isSql:
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                    elif user1skill_type == 4:  #封印类技能
+                        player1turncost = player1turncost - 1
+                        skillmsg = get_persistent_skill_msg(player1['道号'], user1skilldate['name'], user1skillsh, player1turncost)
+                        play_list.append(skillmsg)
+                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        if isCrit:
+                            msg1 = "{}发起会心一击，造成了{}伤害\n"
+                        else:
+                            msg1 = "{}发起攻击，造成了{}伤害\n"
+                        play_list.append(msg1.format(player1['道号'], player1_sh))
+                        
+                        player2['气血'] = player2['气血'] - int(player1_sh * player2js)# 玩家1的伤害 * 玩家2的减伤
+                        play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
+                        if isSql:
+                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                        if player1turncost == 0:#封印时间到
+                            user2turnskip = True
+                            user2buffturn = True            
+                
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
-                if player1turncost == 0:
+                if player1turncost == 0 and user1buffturn:
                     user1turnskip = True
 
         else:  # 没有技能的derB
-            play_list.append(f"☆------{player1['道号']}的回合------☆")
-            isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
-            if isCrit:
-                msg1 = "{}发起会心一击，造成了{}伤害\n"
+            if user1turnskip:
+                play_list.append(f"☆------{player1['道号']}的回合------☆")
+                isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                if isCrit:
+                    msg1 = "{}发起会心一击，造成了{}伤害\n"
+                else:
+                    msg1 = "{}发起攻击，造成了{}伤害\n"
+                play_list.append(msg1.format(player1['道号'], player1_sh))
+                player2['气血'] = player2['气血'] - player1_sh
+                play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
+                if isSql:
+                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
             else:
-                msg1 = "{}发起攻击，造成了{}伤害\n"
-            play_list.append(msg1.format(player1['道号'], player1_sh))
-            player2['气血'] = player2['气血'] - player1_sh
-            play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-            if isSql:
-                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
 
         if player2['气血'] <= 0:  # 玩家2气血小于0，结算
             play_list.append("{}胜利".format(player1['道号']))
@@ -258,6 +290,15 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 if isSql:
                                     XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
                                     XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                                    
+                        elif user2skill_type == 4:#封印类技能
+                                play_list.append(skillmsg)
+                                player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
+                                if isSql:
+                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                                if user2skillsh:#命中
+                                    user1turnskip = False
+                                    user1buffturn = False
 
                     else:  # 没放技能
                         isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
@@ -324,23 +365,45 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             
                             if isSql:
                                 XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                                
+                    elif user2skill_type == 4:  #封印类技能
+                        player2turncost = player2turncost - 1
+                        skillmsg = get_persistent_skill_msg(player2['道号'], user2skilldate['name'], user2skillsh, player2turncost)
+                        play_list.append(skillmsg)
+                        isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                        if isCrit:
+                            msg2 = "{}发起会心一击，造成了{}伤害\n"
+                        else:
+                            msg2 = "{}发起攻击，造成了{}伤害\n"
+                        play_list.append(msg2.format(player2['道号'], player2_sh))
+                        
+                        player1['气血'] = player1['气血'] - int(player2_sh * player1js)# 玩家1的伤害 * 玩家2的减伤
+                        play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
+                        if isSql:
+                            XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                        if player2turncost == 0:#封印时间到
+                            user1turnskip = True
+                            user1buffturn =True       
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player2['道号']}动弹不得！------☆")
-                if player2turncost == 0:
+                if player2turncost == 0 and user2buffturn:
                     user2turnskip = True
         else:  # 没有技能的derB
-            play_list.append(f"☆------{player2['道号']}的回合------☆")
-            isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
-            if isCrit:
-                msg2 = "{}发起会心一击，造成了{}伤害\n"
+            if user2turnskip:
+                play_list.append(f"☆------{player2['道号']}的回合------☆")
+                isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                if isCrit:
+                    msg2 = "{}发起会心一击，造成了{}伤害\n"
+                else:
+                    msg2 = "{}发起攻击，造成了{}伤害\n"
+                play_list.append(msg2.format(player2['道号'], player2_sh))
+                player1['气血'] = player1['气血'] - player2_sh
+                play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
+                if isSql:
+                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
             else:
-                msg2 = "{}发起攻击，造成了{}伤害\n"
-            play_list.append(msg2.format(player2['道号'], player2_sh))
-            player1['气血'] = player1['气血'] - player2_sh
-            play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-            if isSql:
-                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+                play_list.append(f"☆------{player2['道号']}动弹不得！------☆")
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
             play_list.append("{}胜利".format(player2['道号']))
@@ -391,6 +454,9 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
     player1js = 1  # 减伤率
     boss['减伤'] = 1  # boss减伤率
     user1skillsh = 0
+    
+    user1buffturn = True
+    bossbuffturn = True
 
     get_stone = 0
     sh = 0
@@ -461,6 +527,15 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                                 sh += player1_sh
                                 if isSql:
                                     XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                                    
+                        elif user1skill_type == 4:#封印类技能
+                                play_list.append(skillmsg)
+                                player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
+                                if isSql:
+                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                                if user1skillsh:#命中
+                                    bossturnskip = False
+                                    bossbuffturn = False
 
                     else:  # 没放技能，打一拳
                         isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
@@ -522,7 +597,24 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                             play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
                             player1js = 1 - user1skillsh
                             sh += player1_sh
-
+                            
+                    elif user1skill_type == 4:  #封印类技能
+                        player1turncost = player1turncost - 1
+                        skillmsg = get_persistent_skill_msg(player1['道号'], user1skilldate['name'], user1skillsh, player1turncost)
+                        play_list.append(skillmsg)
+                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        if isCrit:
+                            msg1 = "{}发起会心一击，造成了{}伤害\n"
+                        else:
+                            msg1 = "{}发起攻击，造成了{}伤害\n"
+                        play_list.append(msg1.format(player1['道号'], player1_sh))
+                        
+                        boss['气血'] = boss['气血'] - int(player1_sh * bossjs)# 玩家1的伤害 * 玩家2的减伤
+                        play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
+                        sh += player1_sh
+                        if player1turncost == 0:#封印时间到
+                            bossturnskip = True
+                            bossbuffturn = True   
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
@@ -556,15 +648,18 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
 
         
         # 没有技能的derB
-        play_list.append(f"☆------{boss['name']}的回合------☆")
-        isCrit, boss_sh = get_turnatk(boss)  # 判定是否暴击
-        if isCrit:
-            msg2 = "{}发起会心一击，造成了{}伤害\n"
+        if bossturnskip:
+            play_list.append(f"☆------{boss['name']}的回合------☆")
+            isCrit, boss_sh = get_turnatk(boss)  # 判定是否暴击
+            if isCrit:
+                msg2 = "{}发起会心一击，造成了{}伤害\n"
+            else:
+                msg2 = "{}发起攻击，造成了{}伤害\n"
+            play_list.append(msg2.format(boss['name'], boss_sh))
+            player1['气血'] = player1['气血'] - (boss_sh * player1js)
+            play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
         else:
-            msg2 = "{}发起攻击，造成了{}伤害\n"
-        play_list.append(msg2.format(boss['name'], boss_sh))
-        player1['气血'] = player1['气血'] - (boss_sh * player1js)
-        play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
+            play_list.append(f"☆------{boss['name']}动弹不得！------☆")
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
           play_list.append("{}胜利".format(boss['name']))
@@ -618,6 +713,8 @@ def calculate_skill_cost(player, hpcost, mpcost):
     return player
 
 def get_persistent_skill_msg(username, skillname, sh, turn):
+    if sh == True:
+        return f"{username}的封印技能：{skillname}，剩余回合：{turn}！"
     return f"{username}的持续性技能：{skillname}，造成{sh}伤害，剩余回合：{turn}！"
 
 def get_skill_sh_data(player, secbuffdata):
@@ -664,6 +761,17 @@ def get_skill_sh_data(player, secbuffdata):
             skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}攻击力增加{skillsh}倍，持续{turncost}回合！"
         elif secbuffdata['bufftype'] == 2:
             skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}获得{skillsh * 100}%的减伤，持续{turncost}回合！"
+        
+        return skillmsg, skillsh, turncost
+    
+    elif secbuffdata['type'] == 4:#封印类技能
+        turncost = secbuffdata['turncost']
+        if random.randint(0, 100) <= secbuffdata['success']:#命中
+            skillsh = True
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，使对手动弹不得,{secbuffdata['desc']}持续{turncost}回合！"
+        else:#未命中
+            skillsh = False
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}但是被对手躲避！"
         
         return skillmsg, skillsh, turncost
     
