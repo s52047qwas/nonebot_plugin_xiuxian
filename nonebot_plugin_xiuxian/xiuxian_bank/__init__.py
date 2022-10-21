@@ -12,6 +12,7 @@ import os
 from ..xiuxian2_handle import XiuxianDateManage
 from datetime import datetime
 from .bankconfig import get_config
+from ..utils import data_check_conf
 
 config = get_config()
 
@@ -39,7 +40,7 @@ PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 
 @bank.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
-    
+    await data_check_conf(bot, event)
     mode = args[0] #存钱、取钱、升级会员、信息查看
     num = args[1] #数值
     if mode == None:

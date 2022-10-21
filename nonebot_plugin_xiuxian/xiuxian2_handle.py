@@ -314,6 +314,14 @@ class XiuxianDateManage:
             cur.execute(sql, (price, user_id))
             self.conn.commit()
 
+    def update_ls_all(self, price):
+        """所有用户增加灵石"""
+        cur = self.conn.cursor()
+        sql = f"UPDATE user_xiuxian SET stone=stone+?"
+        cur.execute(sql, (price,))
+        self.conn.commit()
+
+
     def get_ls_rank(self):
         """灵石排行榜"""
         sql = f"SELECT user_id,stone FROM user_xiuxian  WHERE stone>0 ORDER BY stone DESC LIMIT 5"

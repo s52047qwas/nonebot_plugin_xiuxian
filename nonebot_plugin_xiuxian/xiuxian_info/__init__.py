@@ -18,6 +18,7 @@ from ..data_source import jsondata
 from .draw_user_info import draw_user_info_img
 from ..cd_manager import add_cd, check_cd, cd_msg
 from .infoconfig import get_config
+from ..utils import data_check_conf
 
 config = get_config()
 
@@ -32,7 +33,8 @@ sql_message = XiuxianDateManage()  # sql类
 @xiuxian_message.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """我的修仙信息"""
-    
+    await data_check_conf(bot, event)
+
     if cd := check_cd(event, '查询信息'):
         # 如果 CD 还没到 则直接结束
         await xiuxian_message.finish(cd_msg(cd), at_sender=True)
@@ -102,13 +104,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 你的战力为：{int(mess.exp * level_rate * realm_rate)}"""
         await xiuxian_message.finish(msg, at_sender=True)
     
-    
 
-
-    
-    
-    
-    
 async def data_check(bot, event):
     user_qq = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())

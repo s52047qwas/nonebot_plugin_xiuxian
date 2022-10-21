@@ -16,7 +16,7 @@ from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg
+from ..utils import send_forward_msg, Txt2Img, data_check_conf
 from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
@@ -34,14 +34,16 @@ __buff_help__ = f"""
 """.strip()
 
 @buff_help.handle()
-async def _():
+async def _(bot: Bot, event: GroupMessageEvent):
     """修仙帮助"""
+    await data_check_conf(bot, event)
     msg = __buff_help__
     await buff_help.finish(msg)
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """切磋，不会掉血"""
+    await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await qc.finish(msg, at_sender=True)
@@ -107,6 +109,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 @out_closing.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """出关"""
+    await data_check_conf(bot, event)
     user_type = 0  # 状态0为无事件
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -214,6 +217,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @mind_state.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """我的状态信息。"""
+    await data_check_conf(bot, event)
     isUser, user_msg, msg = check_user(event)
     if not isUser:
         await mind_state.finish(msg)
@@ -241,6 +245,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @buffinfo.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await buffinfo.finish(msg)

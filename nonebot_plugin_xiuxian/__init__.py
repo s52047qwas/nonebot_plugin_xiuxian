@@ -17,7 +17,6 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.log import logger
 from typing import Any, Tuple
 from nonebot.params import CommandArg, RegexGroup
-from nonebot_plugin_txt2img import Txt2Img
 
 from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
@@ -26,6 +25,7 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
+from .utils import Txt2Img
 
 
 
@@ -40,11 +40,11 @@ sql_message = XiuxianDateManage()  # sql类
 from nonebot import load_all_plugins
 load_all_plugins(
         [
-            'nonebot_plugin_xiuxian.xiuxian_boss',
-            'nonebot_plugin_xiuxian.xiuxian_bank',
-            'nonebot_plugin_xiuxian.xiuxian_sect',
-            'nonebot_plugin_xiuxian.xiuxian_info',
-            'nonebot_plugin_xiuxian.xiuxian_buff',
+            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_boss',
+            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_bank',
+            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_sect',
+            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_info',
+            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_buff',
         ],
         [],
     )
@@ -54,6 +54,11 @@ load_all_plugins(
 @command.run_xiuxian.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """加入修仙"""
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except ConfError:
+        return
+
     user_id = event.get_user_id()
     user_name = (
         event.sender.card if event.sender.card else event.sender.nickname
@@ -77,6 +82,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
         return
+    except ConfError:
+        return
 
     result = sql_message.get_sign(user_id)
     sql_message.update_power2(user_id)
@@ -84,8 +91,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @command.help_in.handle()
-async def _():
+async def _(bot: Bot, event: GroupMessageEvent):
     """修仙帮助"""
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except ConfError:
+        return
+
     font_size = 30
     title = '修仙模拟器帮助信息'
     msg = help.__xiuxian_notes__
@@ -101,6 +113,8 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     if cd := check_cd(event, '金银阁'):
@@ -164,6 +178,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
         return
+    except ConfError:
+        return
 
     name, root_type = XiuxianJsonDate().linggen_get()
     result = sql_message.ramaker(name, root_type, user_id)
@@ -172,8 +188,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @command.rank.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """排行榜"""
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except ConfError:
+        return
+
     message = str(event.message)
 
     rank_msg = r'[\u4e00-\u9fa5]+'
@@ -207,8 +228,15 @@ async def _():
 
 
 @command.time_mes.handle()
-async def _(event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent):
     """押注超时校验"""
+    # try:
+    #     user_id, group_id, mess = await data_check(bot, event)
+    # except MsgError:
+    #     return
+    # except ConfError:
+    #     return
+
     msg = event.message
     if str(msg) == "金银阁":
         await time_mes.finish(f"指令已更新，例：金银阁10大、金银阁10猜3")
@@ -220,6 +248,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     user_name = args.extract_plain_text().strip()
@@ -239,6 +269,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     user_cd_message = sql_message.get_user_cd(user_id)
@@ -277,6 +309,8 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     if mess.hp is None:
@@ -339,9 +373,12 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
 
 @command.user_leveluprate.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """我的突破概率"""
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
     
     user_msg = sql_message.get_user_message(user_id)  # 用户信息
@@ -358,6 +395,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     user_message = sql_message.get_user_message(user_id)
@@ -436,6 +475,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     text = args.extract_plain_text().strip()
@@ -568,6 +609,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_id, group_id, user_message = await data_check(bot, event)
     except MsgError:
         return
+    except ConfError:
+        return
 
     if cd := check_cd(event, '偷灵石'):
         # 如果 CD 还没到 则直接结束
@@ -633,7 +676,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 # GM加灵石
 @command.gm_command.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except ConfError:
+        return
+
     give_qq = None  # 艾特的时候存到这里
     msg = args.extract_plain_text().strip()
 
@@ -660,7 +708,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
             )
         else:
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
-    if nick_name:
+    elif nick_name:
         give_message = sql_message.get_user_message2(nick_name[0])
         if give_message:
             sql_message.update_ls(give_message.user_id, give_stone_num, 1)  # 增加用户灵石
@@ -670,7 +718,8 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await give_stone.finish("对方未踏入修仙界，不可赠送！")
     else:
-        await give_stone.finish("未获取道号信息，请输入正确的道号！")
+        sql_message.update_ls_all(give_stone_num)
+        await give_stone.finish(f"全服通告：赠送所有用户{give_stone_num}灵石,请注意查收！")
 
 
 @command.rob_stone.handle()
@@ -695,6 +744,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     if user_msg.hp is None or user_msg.hp == 0:
@@ -802,6 +853,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """重置用户状态。
     单用户：重置状态@xxx
     多用户：重置状态"""
+
+    try:
+        user_id, group_id, user_msg = await data_check(bot, event)
+    except ConfError:
+        return
+
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
         if arg.type == "at":
@@ -816,8 +873,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @command.open_robot.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """抢灵石开关配置"""
+
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+    except ConfError:
+        return
+
     group_msg = str(event.message)
     print(group_msg)
 
@@ -837,8 +902,10 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 async def _(bot: Bot, event: GroupMessageEvent):
     """坊市"""
     try:
-        user_id, group_id, user_msg = await data_check(bot, event)
+        user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     data = jsondata.shop_data()
@@ -869,6 +936,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
         return
+    except ConfError:
+        return
 
     goods_data = jsondata.shop_data()
     get_goods = str(args)
@@ -898,6 +967,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_id, group_id, user_msg = await data_check(bot, event)
     except MsgError:
         return
+    except ConfError:
+        return
     data = jsondata.shop_data()  # 物品json信息
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息
 
@@ -917,8 +988,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     #  "remake", "day_num", "all_num", "action_time", "state"]
     """
     try:
-        user_id, group_id, user_msg = await data_check(bot, event)
+        user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
+        return
+    except ConfError:
         return
 
     await use.finish('调试中，未开启！')
@@ -930,6 +1003,23 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if i[2] == get_goods:
             pass
 
+
+@command.open_xiuxian.handle()
+async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+    """群修仙开关配置"""
+    group_msg = str(event.message)
+    group_id = await get_group_id(event.get_session_id())
+
+    if "启用" in group_msg:
+        JsonConfig().write_data(3, group_id)
+        await open_robot.finish("当前群聊修仙模组已启用！")
+
+    elif "禁用" in group_msg:
+        JsonConfig().write_data(4, group_id)
+        await open_robot.finish("当前群聊修仙模组已禁用！")
+
+    else:
+        await open_robot.finish("指令错误!")
 
 # -----------------------------------------------------------------------------
 
@@ -962,6 +1052,17 @@ async def data_check(bot, event):
     user_qq = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())
     msg = sql_message.get_user_message(user_qq)
+    conf_data = JsonConfig().read_data()
+
+    try:
+        if group_id in conf_data["group"]:
+            print('当前存在禁用数据')
+            await bot.send(event=event, message=f"本群已关闭修仙模组，请联系管理员开启！")
+            raise ConfError
+        else:
+            pass
+    except KeyError:
+        pass
 
     if msg:
         pass
@@ -973,6 +1074,10 @@ async def data_check(bot, event):
 
 
 class MsgError(ValueError):
+    pass
+
+
+class ConfError(ValueError):
     pass
 
 
