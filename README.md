@@ -79,6 +79,8 @@ nonebot.load_plugin('nonebot-plugin-xiuxian')
         ],
   其中“nonebot_plugin_xiuxian.xiuxian_boss”修为为bot路径：例如：
   'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_boss'
+  
+ - 当前加载了nonebot-plugin-txt2img插件的图片配置，请在data目录下载配置文件：TXT2IMG
 
 
 ## 更新
