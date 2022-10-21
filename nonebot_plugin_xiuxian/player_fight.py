@@ -645,6 +645,8 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             play_list.append("{}胜利".format(player1['道号']))
             suc = f"{player1['道号']}"
             get_stone = bossnowstone
+            if isSql:
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
 
             break
 
@@ -665,8 +667,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             play_list.append(msg2.format(boss['name'], boss_sh))
             player1['气血'] = player1['气血'] - (boss_sh * player1js)
             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-            if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+            
         else:
             play_list.append(f"☆------{boss['name']}动弹不得！------☆")
 
