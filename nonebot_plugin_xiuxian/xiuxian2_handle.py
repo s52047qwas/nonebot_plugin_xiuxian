@@ -25,6 +25,9 @@ SectInfo = namedtuple("SectInfo",
 BuffInfo = namedtuple("BuffInfo",
                       ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon"])
 
+back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
+                           "remake", "day_num", "all_num", "action_time", "state"])
+
 num = '578043031'
 
 
@@ -119,10 +122,24 @@ class XiuxianDateManage:
 );""")
             elif i == "back":
                 try:
-                    c.execute("""DROP TABLE back;""")
+                    c.execute(f"select count(1) from {i}")
                 except sqlite3.OperationalError:
                     pass
-            
+                    c.execute("""CREATE TABLE "back" (
+  "user_id" INTEGER NOT NULL,
+  "goods_id" INTEGER NOT NULL,
+  "goods_name" TEXT,
+  "goods_type" TEXT,
+  "goods_num" INTEGER,
+  "create_time" TEXT,
+  "update_time" TEXT,
+  "remake" TEXT,
+  "day_num" INTEGER DEFAULT 0,
+  "all_num" INTEGER DEFAULT 0,
+  "action_time" TEXT,
+  "state" INTEGER DEFAULT 0
+);""")
+
             elif i == "BuffInfo":
                 try:
                     c.execute(f"select count(1) from {i}")
@@ -657,13 +674,13 @@ class XiuxianDateManage:
 
     def get_back_msg(self, user_id):
         """获取用户背包信息"""
-        sql = f"SELECT name FROM back where user_id=?"
+        sql = f"SELECT * FROM back where user_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, )
+        cur.execute(sql, (user_id,))
         result = cur.fetchall()
-        msg = f"你的背包\n"
-        for i in result:
-            msg += f"{i},"
+        # msg = f"你的背包\n"
+        # for i in result:
+        #     msg += f"{i},"
         return result
 
     def goods_num(self, user_id, goods_id):
@@ -710,7 +727,7 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, )
         self.conn.commit()
-    
+
     def update_sect_scale_and_used_stone(self, sect_id, sect_used_stone, sect_scale):
         """更新宗门灵石、建设度"""
         sql = f"UPDATE sects SET sect_used_stone=?,sect_scale=? where sect_id=?"
@@ -780,25 +797,43 @@ class XiuxianDateManage:
         self.conn.commit()
     
     
-
-    def send_back(self, user_id, goods_id, name, type_n, num, remake):
+    def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num):
         """
         插入物品至背包
         :param user_id: 用户qq
         :param goods_id: 物品id
-        :param name: 物品名称
-        :param type_n: 物品类型
-        :param num: 物品数量
-        :param remake: 备注
+        :param goods_name: 物品名称
+        :param goods_type: 物品类型
+        :param goods_num: 物品数量
         :return: None
         """
-        # sql = f"UPDATE back SET user_id=?,goods_id=?,name=?,type=?,num=?"
-
-        sql = f"INSERT INTO back(user_id, goods_id, name, type,num, remake) VALUES (?,?,?,?,?,?)"
+        now_time = datetime.datetime.now()
+        # 检查物品是否存在，存在则update
+        check_sql = f"select goods_num from back where user_id=? and goods_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, (user_id, goods_id, name, type_n, num, remake))
-        self.conn.commit()
+        cur.execute(check_sql, (user_id, goods_id))
+        result = cur.fetchone()
 
+        if result:
+            # 判断是否存在，存在则update
+            goods_nums = int(result[0]) + goods_num
+            sql = f"UPDATE back set goods_num=?,update_time=? WHERE user_id=? and goods_id=?"
+            cur.execute(sql, (goods_nums, now_time, user_id, goods_id))
+            self.conn.commit()
+        else:
+            # 判断是否存在，不存在则INSERT
+            sql = """
+                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time)
+            VALUES (?,?,?,?,?,?,?)"""
+            cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time))
+            self.conn.commit()
+
+    def update_back(self, user_id, goods_id, msg):
+        """使用物品"""
+        check_sql = f"select goods_num from back where user_id=? and goods_id=?"
+        cur = self.conn.cursor()
+        cur.execute(check_sql, (user_id, goods_id))
+        result = cur.fetchone()
 
 
 class XiuxianJsonDate:

@@ -8,15 +8,17 @@ from nonebot.adapters.onebot.v11 import (
     Message,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment,
 )
 from nonebot.params import CommandArg, RegexGroup
 from ..data_source import jsondata
 from ..xiuxian_config import XiuConfig
+from nonebot_plugin_txt2img import Txt2Img
 import re
 from .sectconfig import get_config
 import random
 from ..cd_manager import add_cd, check_cd, cd_msg
-from ..utils import check_user
+from ..utils import check_user,send_forward_msg
 from ..read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
 
 config = get_config()
@@ -45,7 +47,6 @@ sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通
 sect_secbuff_learn = on_command("宗门神通学习", aliases={"学习宗门神通"}, priority=5)
 
 __sect_help__ = f"""
-宗门帮助信息:
 指令：
 1、我的宗门：查看当前所处宗门信息
 2、创建宗门：创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
@@ -71,8 +72,14 @@ userstask = {}
 @sect_help.handle()
 async def _():
     """修仙帮助"""
+    font_size = 26
+    title = "宗门帮助信息"
     msg = __sect_help__
-    await sect_help.finish(msg)
+    img = Txt2Img(font_size)
+    pic = img.save(title, msg)
+    await sect_help.finish(MessageSegment.image(pic))
+#     msg = __sect_help__
+#     await sect_help.finish(msg)
 
 sql_message = XiuxianDateManage()  # sql类
 
@@ -289,14 +296,18 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @sect_list.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    """宗门列表：当前为返回转发内容"""
     sectlists = sql_message.get_all_scale()
     msg = ''
+    msg_list = []
     for sect in sectlists:
-        print(sect)
+        # print(sect)
         user_name = sql_message.get_user_message(sect.sect_owner).user_name
         msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
-    
-    await sect_list.finish(msg)
+        msg_list.append(f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
+
+    await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
+    # await sect_list.finish(msg)
 
 @sect_task.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -721,4 +732,5 @@ async def get_group_id(session_id):
 
 class MsgError(ValueError):
     pass
+
 
