@@ -441,6 +441,8 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
     """
     user1buffdate = UserBuffDate(player1['user_id'])#1号的buff信息
     user1mainbuffdata = user1buffdate.get_user_main_buff_data()
+    user1hpbuff = user1mainbuffdata['hpbuff'] if user1mainbuffdata != None else 0
+    user1mpbuff = user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0
 
     # 有技能，则开启技能模式
 
@@ -643,7 +645,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             suc = f"{player1['道号']}"
             get_stone = bossnowstone
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1mainbuffdata['hpbuff'] if user1mainbuffdata != None else 0)), int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0)))
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1hpbuff)), int(player1['真元'] / (1 + user1mpbuff)))
 
             break
 
@@ -676,7 +678,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             boss['stone'] = bossnowstone - get_stone
 
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0)))
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mpbuff)))
             
             break
 
