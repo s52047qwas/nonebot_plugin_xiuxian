@@ -440,6 +440,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
     {"user_id": None,"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None, 'exp':None}
     """
     user1buffdate = UserBuffDate(player1['user_id'])#1号的buff信息
+    user1mainbuffdata = user1buffdate.get_user_main_buff_data()
 
     # 有技能，则开启技能模式
 
@@ -475,6 +476,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
         msg2 = "{}发起攻击，造成了{}伤害\n"
         if player1_skil_open:  # 是否开启技能
             if user1turnskip:  # 无需跳过回合
+                print(player1turncost)
                 play_list.append(f"☆------{player1['道号']}的回合------☆")
                 user1hpconst, user1mpcost, user1skill_type, skillrate = get_skill_hp_mp_data(player1, user1skilldate)
                 if player1turncost == 0:  # 没有持续性技能生效
@@ -487,8 +489,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                             boss['气血'] = boss['气血'] - int(user1skillsh * bossjs)  # 玩家1的伤害 * boss的减伤
                             play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
                             sh += user1skillsh
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
 
                         elif user1skill_type == 2:  # 持续性伤害技能
                             play_list.append(skillmsg)
@@ -496,8 +497,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                             boss['气血'] = boss['气血'] - int(user1skillsh * bossjs)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
                             sh += user1skillsh
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
 
                         elif user1skill_type == 3:  # buff类技能
                             user1buff_type = user1skilldate['bufftype']
@@ -513,8 +513,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                                 boss['气血'] = boss['气血'] - int(player1_sh * bossjs)# 玩家1的伤害 * 玩家2的减伤
                                 play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
                                 sh += player1_sh
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
 
                             elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
                                 isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
@@ -530,14 +529,12 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                                 play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
                                 player1js = 1 - user1skillsh
                                 sh += player1_sh
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                                     
                         elif user1skill_type == 4:#封印类技能
                                 play_list.append(skillmsg)
                                 player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                                 if user1skillsh:#命中
                                     bossturnskip = False
                                     bossbuffturn = False
@@ -580,11 +577,11 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
                             else:
                                 msg1 = "{}发起攻击，造成了{}伤害\n"
-                            play_list.append(skillmsg)
+                            player1turncost = player1turncost - 1
+                            play_list.append(f"{user1skilldate['name']}增伤剩余:{player1turncost}回合")
                             play_list.append(msg1.format(player1['道号'], player1_sh))
                             boss['气血'] = boss['气血'] - int(player1_sh * bossjs)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{boss['name']}剩余血量{boss['气血']}")
-                            player1turncost = player1turncost - 1
                             sh += player1_sh
 
 
@@ -646,7 +643,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             suc = f"{player1['道号']}"
             get_stone = bossnowstone
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1mainbuffdata['hpbuff'])), int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'])))
 
             break
 
@@ -679,7 +676,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
             boss['stone'] = bossnowstone - get_stone
 
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, player1['真元'])
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mainbuffdata['mpbuff'])))
             
             break
 
