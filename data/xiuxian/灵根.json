@@ -1,0 +1,50 @@
+{
+  "混沌灵根" : {
+    "type_rate" : 1,
+    "type_list" : ["全属性灵根"],
+    "type_speeds" : 2.0,
+    "type_flag" : []
+  },
+   "融合灵根" : {
+    "type_rate" : 3,
+    "type_list" : ["融合万物灵根"],
+    "type_speeds" : 1.7,
+    "type_flag" : []
+  },
+  "超灵根" : {
+    "type_rate" : 10,
+    "type_list" : ["日灵根","月灵根"],
+    "type_speeds" : 1.5,
+    "type_flag" : []
+  },
+   "龙灵根" : {
+    "type_rate" : 13,
+    "type_list" : ["空间灵根","时间灵根","言灵灵根"],
+    "type_speeds" : 1.4,
+    "type_flag" : []
+  },
+   "天灵根" : {
+    "type_rate" : 18,
+    "type_list" : ["金灵根","木灵根","水灵根","火灵根","土灵根"],
+    "type_speeds" : 1.3,
+     "type_flag" : []
+  },
+  "变异灵根" : {
+    "type_rate" : 20,
+    "type_list" : ["雷灵根","冰灵根","暗灵根","风灵根","光灵根"],
+    "type_speeds" : 1.2,
+    "type_flag" : []
+  },
+  "真灵根" : {
+    "type_rate" : 30,
+    "type_list" : ["金","木","水","火","土"],
+    "type_speeds" : 1,
+    "type_flag" : [2,3]
+  },
+  "伪灵根" : {
+    "type_rate" : 5,
+    "type_list" : ["四属性灵根","五属性灵根"],
+    "type_speeds" : 0.8,
+    "type_flag" : []
+  }
+}
