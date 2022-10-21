@@ -200,6 +200,8 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
+                if player1turncost > 0:
+                    player1turncost -= 1
                 if player1turncost == 0 and user1buffturn:
                     user1turnskip = True
 
@@ -387,6 +389,8 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player2['道号']}动弹不得！------☆")
+                if player2turncost > 0:
+                    player2turncost -= 1
                 if player2turncost == 0 and user2buffturn:
                     user2turnskip = True
         else:  # 没有技能的derB
@@ -619,6 +623,8 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
 
             else:  # 休息回合-1
                 play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
+                if player1turncost > 0:
+                    player1turncost -= 1
                 if player1turncost == 0:
                     user1turnskip = True
 
