@@ -97,19 +97,19 @@ async def _():
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await sect_mainbuff_learn.finish(msg)
+        await sect_mainbuff_learn.finish(msg, at_sender=True)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
         if sect_position == 4:
-            await sect_mainbuff_learn.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!")
+            await sect_mainbuff_learn.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!", at_sender=True)
         else:
             sect_info = sql_message.get_sect_info(sect_id)
             if sect_info.mainbuff == 0:
-                await sect_mainbuff_learn.finish(f"本宗尚未获得宗门功法，请宗主发送宗门功法搜寻来获得宗门功法！")
+                await sect_mainbuff_learn.finish(f"本宗尚未获得宗门功法，请宗主发送宗门功法搜寻来获得宗门功法！", at_sender=True)
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             if userbuffinfo.main_buff == sect_info.mainbuff:
-                await sect_mainbuff_learn.finish(f"道友已经习得了本宗功法，请勿重复学习！")
+                await sect_mainbuff_learn.finish(f"道友已经习得了本宗功法，请勿重复学习！", at_sender=True)
             mainbuffconfig = config['宗门主功法参数']
             mainbuffgear, mainbufftype = get_sectbufftxt(sect_info.sect_scale, mainbuffconfig)
             #获取逻辑
@@ -118,17 +118,17 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
                 sql_message.updata_user_main_buff(user_info.user_id, sect_info.mainbuff)
                 mainbuff, mainbuffmsg = get_main_info_msg(str(sect_info.mainbuff))
-                await sect_mainbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}")
+                await sect_mainbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}", at_sender=True)
             else:
-                await sect_mainbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！")
+                await sect_mainbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！", at_sender=True)
     else:
-        await sect_mainbuff_learn.finish(f"道友尚未加入宗门！")
+        await sect_mainbuff_learn.finish(f"道友尚未加入宗门！", at_sender=True)
 
 @sect_mainbuff_get.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await sect_mainbuff_get.finish(msg)
+        await sect_mainbuff_get.finish(msg, at_sender=True)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -148,22 +148,22 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     mainbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[mainbufftype]['gf_list'])
                     sql_message.update_sect_mainbuff(sect_id, mainbuffid)
                     mainbuff, mainbuffmsg = get_main_info_msg(mainbuffid)
-                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}")
+                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}", at_sender=True)
                 else:
-                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，可惜失败了！")
+                    await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，可惜失败了！", at_sender=True)
 
             else:
-                await sect_mainbuff_get.finish(f"本次搜寻需要消耗{stonecost}宗门灵石，{materialscost}宗门资材，不满足条件！")
+                await sect_mainbuff_get.finish(f"本次搜寻需要消耗{stonecost}宗门灵石，{materialscost}宗门资材，不满足条件！", at_sender=True)
         else:
-            await sect_mainbuff_get.finish(f"道友不是宗主，无法使用该命令！")
+            await sect_mainbuff_get.finish(f"道友不是宗主，无法使用该命令！", at_sender=True)
     else:
-        await sect_mainbuff_get.finish(f"道友尚未加入宗门！")
+        await sect_mainbuff_get.finish(f"道友尚未加入宗门！", at_sender=True)
 
 @sect_secbuff_get.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await sect_secbuff_get.finish(msg)
+        await sect_secbuff_get.finish(msg, at_sender=True)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -184,34 +184,34 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     sql_message.update_sect_secbuff(sect_id, secbuffid)
                     secbuff = BuffJsonDate().get_sec_buff(secbuffid)
                     secmsg = get_sec_msg(secbuff)
-                    await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{secbufftype}神通：{secbuff['name']}\n{secmsg}")
+                    await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{secbufftype}神通：{secbuff['name']}\n{secmsg}", at_sender=True)
                 else:
-                    await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，可惜失败了！")
+                    await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，可惜失败了！", at_sender=True)
 
             else:
-                await sect_secbuff_get.finish(f"本次搜寻需要消耗{stonecost}宗门灵石，{materialscost}宗门资材，不满足条件！")
+                await sect_secbuff_get.finish(f"本次搜寻需要消耗{stonecost}宗门灵石，{materialscost}宗门资材，不满足条件！", at_sender=True)
         else:
-            await sect_secbuff_get.finish(f"道友不是宗主，无法使用该命令！")
+            await sect_secbuff_get.finish(f"道友不是宗主，无法使用该命令！", at_sender=True)
     else:
-        await sect_secbuff_get.finish(f"道友尚未加入宗门！")
+        await sect_secbuff_get.finish(f"道友尚未加入宗门！", at_sender=True)
         
 @sect_secbuff_learn.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await sect_secbuff_learn.finish(msg)
+        await sect_secbuff_learn.finish(msg, at_sender=True)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
         if sect_position == 4:
-            await sect_secbuff_learn.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!")
+            await sect_secbuff_learn.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!", at_sender=True)
         else:
             sect_info = sql_message.get_sect_info(sect_id)
             if sect_info.secbuff == 0:
-                await sect_secbuff_learn.finish(f"本宗尚未获得宗门神通，请宗主发送宗门神通搜寻来获得宗门神通！")
+                await sect_secbuff_learn.finish(f"本宗尚未获得宗门神通，请宗主发送宗门神通搜寻来获得宗门神通！", at_sender=True)
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             if userbuffinfo.sec_buff == sect_info.secbuff:
-                await sect_secbuff_learn.finish(f"道友已经习得了本宗神通，请勿重复学习！")
+                await sect_secbuff_learn.finish(f"道友已经习得了本宗神通，请勿重复学习！", at_sender=True)
             secbuffconfig = config['宗门神通参数']
             secbuffgear, secbufftype = get_sectbufftxt(sect_info.sect_scale, secbuffconfig)
             #获取逻辑
@@ -221,11 +221,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 sql_message.updata_user_sec_buff(user_info.user_id, sect_info.secbuff)
                 secbuff = BuffJsonDate().get_sec_buff(str(sect_info.secbuff))
                 secmsg = get_sec_msg(secbuff)
-                await sect_secbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{secbufftype}神通：{secbuff['name']}\n{secbuff['name']}：{secmsg}")
+                await sect_secbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{secbufftype}神通：{secbuff['name']}\n{secbuff['name']}：{secmsg}", at_sender=True)
             else:
-                await sect_secbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！")
+                await sect_secbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！", at_sender=True)
     else:
-        await sect_secbuff_learn.finish(f"道友尚未加入宗门！")
+        await sect_secbuff_learn.finish(f"道友尚未加入宗门！", at_sender=True)
 
 
 @upatkpractice.handle()

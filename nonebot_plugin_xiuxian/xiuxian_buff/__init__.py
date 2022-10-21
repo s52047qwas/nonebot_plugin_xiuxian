@@ -17,6 +17,7 @@ from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
 from ..utils import send_forward_msg
+from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
@@ -26,21 +27,45 @@ sql_message = XiuxianDateManage()  # sql类
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """重置用户状态。
-    单用户：重置状态@xxx
-    多用户：重置状态"""
+    """切磋，不会掉血"""
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await qc.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
-
     if give_qq:
+        if give_qq == str(user_id):
+            await qc.finish("道友不会左右互搏之术！")
+        
+        
+        user2 = sql_message.get_user_message(give_qq)
+        if user2:
+            if user_info.hp is None or user_info.hp == 0:
+                #判断用户气血是否为None
+                sql_message.update_user_hp(user_id)
+                user_info = sql_message.get_user_message(user_id)
+            if user2.hp is None:
+                sql_message.update_user_hp(give_qq)
+                user2 = sql_message.get_user_message(give_qq)
+
+            if user2.hp <= user2.exp/10:
+                await qc.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
+
+            if user_info.hp <= user_info.exp/10:
+                await qc.finish("重伤未愈，动弹不得！", at_sender=True)
+                
+        if cd := check_cd(event, '切磋'):
+            # 如果 CD 还没到 则直接结束
+            await qc.finish(cd_msg(cd), at_sender=True)
         player1 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
-        user1 = XiuxianDateManage().get_user_message(event.get_user_id())
-        user2 = XiuxianDateManage().get_user_message(give_qq)
+        user1 = user_info
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
@@ -57,10 +82,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2['会心'] = 1
         player2['exp'] = user2.exp
         
-        print('开始切磋')
         result, victor = Player_fight(player1, player2, 1)
+        add_cd(event, 300, '切磋')
         await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
         await qc.finish(f"获胜的是{victor}")
+    else:
+        await qc.finish("没有对方的信息！")
 
 
 @out_closing.handle()
@@ -195,7 +222,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 修炼效率：{int((level_rate * realm_rate) * (1 + mainbuffratebuff)  * 100)}%
 """
 
-    await mind_state.finish(user)
+    await mind_state.finish(user, at_sender=True)
 
 
 @buffinfo.handle()
@@ -208,7 +235,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if mainbuffdata != None:
         s, mainbuffmsg = get_main_info_msg(str(get_user_buff(user_id).main_buff))
     else:
-        s, mainbuffmsg = ''
+        mainbuffmsg = ''
     secbuffdata = UserBuffDate(user_id).get_user_sec_buff_data()
     secbuffmsg = get_sec_msg(secbuffdata) if get_sec_msg(secbuffdata) != '无' else ''
     msg = f"""
@@ -217,5 +244,5 @@ async def _(bot: Bot, event: GroupMessageEvent):
 道友的神通：{secbuffdata["name"] if secbuffdata != None else '无'}
 {secbuffmsg}
 """
-    await buffinfo.finish(msg)
+    await buffinfo.finish(msg, at_sender=True)
 
