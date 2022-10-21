@@ -450,6 +450,7 @@ def Boss_fight(player1: dict, boss: dict, type_in = 2):
     if type_in == 2:
         isSql = True
     user1turnskip = True
+    bossturnskip = True
     player1turncost = 0  # 先设定为初始值 0
     player1js = 1  # 减伤率
     boss['减伤'] = 1  # boss减伤率
