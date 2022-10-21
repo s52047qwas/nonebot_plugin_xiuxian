@@ -23,7 +23,21 @@ buffinfo = on_command("我的功法", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 qc = on_command("切磋", priority=5)
+buff_help = on_command("功法帮助", priority=5)
 sql_message = XiuxianDateManage()  # sql类
+
+__buff_help__ = f"""
+功法帮助信息:
+指令：
+1、我的功法：查看自身功法信息
+2、切磋，at对应人员，不会消耗气血
+""".strip()
+
+@buff_help.handle()
+async def _():
+    """修仙帮助"""
+    msg = __buff_help__
+    await buff_help.finish(msg)
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
