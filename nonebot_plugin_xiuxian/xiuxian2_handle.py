@@ -194,6 +194,18 @@ class XiuxianDateManage:
         else:
             return UserDate(*final_user_data(result))
 
+    def get_user_real_info(self, user_id):
+        """根据USER_ID获取用户信息，不获取功法加成"""
+        cur = self.conn.cursor()
+        sql = f"select * from user_xiuxian where user_id=?"
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserDate(*result)
+
+
     def get_sect_info(self, sect_id):
         """
         通过宗门编号获取宗门信息
@@ -1103,7 +1115,7 @@ class OtherSet(XiuConfig):
         return play_list, suc
 
     def send_hp_mp(self, user_id, hp, mp):
-        user_msg = XiuxianDateManage().get_user_message(user_id)
+        user_msg = XiuxianDateManage().get_user_real_info(user_id)
         max_hp = int(user_msg.exp/2)
         max_mp = int(user_msg.exp)
 
