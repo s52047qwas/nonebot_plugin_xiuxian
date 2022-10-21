@@ -6,19 +6,23 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     GroupMessageEvent,
 )
+from datetime import datetime
 from nonebot import get_bot, on_command, on_regex, require
-from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
+from ..xiuxian_config import XiuConfig, JsonConfig
 from ..utils import check_user
+from ..data_source import jsondata
 from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_buff
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
 from ..utils import send_forward_msg
 
-buffinfo = on_command("我的buff", aliases={"我的Buff", "我的BUFF"}, priority=5)
-
+buffinfo = on_command("我的功法", priority=5)
+out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
+mind_state = on_command("我的状态", priority=5)
 qc = on_command("切磋", priority=5)
-
+sql_message = XiuxianDateManage()  # sql类
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -59,7 +63,139 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await qc.finish(f"获胜的是{victor}")
 
 
-Buffjsondata = BuffJsonDate()
+@out_closing.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    """出关"""
+    user_type = 0  # 状态0为无事件
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await out_closing.finish(msg)
+    user_id = user_info.user_id
+    user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
+    level = user_mes.level
+    use_exp = user_mes.exp
+    hp_speed = 15
+    mp_speed = 15
+
+    max_exp = (
+            int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
+    )  # 获取下个境界需要的修为 * 1.5为闭关上限
+    user_get_exp_max = int(max_exp) - use_exp
+
+    if user_get_exp_max < 0:
+        # 校验当当前修为超出上限的问题，不可为负数
+        user_get_exp_max = 0
+
+    now_time = datetime.now()
+    user_cd_message = sql_message.get_user_cd(user_id)
+
+    if user_cd_message is None:
+        # 不存在用户信息
+        await out_closing.finish("没有查到道友的信息，修炼发送【闭关】，进入修炼状态！", at_sender=True)
+
+    elif user_cd_message.type == 0:
+        # 用户状态为0
+        await out_closing.finish("道友现在什么都没干呢~", at_sender=True)
+
+    elif user_cd_message.type == 1:
+        # 用户状态为1
+        in_closing_time = datetime.strptime(
+            user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
+        )  # 进入闭关的时间
+        exp_time = (
+                OtherSet().date_diff(now_time, in_closing_time) // 60
+        )  # 闭关时长计算(分钟) = second // 60
+        level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
+        realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+        mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+        mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0#功法修炼倍率
+        exp = int(
+            exp_time * XiuConfig().closing_exp * level_rate * realm_rate * (1 + mainbuffratebuff)
+        )  # 本次闭关获取的修为
+
+        if exp >= user_get_exp_max:
+            # 用户获取的修为到达上限
+            sql_message.in_closing(user_id, user_type)
+            sql_message.update_exp(user_id, user_get_exp_max)
+            sql_message.update_power2(user_id)  # 更新战力
+
+            result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp*mp_speed))
+            sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
+            await out_closing.finish(
+                "闭关结束，本次闭关到达上限，共增加修为：{}{}{}".format(user_get_exp_max, result_msg[0], result_msg[1]), at_sender=True
+            )
+        else:
+            # 用户获取的修为没有到达上限
+
+            if str(event.message) == "灵石出关":
+                user_stone = user_mes.stone  # 用户灵石数
+                if exp <= user_stone:
+                    exp = exp * 2
+                    sql_message.in_closing(user_id, user_type)
+                    sql_message.update_exp(user_id, exp)
+                    sql_message.update_ls(user_id, int(exp / 2), 2)
+                    sql_message.update_power2(user_id)  # 更新战力
+
+                    result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
+                    sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1],
+                                                      int(result_hp_mp[2] / 10))
+                    await out_closing.finish(
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, int(exp / 2),
+                                                                      result_msg[0], result_msg[1]), at_sender=True
+                    )
+                else:
+                    exp = exp + user_stone
+                    sql_message.in_closing(user_id, user_type)
+                    sql_message.update_exp(user_id, exp)
+                    sql_message.update_ls(user_id, user_stone, 2)
+                    sql_message.update_power2(user_id)  # 更新战力
+                    result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
+                    sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1],
+                                                      int(result_hp_mp[2] / 10))
+                    await out_closing.finish(
+                        "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, user_stone,
+                                                                  result_msg[0], result_msg[1]), at_sender=True
+                    )
+            else:
+                sql_message.in_closing(user_id, user_type)
+                sql_message.update_exp(user_id, exp)
+                sql_message.update_power2(user_id)  # 更新战力
+                result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
+                sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
+                await out_closing.finish(
+                    "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
+                                                          result_msg[1]), at_sender=True
+                )
+
+    elif user_cd_message.type == 2:
+        await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
+
+@mind_state.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    """我的状态信息。"""
+    isUser, user_msg, msg = check_user(event)
+    if not isUser:
+        await mind_state.finish(msg)
+    user_id = user_msg.user_id
+
+    if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
+        sql_message.update_user_hp(user_id)
+    
+    level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
+    mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+    mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0
+    mainhpbuff = mainbuffdata['hpbuff'] if mainbuffdata != None else 0
+    mainmpbuff = mainbuffdata['mpbuff'] if mainbuffdata != None else 0
+    user = f"""道号：{user_msg.user_name}
+气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + mainhpbuff))}
+真元：{user_msg.mp}/{int((user_msg.exp) * (1 + mainmpbuff))}
+攻击：{user_msg.atk}
+攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
+修炼效率：{int((level_rate * realm_rate) * (1 + mainbuffratebuff)  * 100)}%
+"""
+
+    await mind_state.finish(user)
 
 
 @buffinfo.handle()
@@ -107,6 +243,6 @@ def get_sec_msg(secbuffdata):
         elif secbuffdata['bufftype'] == 2:
             msg = f"增强自身，提高{secbuffdata['buffvalue'] * 100}%减伤率{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
     elif secbuffdata['type'] == 4:
-        msg = f"封印对手{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%，命中成功率{secbuffdata['success']}"
+        msg = f"封印对手{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%，命中成功率{secbuffdata['success']}%"
 
     return msg
