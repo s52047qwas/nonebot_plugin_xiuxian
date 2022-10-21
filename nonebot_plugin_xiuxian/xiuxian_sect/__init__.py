@@ -42,9 +42,11 @@ sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, pri
 sect_task_complete = on_command("宗门任务完成", priority=5)
 sect_task_refresh = on_command("宗门任务刷新", priority=5)
 sect_mainbuff_get = on_command("宗门功法搜寻", aliases={"搜寻宗门功法"}, priority=5)
-sect_mainbuff_learn = on_command("宗门功法学习", aliases={"学习宗门功法"}, priority=5)
+sect_mainbuff_learn = on_command("学习宗门功法", priority=5)
 sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通"}, priority=5)
-sect_secbuff_learn = on_command("宗门神通学习", aliases={"学习宗门神通"}, priority=5)
+sect_secbuff_learn = on_command("学习宗门神通", priority=5)
+sect_buff_info = on_command("宗门功法查看", aliases={"查看宗门功法"}, priority=5)
+
 
 __sect_help__ = f"""
 指令：
@@ -62,7 +64,8 @@ __sect_help__ = f"""
 12、宗门任务完成：完成所接取的宗门任务，完成间隔时间：{config["宗门任务完成cd"]}秒
 13、宗门任务刷新：刷新当前所接取的宗门任务，刷新间隔时间：{config["宗门任务刷新cd"]}秒
 14、宗门功法、神通搜寻：宗主可消耗宗门资材和宗门灵石搜寻功法或者神通
-15、宗门功法、神通学习：宗门成员可消耗宗门资材来学习宗门功法或者神通
+15、宗门功法、神通学习：宗门成员可消耗宗门资材来学习宗门功法或者神通，后接功法名称
+16、宗门功法查看：查看当前宗门已有的功法
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
@@ -100,11 +103,45 @@ async def _():
     logger.info('已重置用户宗门任务次数')
 
 
-@sect_mainbuff_learn.handle()
+@sect_buff_info.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await sect_mainbuff_learn.finish(msg, at_sender=True)
+    sect_id = user_info.sect_id
+    if sect_id:
+        sect_info = sql_message.get_sect_info(sect_id)
+        if sect_info.mainbuff == 0 and sect_info.secbuff == 0:
+            await sect_buff_info.finish(f"本宗尚未获得任何功法、神通，请宗主发送宗门功法、神通搜寻来获得！", at_sender=True)
+        msg = ''
+        
+        if sect_info.mainbuff != 0:
+            mainbufflist = get_sect_mainbuff_id_list(sect_id)
+            mainmsg = ''
+            for main in mainbufflist:
+                mainbuff, mainbuffmsg = get_main_info_msg(str(main))
+                mainmsg += f"{mainbuff['rank']}：{mainbuffmsg}\n"
+            msg += mainmsg
+            
+        if sect_info.secbuff != 0:
+            secbufflist = get_sect_secbuff_id_list(sect_id)
+            secmsg = ''
+            for sec in secbufflist:
+                secbuff = BuffJsonDate().get_sec_buff(str(sec))
+                secbuffmsg = get_sec_msg(secbuff)
+                secmsg += f"本宗门拥有功法：\n{secbuff['rank']}：{secbuff['name']} {secbuffmsg}\n"
+            msg += secmsg
+                
+        await sect_buff_info.finish(msg, at_sender=True)
+    else:
+        await sect_buff_info.finish(f"道友尚未加入宗门！", at_sender=True)
+
+@sect_mainbuff_learn.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_mainbuff_learn.finish(msg, at_sender=True)
+    msg = args.extract_plain_text().strip()
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -114,17 +151,25 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sect_info = sql_message.get_sect_info(sect_id)
             if sect_info.mainbuff == 0:
                 await sect_mainbuff_learn.finish(f"本宗尚未获得宗门功法，请宗主发送宗门功法搜寻来获得宗门功法！", at_sender=True)
+            
+            sectmainbuffidlist = get_sect_mainbuff_id_list(sect_id)
+            
+            if msg not in get_mainname_list(sectmainbuffidlist):
+                await sect_mainbuff_learn.finish(f"本宗还没有该功法，请发送本宗有的功法进行学习！", at_sender=True)
+                
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
-            if userbuffinfo.main_buff == sect_info.mainbuff:
-                await sect_mainbuff_learn.finish(f"道友已经习得了本宗功法，请勿重复学习！", at_sender=True)
+            mainbuffid = get_mainnameid(msg, sectmainbuffidlist)
+            if userbuffinfo.main_buff == mainbuffid:
+                await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
+        
             mainbuffconfig = config['宗门主功法参数']
             mainbuffgear, mainbufftype = get_sectbufftxt(sect_info.sect_scale, mainbuffconfig)
             #获取逻辑
             materialscost = mainbuffgear * mainbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
-                sql_message.updata_user_main_buff(user_info.user_id, sect_info.mainbuff)
-                mainbuff, mainbuffmsg = get_main_info_msg(str(sect_info.mainbuff))
+                sql_message.updata_user_main_buff(user_info.user_id, mainbuffid)
+                mainbuff, mainbuffmsg = get_main_info_msg(str(mainbuffid))
                 await sect_mainbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}", at_sender=True)
             else:
                 await sect_mainbuff_learn.finish(f"本次学习需要消耗{materialscost}宗门资材，不满足条件！", at_sender=True)
@@ -149,11 +194,17 @@ async def _(bot: Bot, event: GroupMessageEvent):
             stonecost = mainbuffgear * mainbuffconfig['获取消耗的灵石']
             materialscost = mainbuffgear * mainbuffconfig['获取消耗的资材']
             if sect_info.sect_used_stone >= stonecost and sect_info.sect_materials >= materialscost:
-                sql_message.update_sect_materials(sect_id, materialscost, 2)
-                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - stonecost, sect_info.sect_scale)
                 if random.randint(0, 100) <= mainbuffconfig['获取到功法的概率']:
                     mainbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[mainbufftype]['gf_list'])
-                    sql_message.update_sect_mainbuff(sect_id, mainbuffid)
+                    mainbuffidlist = get_sect_mainbuff_id_list(sect_id)
+                    if mainbuffid in mainbuffidlist:
+                        await sect_mainbuff_get.finish(f"本次搜寻到了重复的功法！不消耗资源！")
+                    sql_message.update_sect_materials(sect_id, materialscost, 2)
+                    sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - stonecost, sect_info.sect_scale)
+                    mainbuffidlist.append(mainbuffid)
+                    sql = set_sect_list(mainbuffidlist)
+                    
+                    sql_message.update_sect_mainbuff(sect_id, sql)
                     mainbuff, mainbuffmsg = get_main_info_msg(mainbuffid)
                     await sect_mainbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{mainbufftype}功法：{mainbuff['name']}\n{mainbuffmsg}", at_sender=True)
                 else:
@@ -184,11 +235,17 @@ async def _(bot: Bot, event: GroupMessageEvent):
             stonecost = secbuffgear * secbuffconfig['获取消耗的灵石']
             materialscost = secbuffgear * secbuffconfig['获取消耗的资材']
             if sect_info.sect_used_stone >= stonecost and sect_info.sect_materials >= materialscost:
-                sql_message.update_sect_materials(sect_id, materialscost, 2)
-                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - stonecost, sect_info.sect_scale)
                 if random.randint(0, 100) <= secbuffconfig['获取到神通的概率']:
                     secbuffid = random.choice(BuffJsonDate().get_gfpeizhi()[secbufftype]['st_list'])
-                    sql_message.update_sect_secbuff(sect_id, secbuffid)
+                    secbuffidlist = get_sect_secbuff_id_list(sect_id)
+                    if secbuffid in secbuffidlist:
+                        await sect_secbuff_get.finish(f"本次搜寻到了重复的神通！不消耗资源！")
+
+                    sql_message.update_sect_materials(sect_id, materialscost, 2)
+                    sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - stonecost, sect_info.sect_scale)     
+                    secbuffidlist.append(secbuffid)         
+                    sql = set_sect_list(secbuffidlist)
+                    sql_message.update_sect_secbuff(sect_id, sql)
                     secbuff = BuffJsonDate().get_sec_buff(secbuffid)
                     secmsg = get_sec_msg(secbuff)
                     await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{secbufftype}神通：{secbuff['name']}\n{secmsg}", at_sender=True)
@@ -203,10 +260,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
         await sect_secbuff_get.finish(f"道友尚未加入宗门！", at_sender=True)
         
 @sect_secbuff_learn.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await sect_secbuff_learn.finish(msg, at_sender=True)
+    msg = args.extract_plain_text().strip()
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -216,17 +274,25 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sect_info = sql_message.get_sect_info(sect_id)
             if sect_info.secbuff == 0:
                 await sect_secbuff_learn.finish(f"本宗尚未获得宗门神通，请宗主发送宗门神通搜寻来获得宗门神通！", at_sender=True)
+                
+            sectsecbuffidlist = get_sect_secbuff_id_list(sect_id)
+            
+            if msg not in get_secname_list(sectsecbuffidlist):
+                await sect_secbuff_learn.finish(f"本宗还没有该神通，请发送本宗有的神通进行学习！", at_sender=True)
+            
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
-            if userbuffinfo.sec_buff == sect_info.secbuff:
-                await sect_secbuff_learn.finish(f"道友已经习得了本宗神通，请勿重复学习！", at_sender=True)
+            secbuffid = get_secnameid(msg, sectsecbuffidlist)
+            if userbuffinfo.main_buff == secbuffid:
+                await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
+
             secbuffconfig = config['宗门神通参数']
             secbuffgear, secbufftype = get_sectbufftxt(sect_info.sect_scale, secbuffconfig)
             #获取逻辑
             materialscost = secbuffgear * secbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
-                sql_message.updata_user_sec_buff(user_info.user_id, sect_info.secbuff)
-                secbuff = BuffJsonDate().get_sec_buff(str(sect_info.secbuff))
+                sql_message.updata_user_sec_buff(user_info.user_id, secbuffid)
+                secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
                 secmsg = get_sec_msg(secbuff)
                 await sect_secbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{secbufftype}神通：{secbuff['name']}\n{secbuff['name']}：{secmsg}", at_sender=True)
             else:
@@ -684,6 +750,62 @@ def isUserTask(user_id):
 
     return Flag
 
+
+def get_sect_mainbuff_id_list(sect_id):
+    sect_info = sql_message.get_sect_info(sect_id)
+    mainbufflist = str(sect_info.mainbuff)[1:-1].split(',')
+    return mainbufflist
+
+def get_sect_secbuff_id_list(sect_id):
+    sect_info = sql_message.get_sect_info(sect_id)
+    secbufflist = str(sect_info.secbuff)[1:-1].split(',')
+    return secbufflist
+
+def set_sect_list(bufflist):
+    sqllist1 = ''
+    for buff in bufflist:
+        if buff == '':
+            continue
+        sqllist1 += f'{buff},'
+    sqllist = f"[{sqllist1[:-1]}]"
+    return sqllist
+    
+def get_mainname_list(bufflist):
+    namelist = []
+    for buff in bufflist:
+        mainbuff = BuffJsonDate().get_main_buff(str(buff))
+        namelist.append(mainbuff['name'])
+    return namelist
+
+def get_secname_list(bufflist):
+    namelist = []
+    for buff in bufflist:
+        secbuff = BuffJsonDate().get_sec_buff(buff)
+        namelist.append(secbuff['name'])
+    return namelist
+
+def get_mainnameid(buffname, bufflist):
+    tempdict = {}
+    buffid = 0
+    for buff in bufflist:
+        mainbuff = BuffJsonDate().get_main_buff(buff)
+        tempdict[mainbuff['name']] = buff
+    for k, v in tempdict.items():
+        if buffname == k:
+            buffid = v
+    return buffid
+
+def get_secnameid(buffname, bufflist):
+    tempdict = {}
+    buffid = 0
+    for buff in bufflist:
+        secbuff = BuffJsonDate().get_sec_buff(buff)
+        tempdict[secbuff['name']] = buff
+    for k, v in tempdict.items():
+        if buffname == k:
+            buffid = v
+    return buffid
+    
 
 def get_sectbufftxt(sect_scale, config):
     """

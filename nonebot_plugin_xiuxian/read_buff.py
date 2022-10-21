@@ -15,10 +15,10 @@ class BuffJsonDate:
         self.gfpeizhi_jsonpath = READPATH / "功法概率设置.json"
     
     def get_main_buff(self, id):
-        return readf(self.mainbuff_jsonpath)[id]
+        return readf(self.mainbuff_jsonpath)[str(id)]
     
     def get_sec_buff(self, id):
-        return readf(self.secbuff_jsonpath)[id]
+        return readf(self.secbuff_jsonpath)[str(id)]
     
     def get_gfpeizhi(self):
         return readf(self.gfpeizhi_jsonpath)
