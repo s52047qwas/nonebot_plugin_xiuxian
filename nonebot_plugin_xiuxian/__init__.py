@@ -25,7 +25,7 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
-from .utils import Txt2Img
+from .utils import Txt2Img, data_check_conf
 
 
 
@@ -54,10 +54,7 @@ load_all_plugins(
 @command.run_xiuxian.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """加入修仙"""
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     user_id = event.get_user_id()
     user_name = (
@@ -78,11 +75,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @sign_in.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """修仙签到"""
+    await data_check_conf(bot, event)
+
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
-        return
-    except ConfError:
         return
 
     result = sql_message.get_sign(user_id)
@@ -93,10 +90,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @command.help_in.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """修仙帮助"""
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     font_size = 30
     title = '修仙模拟器帮助信息'
@@ -110,11 +104,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @command.dufang.handle()
 async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+    await data_check_conf(bot, event)
+
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
-        return
-    except ConfError:
         return
 
     if cd := check_cd(event, '金银阁'):
@@ -174,11 +168,11 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
 @command.restart.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """重置灵根信息"""
+    await data_check_conf(bot, event)
+
     try:
         user_id, group_id, mess = await data_check(bot, event)
     except MsgError:
-        return
-    except ConfError:
         return
 
     name, root_type = XiuxianJsonDate().linggen_get()
@@ -190,10 +184,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @command.rank.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """排行榜"""
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     message = str(event.message)
 
@@ -677,10 +668,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 # GM加灵石
 @command.gm_command.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     give_qq = None  # 艾特的时候存到这里
     msg = args.extract_plain_text().strip()
@@ -854,10 +842,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     单用户：重置状态@xxx
     多用户：重置状态"""
 
-    try:
-        user_id, group_id, user_msg = await data_check(bot, event)
-    except ConfError:
-        return
 
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
@@ -876,12 +860,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """抢灵石开关配置"""
 
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except MsgError:
-        return
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     group_msg = str(event.message)
     print(group_msg)
@@ -901,12 +880,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 @command.shop.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """坊市"""
-    try:
-        user_id, group_id, mess = await data_check(bot, event)
-    except MsgError:
-        return
-    except ConfError:
-        return
+    await data_check_conf(bot, event)
 
     data = jsondata.shop_data()
 
