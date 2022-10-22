@@ -119,7 +119,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         
         if sect_info.mainbuff != 0:
             mainbufflist = get_sect_mainbuff_id_list(sect_id)
-            mainmsg = ''
+            mainmsg = '\n☆------宗门功法------☆\n'
             for main in mainbufflist:
                 mainbuff, mainbuffmsg = get_main_info_msg(str(main))
                 mainmsg += f"{mainbuff['rank']}：{mainbuffmsg}\n"
@@ -127,11 +127,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
             
         if sect_info.secbuff != 0:
             secbufflist = get_sect_secbuff_id_list(sect_id)
-            secmsg = ''
+            secmsg = '☆------宗门神通------☆\n'
             for sec in secbufflist:
                 secbuff = BuffJsonDate().get_sec_buff(str(sec))
                 secbuffmsg = get_sec_msg(secbuff)
-                secmsg += f"本宗门拥有功法：\n{secbuff['rank']}：{secbuff['name']} {secbuffmsg}\n"
+                secmsg += f"{secbuff['rank']}：{secbuff['name']} {secbuffmsg}\n"
             msg += secmsg
                 
         await sect_buff_info.finish(msg, at_sender=True)

@@ -784,17 +784,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             player2['真元'] = user_2.mp
             player2['会心'] = 1
 
-            # msg1 = ""
-            # msg2 = ""
-            #
-            # for i, v in player1.items():
-            #     msg1 += "{}:{}\n".format(i, v)
-            #
-            # for i, v in player2.items():
-            #     msg2 += "{}:{}\n".format(i, v)
-            #
-            # await rob_stone.send(msg1)
-            # await rob_stone.send(msg2)
 
             result, victor = OtherSet().player_fight(player1, player2, 1)
             await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
