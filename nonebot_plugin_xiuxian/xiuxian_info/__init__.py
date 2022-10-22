@@ -45,6 +45,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     except MsgError:
         return
     add_cd(event, config['查询CD'], '查询信息')
+    mess = sql_message.get_user_real_info(user_id)
     user_name = mess.user_name
     if user_name:
         pass

@@ -38,13 +38,14 @@ sect_out_check = {}  # 退出宗门或踢出宗门信息记录
 sql_message = XiuxianDateManage()  # sql类
 
 from nonebot import load_all_plugins
+src = ''
 load_all_plugins(
         [
-            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_boss',
-            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_bank',
-            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_sect',
-            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_info',
-            'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_buff',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_boss',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_bank',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_sect',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_info',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_buff',
         ],
         [],
     )
@@ -341,6 +342,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         now_exp = int(int(exp) * (percentage / 100))
 
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
+        sql_message.update_user_hp_mp(user_id, user_msg.hp - (now_exp / 2), user_msg.mp - now_exp)  # 修为掉了，血量、真元也要掉
 
         update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
             level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率

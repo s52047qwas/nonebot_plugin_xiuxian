@@ -13,7 +13,13 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
     {"user_id": None,"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None, 'exp':None}
     """
     user1buffdate = UserBuffDate(player1['user_id'])#1号的buff信息
+    user1mainbuffdata = user1buffdate.get_user_main_buff_data()
+    user1hpbuff = user1mainbuffdata['hpbuff'] if user1mainbuffdata != None else 0
+    user1mpbuff = user1mainbuffdata['mpbuff'] if user1mainbuffdata != None else 0
     user2buffdate = UserBuffDate(player2['user_id'])#2号的buff信息
+    user2mainbuffdata = user2buffdate.get_user_main_buff_data()
+    user2hpbuff = user2mainbuffdata['hpbuff'] if user2mainbuffdata != None else 0
+    user2mpbuff = user2mainbuffdata['mpbuff'] if user2mainbuffdata != None else 0
 
     # 有技能，则开启技能模式
 
@@ -58,18 +64,12 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
 
                             player2['气血'] = player2['气血'] - int(user1skillsh * player2js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user1skill_type == 2:  # 持续性伤害技能
                             play_list.append(skillmsg)
                             player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
                             player2['气血'] = player2['气血'] - int(user1skillsh * player2js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user1skill_type == 3:  # buff类技能
                             user1buff_type = user1skilldate['bufftype']
@@ -84,9 +84,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 play_list.append(msg1.format(player1['道号'], player1_sh))
                                 player2['气血'] = player2['气血'] - int(player1_sh * player2js)# 玩家1的伤害 * 玩家2的减伤
                                 play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
-                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
 
                             elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
                                 isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
@@ -101,14 +99,11 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 player2['气血'] = player2['气血'] - int(player1_sh * player2js)# 玩家1的伤害 * 玩家2的减伤
                                 play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
                                 player1js = 1 - user1skillsh
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
-                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
                         elif user1skill_type == 4:#封印类技能
                             play_list.append(skillmsg)
                             player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                             if user1skillsh:#命中
                                 user2turnskip = False
                                 user2buffturn = False
@@ -122,8 +117,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         play_list.append(msg1.format(player1['道号'], player1_sh))
                         player2['气血'] = player2['气血'] - int(player1_sh * player2js)  # 玩家1的伤害 * 玩家2的减伤
                         play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
 
                 else:  # 持续性技能判断,不是第一次
                     if user1skill_type == 2:  # 持续性伤害技能
@@ -139,8 +133,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         # 玩家1的伤害 * 玩家2的减伤,持续性伤害不影响普攻
                         player2['气血'] = player2['气血'] - int((user1skillsh + player1_sh) * player2js)
                         play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
 
                     elif user1skill_type == 3:  # buff类技能
                         user1buff_type = user1skilldate['bufftype']
@@ -158,8 +151,6 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             player2['气血'] = player2['气血'] - int(player1_sh * player2js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
                             
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
                             print("玩家1减伤" + str(player1js))
@@ -176,8 +167,6 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
                             player1js = 1 - user1skillsh
                             
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
                     elif user1skill_type == 4:  #封印类技能
                         player1turncost = player1turncost - 1
                         skillmsg = get_persistent_skill_msg(player1['道号'], user1skilldate['name'], user1skillsh, player1turncost)
@@ -191,8 +180,6 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         
                         player2['气血'] = player2['气血'] - int(player1_sh * player2js)# 玩家1的伤害 * 玩家2的减伤
                         play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
                         if player1turncost == 0:#封印时间到
                             user2turnskip = True
                             user2buffturn = True            
@@ -216,8 +203,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                 play_list.append(msg1.format(player1['道号'], player1_sh))
                 player2['气血'] = player2['气血'] - player1_sh
                 play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-                if isSql:
-                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
             else:
                 play_list.append(f"☆------{player1['道号']}动弹不得！------☆")
 
@@ -225,8 +211,8 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
             play_list.append("{}胜利".format(player1['道号']))
             suc = f"{player1['道号']}"
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player2['user_id'], 1, player2['真元'])
-
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1hpbuff)), int(player1['真元'] / (1 + user1mpbuff)))
+                XiuxianDateManage().update_user_hp_mp(player2['user_id'], 1, int(player2['真元'] / (1 + user2mpbuff)))
             break
 
         if player1turncost < 0:#休息为负数，如果休息，则跳过回合，正常是0
@@ -247,18 +233,14 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             player1['气血'] = player1['气血'] - int(user2skillsh * player1js)  # 玩家2的伤害 * 玩家1的减伤
                             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
                             player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
 
                         elif user2skill_type == 2:  # 持续性伤害技能
                             play_list.append(skillmsg)
                             player1['气血'] = player1['气血'] - int(user2skillsh * player1js)  # 玩家2的伤害 * 玩家1的减伤
                             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
                             player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
-                                XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
 
                         elif user2skill_type == 3:  # buff类技能
                             user2buff_type = user2skilldate['bufftype']
@@ -274,9 +256,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 player1['气血'] = player1['气血'] - int(player2_sh * player1js)
                                 play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
                                 player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                             elif user2buff_type == 2:  # 减伤类buff,需要在player2处判断
                                 isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
                                 if isCrit:
@@ -289,15 +269,12 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                                 play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
                                 player2js = 1 - user2skillsh
                                 player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
-                                    XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                                     
                         elif user2skill_type == 4:#封印类技能
                                 play_list.append(skillmsg)
                                 player2 = calculate_skill_cost(player2, user2hpconst, user2mpcost)
-                                if isSql:
-                                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
                                 if user2skillsh:#命中
                                     user1turnskip = False
                                     user1buffturn = False
@@ -311,8 +288,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         play_list.append(msg2.format(player2['道号'], player2_sh))
                         player1['气血'] = player1['气血'] - int(player2_sh * player1js)  # 玩家2的伤害 * 玩家1的减伤
                         play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
 
                 else:  # 持续性技能判断,不是第一次
                     if user2skill_type == 2:  # 持续性伤害技能
@@ -329,8 +305,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         play_list.append(msg2.format(player2['道号'], player2_sh))# 玩家2的伤害 * 玩家1的减伤,持续性伤害不影响普攻
                         player1['气血'] = player1['气血'] - int((user2skillsh + player2_sh) * player1js)
                         play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
 
                     elif user2skill_type == 3:  # buff类技能
                         user2buff_type = user2skilldate['bufftype']
@@ -346,9 +321,6 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             play_list.append(msg2.format(player2['道号'], player2_sh))
                             player1['气血'] = player1['气血'] - int(player2_sh * player1js)  # 玩家2的伤害 * 玩家1的减伤
                             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-                            
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
 
                         elif user2buff_type == 2:  # 减伤类buff,需要在player2处判断
                             print("玩家2减伤" + str(player2js))
@@ -364,9 +336,6 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                             player1['气血'] = player1['气血'] - int(player2_sh * player1js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
                             player2js = 1 - user2skillsh
-                            
-                            if isSql:
-                                XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
                                 
                     elif user2skill_type == 4:  #封印类技能
                         player2turncost = player2turncost - 1
@@ -381,8 +350,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                         
                         player1['气血'] = player1['气血'] - int(player2_sh * player1js)# 玩家1的伤害 * 玩家2的减伤
                         play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-                        if isSql:
-                            XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
+
                         if player2turncost == 0:#封印时间到
                             user1turnskip = True
                             user1buffturn =True       
@@ -404,8 +372,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
                 play_list.append(msg2.format(player2['道号'], player2_sh))
                 player1['气血'] = player1['气血'] - player2_sh
                 play_list.append(f"{player1['道号']}剩余血量{player1['气血']}")
-                if isSql:
-                    XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
+
             else:
                 play_list.append(f"☆------{player2['道号']}动弹不得！------☆")
 
@@ -413,7 +380,8 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
             play_list.append("{}胜利".format(player2['道号']))
             suc = f"{player2['道号']}"
             if isSql:
-                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, player1['真元'])
+                XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1mpbuff)))
+                XiuxianDateManage().update_user_hp_mp(player2['user_id'], int(player2['气血'] / (1 + user2hpbuff)), int(player2['真元'] / (1 + user2mpbuff)))
             break
 
         if player2turncost < 0:#休息为负数，如果休息，则跳过回合，正常是0

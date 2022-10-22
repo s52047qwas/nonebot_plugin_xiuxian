@@ -23,6 +23,7 @@ buffinfo = on_command("我的功法", priority=5)
 out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 qc = on_command("切磋", priority=5)
+sd = on_command("死斗", priority=5)
 buff_help = on_command("功法帮助", priority=5)
 sql_message = XiuxianDateManage()  # sql类
 
@@ -58,15 +59,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await qc.finish("道友不会左右互搏之术！")
         
         
-        user2 = sql_message.get_user_message(give_qq)
+        user2 = sql_message.get_user_real_info(give_qq)
         if user2:
             if user_info.hp is None or user_info.hp == 0:
                 #判断用户气血是否为None
                 sql_message.update_user_hp(user_id)
-                user_info = sql_message.get_user_message(user_id)
+                user_info = sql_message.get_user_real_info(user_id)
             if user2.hp is None:
                 sql_message.update_user_hp(give_qq)
-                user2 = sql_message.get_user_message(give_qq)
+                user2 = sql_message.get_user_real_info(give_qq)
 
             if user2.hp <= user2.exp/10:
                 await qc.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
@@ -81,7 +82,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
-        user1 = user_info
+        user1 = sql_message.get_user_real_info(user_id)
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
@@ -104,6 +105,72 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await qc.finish(f"获胜的是{victor}")
     else:
         await qc.finish("没有对方的信息！")
+
+@sd.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """切磋，不会掉血"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sd.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    
+    give_qq = None  # 艾特的时候存到这里
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+    if give_qq:
+        if give_qq == str(user_id):
+            await sd.finish("道友不会左右互搏之术！")
+        
+        
+        user2 = sql_message.get_user_real_info(give_qq)
+        if user2:
+            if user_info.hp is None or user_info.hp == 0:
+                #判断用户气血是否为None
+                sql_message.update_user_hp(user_id)
+                user_info = sql_message.get_user_real_info(user_id)
+            if user2.hp is None:
+                sql_message.update_user_hp(give_qq)
+                user2 = sql_message.get_user_real_info(give_qq)
+
+            if user2.hp <= user2.exp/10:
+                await sd.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
+
+            if user_info.hp <= user_info.exp/10:
+                await sd.finish("重伤未愈，动弹不得！", at_sender=True)
+                
+        if cd := check_cd(event, '死斗'):
+            # 如果 CD 还没到 则直接结束
+            await sd.finish(cd_msg(cd), at_sender=True)
+        player1 = {"user_id": None, "道号": None, "气血": None,
+                   "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+        player2 = {"user_id": None, "道号": None, "气血": None,
+                   "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+        user1 = sql_message.get_user_real_info(user_id)
+        player1['user_id'] = user1.user_id
+        player1['道号'] = user1.user_name
+        player1['气血'] = user1.hp
+        player1['攻击'] = user1.atk
+        player1['真元'] = user1.mp
+        player1['会心'] = 1
+        player1['exp'] = user1.exp
+
+        player2['user_id'] = user2.user_id
+        player2['道号'] = user2.user_name
+        player2['气血'] = user2.hp
+        player2['攻击'] = user2.atk
+        player2['真元'] = user2.mp
+        player2['会心'] = 1
+        player2['exp'] = user2.exp
+        
+        result, victor = Player_fight(player1, player2, 2)
+        add_cd(event, 300, '死斗')
+        await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
+        await sd.finish(f"获胜的是{victor}")
+    else:
+        await sd.finish("没有对方的信息！")
+
 
 
 @out_closing.handle()
@@ -223,8 +290,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         await mind_state.finish(msg)
     user_id = user_msg.user_id
 
+
     if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
         sql_message.update_user_hp(user_id)
+    user_msg = sql_message.get_user_real_info(user_id)
     
     level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
     realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
