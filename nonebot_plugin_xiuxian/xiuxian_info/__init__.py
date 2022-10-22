@@ -19,6 +19,7 @@ from .draw_user_info import draw_user_info_img
 from ..cd_manager import add_cd, check_cd, cd_msg
 from .infoconfig import get_config
 from ..utils import data_check_conf
+from ..read_buff import UserBuffDate
 
 config = get_config()
 
@@ -74,12 +75,20 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if get_exp > 0:
             if get_exp > 10000:
                 get_exp = int(divmod(get_exp, 10000)[0])
-                exp_meg = "还需{}万修为可突破".format(get_exp)
+                exp_meg = "还需{}万修为可突破！".format(get_exp)
             else:
-                exp_meg = "还需{}修为可突破".format(get_exp)
+                exp_meg = "还需{}修为可突破！".format(get_exp)
         else:
             exp_meg = "可突破！"
-    
+    usermainbufdate =  UserBuffDate(user_id).get_user_main_buff_data()
+    usersecbufdate = UserBuffDate(user_id).get_user_sec_buff_data()
+    mainbffname = '无'
+    secbuffname = '无'
+    if usermainbufdate != None:
+        mainbffname = f"{usermainbufdate['name']}({usermainbufdate['rank']})"
+    if usersecbufdate != None:
+        secbuffname = f"{usersecbufdate['name']}({usersecbufdate['rank']})"
+
     DETAIL_MAP = {
     '道号': f'{user_name}',
     '境界': f'{mess.level}',
@@ -87,10 +96,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '灵石': f'{mess.stone}',
     '战力': f'{int(mess.exp * level_rate * realm_rate)}',
     '灵根': f'{mess.root}({mess.root_type}+{int(level_rate * 100)}%)',
-    '突破状态': f'{exp_meg}，概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
+    '突破状态': f'{exp_meg}概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
     '攻击力': f'{mess.atk}，攻修等级{mess.atkpractice}级',
     '所在宗门':sectmsg,
     '宗门职位':sectzw,
+    '主修功法':mainbffname,
+    '副修神通':secbuffname
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
