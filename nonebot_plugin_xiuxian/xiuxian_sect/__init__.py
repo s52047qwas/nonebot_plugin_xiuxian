@@ -471,7 +471,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         await sect_task_complete.finish(f"道友尚未加入宗门，请加入宗门后再完成任务！")
 
 @sect_owner_change.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
     """宗主传位"""
     await data_check_conf(bot, event)
 
@@ -548,7 +548,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await create_sect.finish(msg, at_sender=True)
 
 @sect_kick_out.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
     """踢出宗门"""
     await data_check_conf(bot, event)
 
@@ -592,7 +592,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @sect_out.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
     """退出宗门"""
     await data_check_conf(bot, event)
 
@@ -625,7 +625,7 @@ async def _(event: GroupMessageEvent, args: Message = CommandArg()):
         await sect_out.finish("宗主无法直接退出宗门，如确有需要，请完成宗主传位后另行尝试。")
 
 @sect_donate.handle()
-async def _(event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
     """宗门捐献"""
     await data_check_conf(bot, event)
 
