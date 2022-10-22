@@ -122,7 +122,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish("重伤未愈，动弹不得！", at_sender=True)
         
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
-    userinfo = XiuxianDateManage().get_user_message(user_id)
+    userinfo = XiuxianDateManage().get_user_real_info(user_id)
     player['user_id'] = userinfo.user_id
     player['道号'] = userinfo.user_name
     player['气血'] = userinfo.hp
