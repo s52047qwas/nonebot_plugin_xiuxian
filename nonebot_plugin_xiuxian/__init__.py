@@ -712,6 +712,27 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await give_stone.finish(f"全服通告：赠送所有用户{give_stone_num}灵石,请注意查收！")
 
 
+#GM改灵根
+@command.gmm_command.handle()
+async def _(bot: Bot, event: GuildMessageEvent, args: Message = CommandArg()):
+    give_qq = None  # 艾特的时候存到这里
+    msg = args.extract_plain_text().strip()
+
+    for arg in args:
+        if arg.type == "at":
+            give_qq = arg.data.get("qq", "")
+
+    give_user = sql_message.get_user_message(give_qq)
+    if give_user:
+        sql_message.update_root(give_qq, msg)
+        sql_message.update_power2(give_qq)
+        await gmm_command.finish(
+            "{}道友的修仙境界已变更！".format(give_user.user_name)
+        )
+    else:
+        await gmm_command.finish("对方未踏入修仙界，不可修改！")
+
+
 @command.rob_stone.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """抢灵石
