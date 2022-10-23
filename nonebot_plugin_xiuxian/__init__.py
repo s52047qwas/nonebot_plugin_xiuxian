@@ -342,7 +342,10 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         now_exp = int(int(exp) * (percentage / 100))
 
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
-        sql_message.update_user_hp_mp(user_id, user_msg.hp - (now_exp / 2), user_msg.mp - now_exp)  # 修为掉了，血量、真元也要掉
+        nowhp = user_msg.hp - (now_exp / 2) if (user_msg.hp - (now_exp / 2)) > 0 else 1
+        nowmp = user_msg.mp - now_exp if (user_msg.mp - now_exp) > 0 else 1
+
+        sql_message.update_user_hp_mp(user_id, nowhp, nowmp)  # 修为掉了，血量、真元也要掉
 
         update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
             level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
