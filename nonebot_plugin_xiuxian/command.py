@@ -31,6 +31,7 @@ dufang = on_regex(
 
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
+gmm_command = on_command("未知力量", permission=SUPERUSER, priority=5)
 
 rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
 
