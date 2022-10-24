@@ -31,6 +31,7 @@ bossinfo = on_command("查询世界boss", aliases={"查询世界Boss", "查询�
 setgroupboss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
 bosshelp = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
+bossdelete = on_command("天罚boss", aliases={"天罚世界boss", "天罚Boss", "天罚BOSS", "天罚世界Boss","天罚世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 
 __boss_help__ = f"""
 世界Boss帮助信息:
@@ -78,7 +79,37 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
     await bosshelp.finish(__boss_help__)
 
+@bossdelete.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    msg = args.extract_plain_text().strip()
+    group_id = event.group_id
+    boss_num = re.findall("\d+", msg)  # boss编号
     
+    isInGroup = isInGroups(event)
+    if not isInGroup:#不在配置表内
+        await bossdelete.finish(f'本群尚未开启世界Boss，请联系管理员开启!')
+    
+    if boss_num:
+        boss_num = int(boss_num[0])
+    else:
+        await bossdelete.finish(f'请输入正确的世界Boss编号！')
+    
+    try:
+        bosss = groupboss[group_id]
+    except:
+        await bossdelete.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
+    
+    if bosss == []:
+        await bossdelete.finish(f'本群尚未生成世界Boss，请等待世界boss刷新!')
+    
+    index = len(groupboss[group_id])
+    
+    if not (0 < boss_num <= index):
+        await bossdelete.finish(f'请输入正确的世界Boss编号！')
+    
+    groupboss[group_id].remove(groupboss[group_id][boss_num - 1])
+    await bossdelete.finish(f"该世界Boss被突然从天而降的神雷劈中，烟消云散了", at_sender=True)
 
 @battle.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
