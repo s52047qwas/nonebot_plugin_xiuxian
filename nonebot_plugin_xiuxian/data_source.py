@@ -15,6 +15,9 @@ class JsonDate:
         self.level_jsonpath = DATABASE / "境界.json"
         self.sect_json_pth = DATABASE / "宗门玩法配置.json"
         self.shop_jsonpath = DATABASE / "goods.json"
+        self.BACKGROUND_FILE = DATABASE / "image" / "background.png"
+        self.BANNER_FILE = DATABASE / "image" / "banner.png"
+        self.FONT_FILE = DATABASE / "font" / "sarasa-mono-sc-regular.ttf"
 
     def level_data(self):
         """境界数据"""

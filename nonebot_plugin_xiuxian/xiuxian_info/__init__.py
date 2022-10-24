@@ -18,6 +18,8 @@ from ..data_source import jsondata
 from .draw_user_info import draw_user_info_img
 from ..cd_manager import add_cd, check_cd, cd_msg
 from .infoconfig import get_config
+from ..utils import data_check_conf
+from ..read_buff import UserBuffDate
 
 config = get_config()
 
@@ -32,7 +34,8 @@ sql_message = XiuxianDateManage()  # sql类
 @xiuxian_message.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """我的修仙信息"""
-    
+    await data_check_conf(bot, event)
+
     if cd := check_cd(event, '查询信息'):
         # 如果 CD 还没到 则直接结束
         await xiuxian_message.finish(cd_msg(cd), at_sender=True)
@@ -43,6 +46,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     except MsgError:
         return
     add_cd(event, config['查询CD'], '查询信息')
+    mess = sql_message.get_user_real_info(user_id)
     user_name = mess.user_name
     if user_name:
         pass
@@ -71,12 +75,20 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if get_exp > 0:
             if get_exp > 10000:
                 get_exp = int(divmod(get_exp, 10000)[0])
-                exp_meg = "还需{}万修为可突破".format(get_exp)
+                exp_meg = "还需{}万修为可突破！".format(get_exp)
             else:
-                exp_meg = "还需{}修为可突破".format(get_exp)
+                exp_meg = "还需{}修为可突破！".format(get_exp)
         else:
             exp_meg = "可突破！"
-    
+    usermainbufdate =  UserBuffDate(user_id).get_user_main_buff_data()
+    usersecbufdate = UserBuffDate(user_id).get_user_sec_buff_data()
+    mainbffname = '无'
+    secbuffname = '无'
+    if usermainbufdate != None:
+        mainbffname = f"{usermainbufdate['name']}({usermainbufdate['rank']})"
+    if usersecbufdate != None:
+        secbuffname = f"{usersecbufdate['name']}({usersecbufdate['rank']})"
+
     DETAIL_MAP = {
     '道号': f'{user_name}',
     '境界': f'{mess.level}',
@@ -84,10 +96,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '灵石': f'{mess.stone}',
     '战力': f'{int(mess.exp * level_rate * realm_rate)}',
     '灵根': f'{mess.root}({mess.root_type}+{int(level_rate * 100)}%)',
-    '突破状态': f'{exp_meg}，概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
+    '突破状态': f'{exp_meg}概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
     '攻击力': f'{mess.atk}，攻修等级{mess.atkpractice}级',
     '所在宗门':sectmsg,
     '宗门职位':sectzw,
+    '主修功法':mainbffname,
+    '副修神通':secbuffname
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
@@ -102,13 +116,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 你的战力为：{int(mess.exp * level_rate * realm_rate)}"""
         await xiuxian_message.finish(msg, at_sender=True)
     
-    
 
-
-    
-    
-    
-    
 async def data_check(bot, event):
     user_qq = event.get_user_id()
     group_id = await get_group_id(event.get_session_id())

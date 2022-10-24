@@ -35,10 +35,15 @@ class XiuConfig:
         self.tou_cd = config_data['tou_cd']  # 偷灵石CD
         # self.ggg = config_data['ggg']
 
-        self.sql_table = config_data['sql_table']
-        self.sql_user_xiuxian = config_data['sql_user_xiuxian']
-        self.sql_sects = config_data['sql_sects']
+        self.sql_table = ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo"]  # 数据库表校验
+        self.sql_user_xiuxian = ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
+                           "sect_task"]  # 数据库字段校验
+        self.sql_sects = ["sect_materials", "mainbuff", "secbuff"]
 
+        # sql_table: ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo"]  # 数据库表校验
+        # sql_user_xiuxian: ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
+        #                    "sect_task"]  # 数据库字段校验
+        # sql_sects: ["sect_materials", "mainbuff", "secbuff"]
 
     def _config_data(self):
         """配置数据"""
@@ -59,11 +64,12 @@ class JsonConfig:
             data = json.load(e)
             return data
 
-    def write_data(self, key):
+    def write_data(self, key, group_id=None):
         """
         说明：设置抢灵石开启或关闭
         参数：
-            key：1为开启，2为关闭
+            key：抢灵石1为开启，2为关闭
+            key: 群聊1为开启，2为关闭
         """
 
         json_data = self.read_data()
@@ -73,12 +79,49 @@ class JsonConfig:
         if key == 2:
             json_data['qiang'] = False
 
+        if key == 3 or key == 4:
+            try:
+                dd = json_data['group']
+                if key == 4:
+                    dd.append(group_id)
+                if key == 3:
+                    try:
+                        dd.remove(group_id)
+                    except ValueError:
+                        print('删除数据失败')
+                        return False
+            except KeyError:
+                json_data['group'] = [group_id]
+
         with open(self.config_jsonpath, 'w', encoding='utf-8') as f:
             json.dump(json_data, f)
 
 
 
 if __name__ == '__main__':
-    name = XiuConfig()._config_data()
-    for i in name:
-        print(i)
+    pathname = r""
+    with open(pathname, 'r', encoding='utf-8') as e:
+        data = json.load(e)
+
+    key = 4
+
+
+    if key == 1:
+        data['qiang'] = True
+    if key == 2:
+        data['qiang'] = False
+    if key == 3 or key == 4:
+        try:
+            dd = data['group']
+            if key == 3:
+                dd.append('223')
+            if key == 4:
+                try:
+                    dd.remove('123')
+                except ValueError:
+                    print('bbbb')
+        except KeyError:
+            data['group'] = []
+
+    with open(pathname, 'w', encoding='utf-8') as f:
+        json.dump(data, f)

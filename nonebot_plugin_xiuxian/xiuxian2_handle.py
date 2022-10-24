@@ -184,7 +184,18 @@ class XiuxianDateManage:
         self.conn.commit()
 
     def get_user_message(self, user_id):
-        """根据USER_ID获取用户信息"""
+        """根据USER_ID获取用户信息，不获取功法加成"""
+        cur = self.conn.cursor()
+        sql = f"select * from user_xiuxian where user_id=?"
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserDate(*result)
+
+    def get_user_real_info(self, user_id):
+        """根据USER_ID获取用户信息，获取功法加成"""
         cur = self.conn.cursor()
         sql = f"select * from user_xiuxian where user_id=?"
         cur.execute(sql, (user_id,))
@@ -193,6 +204,7 @@ class XiuxianDateManage:
             return None
         else:
             return UserDate(*final_user_data(result))
+
 
     def get_sect_info(self, sect_id):
         """
@@ -218,7 +230,7 @@ class XiuxianDateManage:
         if not result:
             return None
         else:
-            return UserDate(*final_user_data(result))
+            return UserDate(*result)
 
     def create_user(self, user_id, *args):
         """校验用户是否存在"""
@@ -301,6 +313,14 @@ class XiuxianDateManage:
             sql = f"UPDATE user_xiuxian SET stone=stone-? WHERE user_id=?"
             cur.execute(sql, (price, user_id))
             self.conn.commit()
+
+    def update_ls_all(self, price):
+        """所有用户增加灵石"""
+        cur = self.conn.cursor()
+        sql = f"UPDATE user_xiuxian SET stone=stone+?"
+        cur.execute(sql, (price,))
+        self.conn.commit()
+
 
     def get_ls_rank(self):
         """灵石排行榜"""

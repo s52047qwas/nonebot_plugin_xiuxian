@@ -34,12 +34,12 @@ gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 
 rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5)
 
-
 restate = on_command("重置状态", permission=SUPERUSER, priority=5)
 shop = on_command("坊市", priority=5)
 
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5)
-open_robot = on_command("开启抢灵石", aliases={'关闭抢灵石'}, priority=5)
+open_robot = on_command("开启抢灵石", aliases={'关闭抢灵石'}, permission=SUPERUSER, priority=5)
+open_xiuxian = on_command("启用修仙功能", aliases={'禁用修仙功能'}, permission=SUPERUSER, priority=5)
 
 user_leveluprate = on_command('我的突破概率', priority=5)
 

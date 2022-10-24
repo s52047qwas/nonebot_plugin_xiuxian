@@ -22,17 +22,5 @@
           "境界": "筑基期",
           "status": 1,
           "quantity": 1
-    },
-       "3":{
-          "name": "test3",
-          "type": "法宝",
-          "buff_type": "atk",
-          "buff": 1000,
-          "price": 1000,
-          "selling": 100,
-          "desc": "回复气血50%",
-          "境界": "筑基期",
-          "status": 1,
-          "quantity": 1
     }
 }

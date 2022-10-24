@@ -16,7 +16,7 @@ from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg
+from ..utils import send_forward_msg, Txt2Img, data_check_conf
 from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
@@ -34,14 +34,16 @@ __buff_help__ = f"""
 """.strip()
 
 @buff_help.handle()
-async def _():
+async def _(bot: Bot, event: GroupMessageEvent):
     """修仙帮助"""
+    await data_check_conf(bot, event)
     msg = __buff_help__
     await buff_help.finish(msg)
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """切磋，不会掉血"""
+    await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await qc.finish(msg, at_sender=True)
@@ -56,15 +58,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await qc.finish("道友不会左右互搏之术！")
         
         
-        user2 = sql_message.get_user_message(give_qq)
+        user2 = sql_message.get_user_real_info(give_qq)
         if user2:
             if user_info.hp is None or user_info.hp == 0:
                 #判断用户气血是否为None
                 sql_message.update_user_hp(user_id)
-                user_info = sql_message.get_user_message(user_id)
+                user_info = sql_message.get_user_real_info(user_id)
             if user2.hp is None:
                 sql_message.update_user_hp(give_qq)
-                user2 = sql_message.get_user_message(give_qq)
+                user2 = sql_message.get_user_real_info(give_qq)
 
             if user2.hp <= user2.exp/10:
                 await qc.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
@@ -79,7 +81,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
-        user1 = user_info
+        user1 = sql_message.get_user_real_info(user_id)
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
@@ -103,10 +105,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     else:
         await qc.finish("没有对方的信息！")
 
-
 @out_closing.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """出关"""
+    await data_check_conf(bot, event)
     user_type = 0  # 状态0为无事件
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -214,13 +216,16 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @mind_state.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """我的状态信息。"""
+    await data_check_conf(bot, event)
     isUser, user_msg, msg = check_user(event)
     if not isUser:
         await mind_state.finish(msg)
     user_id = user_msg.user_id
 
+
     if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
         sql_message.update_user_hp(user_id)
+    user_msg = sql_message.get_user_real_info(user_id)
     
     level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
     realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
@@ -241,6 +246,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @buffinfo.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await buffinfo.finish(msg)

@@ -20,6 +20,7 @@ from .makeboss import createboss
 import json
 from .bossconfig import get_config
 from ..player_fight import Boss_fight
+from ..utils import data_check_conf
 
 config = get_config()
 # 定时任务
@@ -73,13 +74,15 @@ async def _():
         
         
 @bosshelp.handle()
-async def _():
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
     await bosshelp.finish(__boss_help__)
 
     
 
 @battle.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
     try:
         user_id, userinfo = await data_check(bot, event)
     except MsgError:
@@ -119,7 +122,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish("重伤未愈，动弹不得！", at_sender=True)
         
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
-    userinfo = XiuxianDateManage().get_user_message(user_id)
+    userinfo = XiuxianDateManage().get_user_real_info(user_id)
     player['user_id'] = userinfo.user_id
     player['道号'] = userinfo.user_name
     player['气血'] = userinfo.hp
@@ -142,6 +145,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 @bossinfo.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -187,6 +191,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 @create.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
     group_id = event.group_id
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -207,6 +212,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 @setgroupboss.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
     mode = args.extract_plain_text().strip()
     group_id = event.group_id
     isInGroup = isInGroups(event) #True在，False不在
