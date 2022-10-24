@@ -41,6 +41,7 @@ __boss_help__ = f"""
 3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
 4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
 5、世界boss帮助、世界boss：获取世界Boss帮助信息
+6、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
 非指令：
 1、拥有定时任务：每日{config["生成时间"]}点生成一只随机大境界的世界Boss
 """.strip()

@@ -628,7 +628,21 @@ class XiuxianDateManage:
         cur.execute(sql, )
         result = cur.fetchall()
         return result
-
+    
+    def get_all_users_by_sect_id(self, sect_id):
+        """
+        获取宗门所有成员信息
+        :return: 成员列表
+        """
+        sql = f"SELECT * FROM user_xiuxian WHERE sect_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_id,))
+        result = cur.fetchall()
+        results = []
+        for user in result:
+            results.append(UserDate(*user))
+        return results
+    
     def do_work(self, user_id, the_type, sc_time=None):
         """
         更新用户操作CD
