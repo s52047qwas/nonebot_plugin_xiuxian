@@ -56,23 +56,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if give_qq:
         if give_qq == str(user_id):
             await qc.finish("道友不会左右互搏之术！")
-        
-        
-        user2 = sql_message.get_user_real_info(give_qq)
-        if user2:
-            if user_info.hp is None or user_info.hp == 0:
-                #判断用户气血是否为None
-                sql_message.update_user_hp(user_id)
-                user_info = sql_message.get_user_real_info(user_id)
-            if user2.hp is None:
-                sql_message.update_user_hp(give_qq)
-                user2 = sql_message.get_user_real_info(give_qq)
-
-            if user2.hp <= user2.exp/10:
-                await qc.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
-
-            if user_info.hp <= user_info.exp/10:
-                await qc.finish("重伤未愈，动弹不得！", at_sender=True)
                 
         if cd := check_cd(event, '切磋'):
             # 如果 CD 还没到 则直接结束
@@ -82,6 +65,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         user1 = sql_message.get_user_real_info(user_id)
+        user2 = sql_message.get_user_real_info(give_qq)
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
