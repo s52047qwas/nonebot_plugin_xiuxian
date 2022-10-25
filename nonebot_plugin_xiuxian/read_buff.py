@@ -50,10 +50,10 @@ class UserBuffDate:
 
 def get_main_info_msg(id):
     mainbuff = BuffJsonDate().get_main_buff(id)
-    hpmsg = f"提升{mainbuff['hpbuff'] * 100}%气血" if mainbuff['hpbuff'] != 0 else ''
-    mpmsg = f"提升{mainbuff['mpbuff'] * 100}%真元" if mainbuff['mpbuff'] != 0 else ''
-    atkmsg = f"提升{mainbuff['atkbuff'] * 100}%攻击力" if mainbuff['atkbuff'] != 0 else ''
-    ratemsg = f"提升{mainbuff['ratebuff'] * 100}%修炼速度" if mainbuff['ratebuff'] != 0 else ''
+    hpmsg = f"提升{round(mainbuff['hpbuff'] * 100, 0)}%气血" if mainbuff['hpbuff'] != 0 else ''
+    mpmsg = f"提升{round(mainbuff['mpbuff'] * 100, 0)}%真元" if mainbuff['mpbuff'] != 0 else ''
+    atkmsg = f"提升{round(mainbuff['atkbuff'] * 100, 0)}%攻击力" if mainbuff['atkbuff'] != 0 else ''
+    ratemsg = f"提升{round(mainbuff['ratebuff'] * 100, 0)}%修炼速度" if mainbuff['ratebuff'] != 0 else ''
     msg = f"{mainbuff['name']}：{hpmsg},{mpmsg},{atkmsg},{ratemsg}。"
     return mainbuff, msg
 
