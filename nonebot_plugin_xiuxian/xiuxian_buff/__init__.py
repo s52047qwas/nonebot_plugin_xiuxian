@@ -101,8 +101,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
     level = user_mes.level
     use_exp = user_mes.exp
-    hp_speed = 15
-    mp_speed = 15
+    hp_speed = 25
+    mp_speed = 50
 
     max_exp = (
             int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
