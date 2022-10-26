@@ -46,6 +46,7 @@ sect_mainbuff_learn = on_command("学习宗门功法", priority=5)
 sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通"}, priority=5)
 sect_secbuff_learn = on_command("学习宗门神通", priority=5)
 sect_buff_info = on_command("宗门功法查看", aliases={"查看宗门功法"}, priority=5)
+sect_users = on_command("宗门成员查看", aliases={"查看宗门成员"}, priority=5)
 
 
 __sect_help__ = f"""
@@ -66,6 +67,7 @@ __sect_help__ = f"""
 14、宗门功法、神通搜寻：宗主可消耗宗门资材和宗门灵石搜寻功法或者神通
 15、学习宗门功法、神通：宗门成员可消耗宗门资材来学习宗门功法或者神通，后接功法名称
 16、宗门功法查看：查看当前宗门已有的功法
+17、宗门成员查看、查看宗门成员：查看所在宗门的成员信息
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
@@ -389,6 +391,32 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
     await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
     # await sect_list.finish(msg)
+
+@sect_users.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    """查看所在宗门成员信息"""
+    await data_check_conf(bot, event)
+    
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_users.finish(msg)
+        
+    if user_info:
+        sect_id = user_info.sect_id
+        if sect_id:
+            sect_info = sql_message.get_sect_info(sect_id)
+            userlist = sql_message.get_all_users_by_sect_id(sect_id)
+            msg = f'☆【{sect_info.sect_name}】的成员信息☆\n'
+            i = 1
+            for user in userlist:
+                msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}\n"
+                i += 1
+        else:
+            msg = "一介散修，莫要再问。"              
+    else:
+        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
+    await sect_users.finish(msg)
+
 
 @sect_task.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
