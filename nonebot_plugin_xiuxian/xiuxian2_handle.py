@@ -1158,7 +1158,7 @@ class OtherSet(XiuConfig):
         if user_msg.mp < max_mp:
             if user_msg.mp + mp < max_mp:
                 new_mp = user_msg.mp + mp
-                msg.append(',回复真元：{}'.format(new_mp))
+                msg.append(',回复真元：{}'.format(mp))
             else:
                 new_mp = max_mp
                 msg.append(',真元已回满！')

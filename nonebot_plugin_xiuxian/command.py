@@ -1,6 +1,6 @@
 from re import I
 
-from nonebot import on_command, on_message, on_regex, on_fullmatch
+from nonebot import on_command, on_message, on_regex
 from nonebot.adapters.onebot.v11 import (
     PRIVATE_FRIEND,
     GROUP,
