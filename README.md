@@ -60,7 +60,7 @@ pip install nonebot-plugin-xiuxian -U或者pip install nonebot-plugin-xiuxian --
 - 然后在bot.py文件中添加
 
 ```
-nonebot.load_plugin('nonebot-plugin-xiuxian')
+nonebot.load_plugin('nonebot_plugin_xiuxian')
 ```
 
 ## 功能展示
