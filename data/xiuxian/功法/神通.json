@@ -537,7 +537,7 @@
     "8903":{
         "name":"凤灵妖火",
         "type":2,
-        "atkvalue":0.7,
+        "atkvalue":1.4,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
@@ -549,7 +549,7 @@
         "name":"大吞焰术",
         "type":3,
         "bufftype":1,
-        "buffvalue":0.7,
+        "buffvalue":1.4,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
@@ -561,7 +561,7 @@
         "name":"鳖住",
         "type":3,
         "bufftype":2,
-        "buffvalue":0.5,
+        "buffvalue":0.7,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":2,
@@ -574,9 +574,9 @@
         "type":4,
         "hpcost":0,
         "mpcost":0.3,
-        "turncost":3,
+        "turncost":4,
         "desc":"吔屎啦!",
-        "rate":100,
+        "rate":50,
         "success":100,
         "rank":"天阶上品"
     }
