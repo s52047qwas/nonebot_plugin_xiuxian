@@ -371,8 +371,8 @@
         "name":"玄武吐纳术",
         "hpbuff":0.6,
         "mpbuff":0.6,
-        "atkbuff":0.6,
-        "ratebuff":0.6,
+        "atkbuff":0.7,
+        "ratebuff":0.7,
         "desc":"",
         "rank":"天阶上品"
     },"9802":{
@@ -388,20 +388,20 @@
         "hpbuff":0.6,
         "mpbuff":0.6,
         "atkbuff":0.9,
-        "ratebuff":0.3,
+        "ratebuff":0.6,
         "desc":"",
         "rank":"天阶上品"
     },"9804":{
         "name":"万尘归灵诀",
-        "hpbuff":1.2,
+        "hpbuff":1.0,
         "mpbuff":0.6,
-        "atkbuff":0.3,
-        "ratebuff":0.3,
+        "atkbuff":0.6,
+        "ratebuff":0.6,
         "desc":"",
         "rank":"天阶上品"
     },"9900":{
         "name":"玄清天衍录",
-        "hpbuff":0.6,
+        "hpbuff":0.1,
         "mpbuff":0.6,
         "atkbuff":0.8,
         "ratebuff":0.8,
