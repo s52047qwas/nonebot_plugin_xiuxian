@@ -517,7 +517,7 @@
         "type":1,
         "atkvalue":[1.6, 1.7, 1.8],
         "hpcost":0.1,
-        "mpcost":0.3,
+        "mpcost":0.2,
         "turncost":1,
         "desc":"吔屎啦！",
         "rate":100,
@@ -537,7 +537,7 @@
     "8903":{
         "name":"凤灵妖火",
         "type":2,
-        "atkvalue":0.7,
+        "atkvalue":1.3,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
@@ -549,7 +549,7 @@
         "name":"大吞焰术",
         "type":3,
         "bufftype":1,
-        "buffvalue":0.7,
+        "buffvalue":1.0,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
@@ -564,7 +564,7 @@
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
-        "turncost":2,
+        "turncost":3,
         "desc":"不说了，开鳖!",
         "rate":100,
         "rank":"天阶上品"
@@ -576,7 +576,7 @@
         "mpcost":0.3,
         "turncost":3,
         "desc":"吔屎啦!",
-        "rate":100,
+        "rate":50,
         "success":100,
         "rank":"天阶上品"
     }

@@ -39,7 +39,7 @@ level_up_probability : 0.3  # 突破失败增加当前境界突破概率的比�
 sign_in_lingshi_lower_limit : 100  # 每日签到灵石下限
 sign_in_lingshi_upper_limit : 2000  # 每日签到灵石上限
 sign_in_xiuwei_lower_limit : 100  # 每日签到修为下限
-sign_in_xiuwei_upper_limit : 10000  # 每日签到修为上限
+sign_in_xiuwei_upper_limit : 2000  # 每日签到修为上限
 tou : 30  # 偷灵石惩罚
 tou_lower_limit : 30  # 偷灵石下限
 tou_upper_limit : 100  # 偷灵石上限
