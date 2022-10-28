@@ -315,7 +315,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             
             secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
             secbufftype = secbuff['rank']
-            secbuffgear = buffrankkey[secbuff]
+            secbuffgear = buffrankkey[secbufftype]
             #获取逻辑
             materialscost = secbuffgear * secbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
