@@ -140,6 +140,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
     else:
         await sect_buff_info.finish(f"道友尚未加入宗门！", at_sender=True)
 
+buffrankkey = {
+    "人阶下品":1,
+    "人阶上品":2,
+    "黄阶下品":3,
+    "黄阶上品":4,
+    "玄阶下品":5,
+    "玄阶上品":6,
+    "地阶下品":7,
+    "地阶上品":8,
+    "天阶下品":9,
+    "天阶上品":10,
+}
+
 @sect_mainbuff_learn.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
@@ -168,7 +181,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
         
             mainbuffconfig = config['宗门主功法参数']
-            mainbuffgear, mainbufftype = get_sectbufftxt(sect_info.sect_scale, mainbuffconfig)
+            mainbuff = BuffJsonDate().get_main_buff(str(mainbuffid))
+            mainbufftype = mainbuff['rank']
+            mainbuffgear = buffrankkey[mainbufftype]
             #获取逻辑
             materialscost = mainbuffgear * mainbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
@@ -297,13 +312,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
 
             secbuffconfig = config['宗门神通参数']
-            secbuffgear, secbufftype = get_sectbufftxt(sect_info.sect_scale, secbuffconfig)
+            
+            secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
+            secbufftype = secbuff['rank']
+            secbuffgear = buffrankkey[secbuff]
             #获取逻辑
             materialscost = secbuffgear * secbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
                 sql_message.updata_user_sec_buff(user_info.user_id, secbuffid)
-                secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
                 secmsg = get_sec_msg(secbuff)
                 await sect_secbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{secbufftype}神通：{secbuff['name']}\n{secbuff['name']}：{secmsg}", at_sender=True)
             else:
@@ -815,16 +832,19 @@ def isUserTask(user_id):
 
 
 def get_sect_mainbuff_id_list(sect_id):
+    """获取宗门功法id列表"""
     sect_info = sql_message.get_sect_info(sect_id)
     mainbufflist = str(sect_info.mainbuff)[1:-1].split(',')
     return mainbufflist
 
 def get_sect_secbuff_id_list(sect_id):
+    """获取宗门神通id列表"""
     sect_info = sql_message.get_sect_info(sect_id)
     secbufflist = str(sect_info.secbuff)[1:-1].split(',')
     return secbufflist
 
 def set_sect_list(bufflist):
+    """传入ID列表，返回[ID列表]"""
     sqllist1 = ''
     for buff in bufflist:
         if buff == '':
@@ -834,6 +854,7 @@ def set_sect_list(bufflist):
     return sqllist
     
 def get_mainname_list(bufflist):
+    """根据传入的功法列表，返回功法名字列表"""
     namelist = []
     for buff in bufflist:
         mainbuff = BuffJsonDate().get_main_buff(str(buff))
@@ -841,6 +862,7 @@ def get_mainname_list(bufflist):
     return namelist
 
 def get_secname_list(bufflist):
+    """根据传入的神通列表，返回神通名字列表"""
     namelist = []
     for buff in bufflist:
         secbuff = BuffJsonDate().get_sec_buff(buff)
@@ -848,6 +870,7 @@ def get_secname_list(bufflist):
     return namelist
 
 def get_mainnameid(buffname, bufflist):
+    """根据传入的功法名字，获取到功法的id"""
     tempdict = {}
     buffid = 0
     for buff in bufflist:
