@@ -102,7 +102,7 @@
         "rank":"人阶上品"
     },
     "8105":{
-        "name":"鳖住",
+        "name":"鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.1,
@@ -159,7 +159,7 @@
         "rank":"黄阶下品"
     },
     "8205":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.15,
@@ -216,7 +216,7 @@
         "rank":"黄阶上品"
     },
     "8305":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.2,
@@ -273,7 +273,7 @@
         "rank":"玄阶下品"
     },
     "8405":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.25,
@@ -330,7 +330,7 @@
         "rank":"玄阶上品"
     },
     "8505":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.3,
@@ -387,7 +387,7 @@
         "rank":"地阶下品"
     },
     "8605":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.35,
@@ -444,7 +444,7 @@
         "rank":"地阶上品"
     },
     "8705":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.4,
@@ -501,7 +501,7 @@
         "rank":"天阶下品"
     },
     "8805":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.45,
@@ -558,7 +558,7 @@
         "rank":"天阶上品"
     },
     "8905":{
-        "name":"鳖住",
+        "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
         "type":3,
         "bufftype":2,
         "buffvalue":0.5,
