@@ -385,7 +385,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 await sect_task_refresh.finish(cd_msg(cd), at_sender=True)
             create_user_sect_task(user_id)
             add_cd(event, config['宗门任务刷新cd'], '宗门任务刷新')
-            await sect_task_refresh.finish(f"已刷新，道友当前接取的任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+            await sect_task_refresh.finish(f"已刷新，道友当前接取的任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}", at_sender=True)
         else:
             await sect_task_refresh.finish(f"道友目前还没有宗门任务，请发送指令宗门任务接取来获取吧", at_sender=True)
 
