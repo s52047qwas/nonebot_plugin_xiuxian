@@ -33,6 +33,7 @@ battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "�
 bosshelp = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
 bossdelete = on_command("天罚boss", aliases={"天罚世界boss", "天罚Boss", "天罚BOSS", "天罚世界Boss","天罚世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 
+bosstime = config["Boss生成时间参数"]
 __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
@@ -43,7 +44,7 @@ __boss_help__ = f"""
 5、世界boss帮助、世界boss：获取世界Boss帮助信息
 6、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
 非指令：
-1、拥有定时任务：每日{config["生成时间"]}点生成一只随机大境界的世界Boss
+1、拥有定时任务：每{str(bosstime['hours']) + '小时' if bosstime['hours'] != 0 else ''}{str(bosstime['minutes']) + '分钟' if bosstime['minutes'] != 0 else ''}生成一只随机大境界的世界Boss
 """.strip()
 
 groupboss = {}
@@ -55,7 +56,9 @@ except:
 
 
 # 定时任务生成世界boss
-@setboss.scheduled_job("cron",hour=config["生成时间"])
+@setboss.scheduled_job("interval", 
+                       hours=bosstime['hours'], 
+                       minutes=bosstime['minutes'])
 async def _():
     bot = get_bot()
     if groups['open'] != []:
