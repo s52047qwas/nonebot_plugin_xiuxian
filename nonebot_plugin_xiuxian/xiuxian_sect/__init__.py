@@ -426,7 +426,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg = f'☆【{sect_info.sect_name}】的成员信息☆\n'
             i = 1
             for user in userlist:
-                msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}\n"
+                msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}\n"
                 i += 1
         else:
             msg = "一介散修，莫要再问。"              
@@ -490,7 +490,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
+            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg, at_sender=True)
@@ -508,7 +509,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
+            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg, at_sender=True)
@@ -623,6 +625,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
                     else:
                         sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
                         sql_message.update_usr_sect(give_user.user_id, None, None)
+                        sql_message.update_user_sect_contribution(user_id, 0)
                         await sect_kick_out.finish(
                             f"传{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}"
                             f"{user_message.user_name}法旨，即日起{give_user.user_name}被"
@@ -661,6 +664,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
                 else:
                     sql_message.update_usr_sect(user_id, None, None)
                     sect_info = sql_message.get_sect_info_by_id(int(sect_out_id[0]))
+                    sql_message.update_user_sect_contribution(user_id, 0)
                     await sect_out.finish(f"道友已退出{sect_info.sect_name}，今后就是自由散修，是福是祸，犹未可知。")
             else:
                 await sect_out.finish(f"道友所在宗门编号为{user_message.sect_id}，与欲退出的宗门编号{int(sect_out_id[0])}不符")
@@ -688,7 +692,8 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             sql_message.update_ls(user_id, int(donate_num[0]), 2)
             sql_message.donate_update(user_message.sect_id, int(donate_num[0]))
-            await sect_donate.finish(f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0]) * 10}，蒸蒸日上！")
+            sql_message.update_user_sect_contribution(user_id, user_message.sect_contribution + int(donate_num[0]))
+            await sect_donate.finish(f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0]) * 10}，宗门贡献度增加：{int(donate_num[0])}点，蒸蒸日上！")
     else:
         await sect_donate.finish("捐献的灵石数量解析异常")
 
@@ -801,6 +806,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     洞天福地：{sect_info.sect_fairyland if sect_info.sect_fairyland else "暂无"}
     宗门位面排名：{top_idx_list.index(sect_id) + 1}
     宗门拥有资材：{sect_info.sect_materials}
+    宗门贡献度：{mess.sect_contribution}
     """
             if sect_position == owner_position:
                 msg += f"\n   宗门储备：{sect_info.sect_used_stone}灵石"
