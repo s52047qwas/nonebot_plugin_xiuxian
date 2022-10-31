@@ -308,8 +308,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             secbuffid = get_secnameid(msg, sectsecbuffidlist)
-            if str(userbuffinfo.main_buff) == str(secbuffid):
-                await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
+            if str(userbuffinfo.sec_buff) == str(secbuffid):
+                await sect_secbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
 
             secbuffconfig = config['宗门神通参数']
             
