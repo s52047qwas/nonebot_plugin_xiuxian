@@ -448,15 +448,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if sect_id:
         user_now_num = int(userinfo.sect_task)
         if user_now_num >= config["每日宗门任务次上限"]:
-            await sect_task.finish(f"道友已完成{user_now_num}次，今日无法再获取宗门任务了！")
+            await sect_task.finish(f"道友已完成{user_now_num}次，今日无法再获取宗门任务了！", at_sender=True)
         
         if isUserTask(user_id): #已有任务
-            await sect_task.finish(f"道友当前已接取了任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+            await sect_task.finish(f"道友当前已接取了任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}", at_sender=True)
 
         create_user_sect_task(user_id)
-        await sect_task.finish(f"{userstask[user_id]['任务内容']['desc']}")
+        await sect_task.finish(f"{userstask[user_id]['任务内容']['desc']}", at_sender=True)
     else:
-        await sect_task.finish(f"道友尚未加入宗门，请加入宗门后再获取任务！")
+        await sect_task.finish(f"道友尚未加入宗门，请加入宗门后再获取任务！", at_sender=True)
 
 
 @sect_task_complete.handle()
@@ -493,7 +493,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
-            await sect_task_complete.finish(msg)
+            await sect_task_complete.finish(msg, at_sender=True)
 
         elif userstask[user_id]['任务内容']['type'] == 2:#type=1：需要扣气血，type=2：需要扣灵石
             costls = userstask[user_id]['任务内容']['cost']
@@ -511,7 +511,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
-            await sect_task_complete.finish(msg)
+            await sect_task_complete.finish(msg, at_sender=True)
     else:
         await sect_task_complete.finish(f"道友尚未加入宗门，请加入宗门后再完成任务！")
 
