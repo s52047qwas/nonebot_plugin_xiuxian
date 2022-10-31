@@ -44,11 +44,9 @@ async def _():
     bot = get_bot()
     if groups['open'] != []:
         for g in groups['open']:
-            try:
-                grouprift[g]
-            except:
-                grouprift[g] = []
-            #秘境逻辑待实现
+            grouprift[g]
+            msg = f"已生成秘境"
+            await bot.send_group_msg(group_id=int(g), message=msg)
 
 
 @setgrouprift.handle()
