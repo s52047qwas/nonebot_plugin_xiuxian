@@ -186,7 +186,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     msg = get_dxsj_info("掉血事件", user_info)
                     await complete_rift.finish(msg, at_sender=True)
                 elif rift_type == "Boss战斗":
-                    result, msg = get_boss_battle_info(user_info)
+                    result, msg = get_boss_battle_info(user_info, rift_rank)
                     await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
                     await complete_rift.finish(msg, at_sender=True)
             elif rift_type == "宝物":
