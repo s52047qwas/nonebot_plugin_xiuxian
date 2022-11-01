@@ -17,7 +17,10 @@ from ..xiuxian2_handle import XiuxianDateManage
 import json
 from ..player_fight import Boss_fight
 from ..utils import data_check_conf, check_user
-from .jsondata import read_group, save_group
+from .riftconfig import get_config, savef
+from .riftmake import get_rift_type
+
+config = get_config()
 
 # 定时任务
 set_rift = require("nonebot_plugin_apscheduler").scheduler
@@ -33,21 +36,20 @@ __rift_help__ = f"""
 
 """.strip()
 
-group_rift = {}
-groups = {}
-try:
-    groups = read_group()
-except:
-    groups['open'] = []
+group_rift = {} #dict
+groups = config['open'] #list
     
 # 定时任务生成群秘境
 @set_rift.scheduled_job("cron", hour=18, minute=30)
 async def _():
     bot = get_bot()
-    if groups['open'] != []:
-        for g in groups['open']:
-            group_rift[g]
-            msg = f"已生成秘境"
+    if groups != []:
+        for g in groups:
+            group_rift[g] = {}
+            rift = get_rift_type()#秘境等级
+            group_rift[g]['rift_rank'] = rift
+            group_rift[g]['count'] = config['rift'][rift]['count']
+            msg = f"野生的{rift}出现了！秘境可探索次数：{group_rift[g]['count']}，请诸位道友发送 探索秘境 来加入吧！"
             await bot.send_group_msg(group_id=int(g), message=msg)
 
 #探索秘境
@@ -80,22 +82,20 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if is_in_group:
             await set_group_rift.finish(f'本群已开启群秘境，请勿重复开启!')
         else:
-            groups['open'].append(group_id)
-            save_group(groups)
+            config['open'].append(group_id)
+            savef(config)
             await set_group_rift.finish(f'已开启本群秘境!')
 
     elif mode == '关闭':
         if is_in_group:
-            groups['open'].remove(group_id)
-            save_group(groups)
+            config['open'].remove(group_id)
+            savef(config)
             await set_group_rift.finish(f'已关闭本群秘境!')
         else:
             await set_group_rift.finish(f'本群未开启群秘境!')
     
-    elif mode == '':
-        await set_group_rift.finish(__rift_help__)
     else:
-        await set_group_rift.finish(f'请输入正确的指令：群秘境开启或关闭!')
+        await set_group_rift.finish(__rift_help__)
         
 def is_in_groups(event: GroupMessageEvent):
-    return event.group_id in groups['open']
+    return event.group_id in groups

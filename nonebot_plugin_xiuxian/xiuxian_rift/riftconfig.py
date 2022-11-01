@@ -2,28 +2,35 @@ import json
 import os
 from pathlib import Path
 
-configkey = []
+configkey = ["open", "rift"]
 CONFIG = {
-    "rank": {
+    "open":[],
+    "rift": {
         "黄级秘境": {
-            "type_rate": 200,
-            "rank":2
+            "type_rate": 200,#概率
+            "rank":2,#增幅等级
+            "count":5,#次数
         },
         "人级秘境": {
             "type_rate": 50,
-            "rank":4
+            "rank":4,
+            "count":5,
+            
         },
         "地级秘境": {
             "type_rate": 25,
-            "rank":6
+            "rank":6,
+            "count":5,
         }, 
         "天级秘境": {
             "type_rate": 12,
-            "rank":8
+            "rank":8,
+            "count":5,
         },
         "仙级秘境": {
             "type_rate": 6,
-            "rank":10
+            "rank":10,
+            "count":5,
         }
     }
 }

@@ -1,4 +1,6 @@
 import random
+from .riftconfig import get_config
+from ..xiuxian2_handle import OtherSet
 
 USERRANK = {
     '江湖好手':50,
@@ -107,6 +109,16 @@ STORY = {
     },
     "功法":{},
 }
+
+def get_rift_type():
+    """根据概率返回秘境等级"""
+    rate_dict = {}
+    data = get_config()['rift']
+    for i, v in data.items():
+        rate_dict[i] = v["type_rate"]
+    rift = OtherSet().calculated(rate_dict)
+    return rift
+
 
 def get_dy_info(user_level, rift_rank):
     """获取丹药事件的信息"""
