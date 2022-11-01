@@ -26,6 +26,7 @@ sql_message = XiuxianDateManage()  # sql类
 set_rift = require("nonebot_plugin_apscheduler").scheduler
 set_group_rift = on_command("群秘境", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 explore_rift = on_command("探索秘境", priority=5, permission= GROUP)
+rift_help = on_command("秘境帮助", priority=5, permission= GROUP)
 create_rift = on_command("生成秘境", priority=5, permission= GROUP and SUPERUSER)
 complete_rift = on_command("秘境结算", aliases={"结算秘境"}, priority=5, permission= GROUP)
 break_rift = on_command("秘境终止", aliases={"终止秘境"}, priority=5, permission= GROUP)
@@ -38,6 +39,7 @@ __rift_help__ = f"""
 3、探索秘境：探索秘境获取随机奖励
 4、秘境结算、结算秘境：结算秘境奖励
 5、秘境终止、终止秘境：终止秘境事件
+6、秘境帮助：获取秘境帮助信息
 非指令：
 
 """.strip()
@@ -59,6 +61,11 @@ async def _():
             group_rift[group_id] = rift
             msg = f"野生的{rift.name}已开启！可探索次数：{group_rift[group_id]['count']}次，请诸位道友发送 探索秘境 来加入吧！"
             await bot.send_group_msg(group_id=int(group_id), message=msg)
+
+@rift_help.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    await rift_help.finish(__rift_help__)
 
 #生成秘境
 @create_rift.handle()
