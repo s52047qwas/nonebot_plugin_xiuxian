@@ -52,7 +52,7 @@ TREASUREMSG = [
 
 STORY = {
     "宝物":{
-        "type_rate":100,
+        "type_rate":300,
         "丹药":{
             "type_rate":40,
             "name":{
@@ -107,9 +107,9 @@ STORY = {
             "type_rate":200,
             "Boss数据":{
                 "name":["墨蛟","婴鲤兽","千目妖","鸡冠蛟","妖冠蛇","铁火蚁","天晶蚁","银光鼠","紫云鹰","狗青"],
-                "hp":[5, 10, 15, 20, 25],
+                "hp":[2, 3, 4, 5, 6, 10],
                 "mp":10,
-                "atk":[0.1, 0.2, 0.3, 0.5, 1, 2],
+                "atk":[0.1, 0.15, 0.2, 0.25, 0.3, 1],
             },
             "success":{
                 "desc":"道友大战一番成功战胜{}!",
@@ -170,7 +170,7 @@ def get_boss_battle_info(user_info):
     boss_info["攻击"] = base_exp * random.choice(boss_data["atk"])
     boss_info["真元"] = base_exp * boss_data["mp"]
     
-    result, victor, bossinfo_new, stone = Boss_fight(player, boss_info, 1)
+    result, victor, bossinfo_new, stone = Boss_fight(player, boss_info, 1)#未开启，1不写入，2写入
     dev_msg = '但是没生效捏'#要删掉的
     if victor == player['道号']:#获胜
         success_info = STORY['战斗']['Boss战斗']["success"]
