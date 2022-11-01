@@ -23,6 +23,7 @@ def check_user_type(user_id, need_type):
       * `msg: 消息体
     """
     isType = False
+    msg = ''
     user_cd_message = XiuxianDateManage().get_user_cd(user_id)
     if user_cd_message == None:
         user_type = 0
@@ -31,15 +32,20 @@ def check_user_type(user_id, need_type):
     
     if user_type == need_type:#状态一致
         isType = True
-        msg = ''
-        return isType, msg
-    
-    if need_type == 1:
-        msg = "道友现在在闭关呢，小心走火入魔！"
-        return isType, msg
-    elif need_type == 2:
-        msg = "道友现在在做悬赏令呢，小心走火入魔！"
-        return isType, msg
+    else:
+        if user_type == 1:
+            msg = "道友现在在闭关呢，小心走火入魔！"
+            
+        elif user_type == 2:
+            msg = "道友现在在做悬赏令呢，小心走火入魔！"
+
+        elif user_type == 3:
+            msg = "道友现在正在秘境中，分身乏术！"
+        
+        elif user_type == 0:
+            msg = "道友现在什么都没干呢~"
+
+    return isType, msg
 
 def check_user(event: GroupMessageEvent):
     """

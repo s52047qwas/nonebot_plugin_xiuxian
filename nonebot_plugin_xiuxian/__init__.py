@@ -25,7 +25,7 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
-from .utils import Txt2Img, data_check_conf
+from .utils import Txt2Img, data_check_conf, check_user_type
 
 
 
@@ -257,6 +257,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 @command.in_closing.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """闭关"""
+    await data_check_conf(bot, event)
     user_type = 1  # 状态1为闭关
     try:
         user_id, group_id, mess = await data_check(bot, event)
@@ -266,23 +267,28 @@ async def _(bot: Bot, event: GroupMessageEvent):
         return
 
     user_cd_message = sql_message.get_user_cd(user_id)
-
-    if user_cd_message is None:
+    is_type, msg = check_user_type(user_id, 0)
+    if is_type:#符合
         sql_message.in_closing(user_id, user_type)
         await in_closing.finish("进入闭关状态，如需出关，发送【出关】！", at_sender=True)
+    else:
+        await in_closing.finish(msg, at_sender=True)
+    # if user_cd_message is None:
+    #     sql_message.in_closing(user_id, user_type)
+    #     await in_closing.finish("进入闭关状态，如需出关，发送【出关】！", at_sender=True)
 
-    elif user_cd_message.type == 0:
-        # 状态0为未进行事件，可闭关
-        sql_message.in_closing(user_id, user_type)
-        await in_closing.finish("进入闭关状态，如需出关，发送【出关】！", at_sender=True)
+    # elif user_cd_message.type == 0:
+    #     # 状态0为未进行事件，可闭关
+    #     sql_message.in_closing(user_id, user_type)
+    #     await in_closing.finish("进入闭关状态，如需出关，发送【出关】！", at_sender=True)
 
-    elif user_cd_message.type == 1:
-        # 状态1为已在闭关中
-        await in_closing.finish("已经在闭关中，请输入【出关】结束！", at_sender=True)
+    # elif user_cd_message.type == 1:
+    #     # 状态1为已在闭关中
+    #     await in_closing.finish("已经在闭关中，请输入【出关】结束！", at_sender=True)
 
-    elif user_cd_message.type == 2:
-        # 状态2为已悬赏令任务进行中
-        await in_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
+    # elif user_cd_message.type == 2:
+    #     # 状态2为已悬赏令任务进行中
+    #     await in_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
 
 
 
@@ -478,6 +484,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     text = args.extract_plain_text().strip()
 
     user_cd_message = sql_message.get_user_cd(user_id)
+    
 
     if "接取" in text:
         try:
@@ -495,16 +502,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         except KeyError:
             await do_work.finish("没有查到你的悬赏令信息呢！")
     elif text == "结算":
-        if user_cd_message is None:
-            await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
+        is_type, msg = check_user_type(user_id, 2)
+        if not is_type:
+            await do_work.finish(msg, at_sender=True)
+            
+        # if user_cd_message is None:
+        #     await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
 
-        elif user_cd_message.type == 0:
-            await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
+        # elif user_cd_message.type == 0:
+        #     await do_work.finish("没有查到你的悬赏令信息呢！输入【悬赏令】获取！")
 
-        elif user_cd_message.type == 1:
-            await do_work.finish("道友现在在闭关呢，小心走火入魔！", at_sender=True)
+        # elif user_cd_message.type == 1:
+        #     await do_work.finish("道友现在在闭关呢，小心走火入魔！", at_sender=True)
 
-        elif user_cd_message.type == 2:
+        # elif user_cd_message.type == 2:
+        else:
             work_time = datetime.strptime(
                 user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
             )

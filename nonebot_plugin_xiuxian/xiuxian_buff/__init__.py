@@ -16,7 +16,7 @@ from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg, Txt2Img, data_check_conf
+from ..utils import send_forward_msg, Txt2Img, data_check_conf, check_user_type
 from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
@@ -115,16 +115,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
     now_time = datetime.now()
     user_cd_message = sql_message.get_user_cd(user_id)
-
-    if user_cd_message is None:
-        # 不存在用户信息
-        await out_closing.finish("没有查到道友的信息，修炼发送【闭关】，进入修炼状态！", at_sender=True)
-
-    elif user_cd_message.type == 0:
-        # 用户状态为0
-        await out_closing.finish("道友现在什么都没干呢~", at_sender=True)
-
-    elif user_cd_message.type == 1:
+    is_type, msg = check_user_type(user_id, 1)
+    if not is_type:
+        await out_closing.finish(msg, at_sender=True)
+    else:
         # 用户状态为1
         in_closing_time = datetime.strptime(
             user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
@@ -193,9 +187,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
                                                           result_msg[1]), at_sender=True
                 )
-
-    elif user_cd_message.type == 2:
-        await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
 
 @mind_state.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
