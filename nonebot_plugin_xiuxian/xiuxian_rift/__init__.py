@@ -155,7 +155,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if not is_type:
         await complete_rift.finish(msg, at_sender=True)
     else:
-        user_id = user_info.user_id
         try:
             rift_info = read_rift_data(user_id)
         except:
