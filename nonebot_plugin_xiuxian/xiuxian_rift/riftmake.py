@@ -107,7 +107,7 @@ STORY = {
             "type_rate":200,
             "Boss数据":{
                 "name":["墨蛟","婴鲤兽","千目妖","鸡冠蛟","妖冠蛇","铁火蚁","天晶蚁","银光鼠","紫云鹰","狗青"],
-                "hp":[2, 3, 4, 5, 6, 1],
+                "hp":[1.2, 1.4, 1.6, 1.8, 2, 3],
                 "mp":10,
                 "atk":[0.1, 0.12, 0.14, 0.16, 0.18, 0.5],
             },
@@ -123,7 +123,7 @@ STORY = {
             }
         },
         "掉血事件":{
-            "type_rate":100,
+            "type_rate":50,
             "desc":[
                 "秘境内竟然散布着浓烈的毒气，道友贸然闯入！{}！",
                 "秘境内竟然藏着一群未知势力，道友被打劫了！{}！"
@@ -166,8 +166,8 @@ def get_boss_battle_info(user_info, rift_rank):
     base_exp = userinfo.exp
     boss_info = {"name": None, "气血": None, "攻击": None, "真元": None, 'stone':1}
     boss_info["name"] = random.choice(boss_data["name"])
-    boss_info["气血"] = base_exp * random.choice(boss_data["hp"])
-    boss_info["攻击"] = base_exp * random.choice(boss_data["atk"])
+    boss_info["气血"] = int(base_exp * random.choice(boss_data["hp"]))
+    boss_info["攻击"] = int(base_exp * random.choice(boss_data["atk"]))
     boss_info["真元"] = base_exp * boss_data["mp"]
     
     result, victor, bossinfo_new, stone = Boss_fight(player, boss_info, 1)#未开启，1不写入，2写入
