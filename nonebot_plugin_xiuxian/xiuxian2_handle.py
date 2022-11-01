@@ -660,6 +660,8 @@ class XiuxianDateManage:
             now_time = 0
         elif the_type == 2:
             now_time = datetime.datetime.now()
+        elif the_type == 3:
+            now_time = datetime.datetime.now()
 
         sql = f"UPDATE user_cd SET type=?,create_time=?,scheduled_time=? where user_id=?"
         cur = self.conn.cursor()

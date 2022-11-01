@@ -6,31 +6,59 @@ configkey = ["open", "rift"]
 CONFIG = {
     "open":[],
     "rift": {
-        "黄级秘境": {
+        "东玄域": {
             "type_rate": 200,#概率
-            "rank":2,#增幅等级
-            "count":5,#次数
+            "rank":1,#增幅等级
+            "count":3,#次数
+            "time":60,#时间，单位分
         },
-        "人级秘境": {
+        "西玄域": {
+            "type_rate": 200,
+            "rank":1,
+            "count":3,
+            "time":60,#时间，单位分
+        },
+        "妖域": {
+            "type_rate": 100,
+            "rank":2,
+            "count":5,
+            "time":90,#时间，单位分
+        }, 
+        "乱魔海": {
+            "type_rate": 100,
+            "rank":2,
+            "count":5,
+            "time":90,#时间，单位分
+        },
+        "幻雾林": {
             "type_rate": 50,
             "rank":4,
             "count":5,
-            
+            "time":120,#时间，单位分
         },
-        "地级秘境": {
+        "狐鸣山": {
+            "type_rate": 50,
+            "rank":4,
+            "count":5,
+            "time":120,#时间，单位分
+        },
+        "云梦泽": {
             "type_rate": 25,
             "rank":6,
             "count":5,
-        }, 
-        "天级秘境": {
+            "time":150,#时间，单位分
+        },
+        "乱星原": {
             "type_rate": 12,
             "rank":8,
             "count":5,
+            "time":150,#时间，单位分
         },
-        "仙级秘境": {
+        "黑水湖": {
             "type_rate": 6,
             "rank":10,
             "count":5,
+            "time":180,#时间，单位分
         }
     }
 }
