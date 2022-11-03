@@ -16,7 +16,7 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task", "sect_contribution"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
@@ -526,34 +526,35 @@ class XiuxianDateManage:
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
-        WHEN level = '渡劫境圆满' THEN '01'
-        WHEN level = '渡劫境中期' THEN '02'
-        WHEN level = '渡劫境初期' THEN '03'
-        WHEN level = '大乘境圆满' THEN '04'
-        WHEN level = '大乘境中期' THEN '05'
-        WHEN level = '大乘境初期' THEN '06'
-        WHEN level = '合体境圆满' THEN '07'
-        WHEN level = '合体境中期' THEN '08'
-        WHEN level = '合体境初期' THEN '09'
-        WHEN level = '炼虚境圆满' THEN '10'
-        WHEN level = '炼虚境中期' THEN '11'
-        WHEN level = '炼虚境初期' THEN '12'
-        WHEN level = '化神境圆满' THEN '13'
-        WHEN level = '化神境中期' THEN '14'
-        WHEN level = '化神境初期' THEN '15'
-        WHEN level = '元婴境圆满' THEN '16'
-        WHEN level = '元婴境中期' THEN '17'
-        WHEN level = '元婴境初期' THEN '18'
-        WHEN level = '结丹境圆满' THEN '19'
-        WHEN level = '结丹境中期' THEN '20'
-        WHEN level = '结丹境初期' THEN '21'
-        WHEN level = '筑基境圆满' THEN '22'
-        WHEN level = '筑基境中期' THEN '23'
-        WHEN level = '筑基境初期' THEN '24'
-        WHEN level = '练气境圆满' THEN '25'
-        WHEN level = '练气境中期' THEN '26'
-        WHEN level = '练气境初期' THEN '27'
-        WHEN level = '江湖好手' THEN '28'
+        WHEN level = '半步真仙' THEN '20'
+        WHEN level = '渡劫境圆满' THEN '21'
+        WHEN level = '渡劫境中期' THEN '22'
+        WHEN level = '渡劫境初期' THEN '23'
+        WHEN level = '大乘境圆满' THEN '24'
+        WHEN level = '大乘境中期' THEN '25'
+        WHEN level = '大乘境初期' THEN '26'
+        WHEN level = '合体境圆满' THEN '27'
+        WHEN level = '合体境中期' THEN '28'
+        WHEN level = '合体境初期' THEN '29'
+        WHEN level = '炼虚境圆满' THEN '30'
+        WHEN level = '炼虚境中期' THEN '31'
+        WHEN level = '炼虚境初期' THEN '32'
+        WHEN level = '化神境圆满' THEN '33'
+        WHEN level = '化神境中期' THEN '34'
+        WHEN level = '化神境初期' THEN '35'
+        WHEN level = '元婴境圆满' THEN '36'
+        WHEN level = '元婴境中期' THEN '37'
+        WHEN level = '元婴境初期' THEN '38'
+        WHEN level = '结丹境圆满' THEN '39'
+        WHEN level = '结丹境中期' THEN '40'
+        WHEN level = '结丹境初期' THEN '41'
+        WHEN level = '筑基境圆满' THEN '42'
+        WHEN level = '筑基境中期' THEN '43'
+        WHEN level = '筑基境初期' THEN '44'
+        WHEN level = '练气境圆满' THEN '45'
+        WHEN level = '练气境中期' THEN '46'
+        WHEN level = '练气境初期' THEN '47'
+        WHEN level = '江湖好手' THEN '48'
         ELSE level END ASC,exp DESC LIMIT 10"""
         cur = self.conn.cursor()
         cur.execute(sql, )
@@ -655,13 +656,27 @@ class XiuxianDateManage:
         cur.execute(sql, )
         result = cur.fetchall()
         return result
-
+    
+    def get_all_users_by_sect_id(self, sect_id):
+        """
+        获取宗门所有成员信息
+        :return: 成员列表
+        """
+        sql = f"SELECT * FROM user_xiuxian WHERE sect_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_id,))
+        result = cur.fetchall()
+        results = []
+        for user in result:
+            results.append(UserDate(*user))
+        return results
+    
     def do_work(self, user_id, the_type, sc_time=None):
         """
         更新用户操作CD
         :param sc_time: 任务
         :param user_id: qq
-        :param the_type: 0:无状态  1：闭关中  2：历练中
+        :param the_type: 0:无状态  1：闭关中  2：历练中  3：探索秘境中
         :param the_time: 本次操作的时长
         :return:
         """
@@ -671,6 +686,8 @@ class XiuxianDateManage:
         elif the_type == 0:
             now_time = 0
         elif the_type == 2:
+            now_time = datetime.datetime.now()
+        elif the_type == 3:
             now_time = datetime.datetime.now()
 
         sql = f"UPDATE user_cd SET type=?,create_time=?,scheduled_time=? where user_id=?"
@@ -697,6 +714,13 @@ class XiuxianDateManage:
         sql = f"UPDATE user_xiuxian SET hp=?,mp=? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (hp, mp, user_id))
+        self.conn.commit()
+        
+    def update_user_sect_contribution(self, user_id, sect_contribution):
+        """更新用户宗门贡献度"""
+        sql = f"UPDATE user_xiuxian SET sect_contribution=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_contribution, user_id))
         self.conn.commit()
 
     def update_user_hp(self,user_id):
@@ -1073,7 +1097,7 @@ class OtherSet(XiuConfig):
 
     def get_power_rate(self, mind, other):
         power_rate = mind / (other + mind)
-        if power_rate >= 9.5:
+        if power_rate >= 0.95:
             return "道友偷窃小辈实属天道所不齿！"
         elif power_rate <= 0.05:
             return "道友请不要不自量力！"
@@ -1171,7 +1195,7 @@ class OtherSet(XiuConfig):
         if user_msg.mp < max_mp:
             if user_msg.mp + mp < max_mp:
                 new_mp = user_msg.mp + mp
-                msg.append(',回复真元：{}'.format(new_mp))
+                msg.append(',回复真元：{}'.format(mp))
             else:
                 new_mp = max_mp
                 msg.append(',真元已回满！')

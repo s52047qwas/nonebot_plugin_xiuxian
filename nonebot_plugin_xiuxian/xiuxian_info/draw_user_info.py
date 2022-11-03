@@ -54,6 +54,8 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     DETAIL_baseinfo['主修功法'] = DETAIL_MAP['主修功法']
     DETAIL_baseinfo['副修神通'] = DETAIL_MAP['副修神通']
     DETAIL_baseinfo["攻击力"] = DETAIL_MAP["攻击力"]
+    DETAIL_baseinfo["法器"] = DETAIL_MAP["法器"]
+    DETAIL_baseinfo["防具"] = DETAIL_MAP["防具"]
     
     DETAIL_right = {}
     DETAIL_right['道号'] = DETAIL_MAP['道号']
@@ -84,7 +86,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     w, h = await linewh(sectinfo, sectword)
     sectinfo_draw = ImageDraw.Draw(sectinfo)
     sectinfo_draw.text((w, h), sectword, first_color, font_40, 'lm')
-    img.paste(sectinfo, (100, 1256), sectinfo)
+    img.paste(sectinfo, (100, 1462), sectinfo)
     
     DETAIL_sectinfo = {}
     DETAIL_sectinfo['所在宗门'] = DETAIL_MAP['所在宗门']
@@ -125,7 +127,7 @@ async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
     w, h = await linewh(line, word)
     
     line_draw.text((100, h), word, first_color, font_36, 'lm')
-    img.paste(line, (100, 1359 + list(DETAIL_MAP.keys()).index(key) * 103), line)
+    img.paste(line, (100, 1565 + list(DETAIL_MAP.keys()).index(key) * 103), line)
     
    
 

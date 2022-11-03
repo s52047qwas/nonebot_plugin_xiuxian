@@ -16,7 +16,7 @@ from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg, Txt2Img, data_check_conf
+from ..utils import send_forward_msg, Txt2Img, data_check_conf, check_user_type
 from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
@@ -56,23 +56,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if give_qq:
         if give_qq == str(user_id):
             await qc.finish("道友不会左右互搏之术！")
-        
-        
-        user2 = sql_message.get_user_real_info(give_qq)
-        if user2:
-            if user_info.hp is None or user_info.hp == 0:
-                #判断用户气血是否为None
-                sql_message.update_user_hp(user_id)
-                user_info = sql_message.get_user_real_info(user_id)
-            if user2.hp is None:
-                sql_message.update_user_hp(give_qq)
-                user2 = sql_message.get_user_real_info(give_qq)
-
-            if user2.hp <= user2.exp/10:
-                await qc.finish("对方重伤藏匿了，无法抢劫！", at_sender=True)
-
-            if user_info.hp <= user_info.exp/10:
-                await qc.finish("重伤未愈，动弹不得！", at_sender=True)
                 
         if cd := check_cd(event, '切磋'):
             # 如果 CD 还没到 则直接结束
@@ -82,6 +65,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         user1 = sql_message.get_user_real_info(user_id)
+        user2 = sql_message.get_user_real_info(give_qq)
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
@@ -117,8 +101,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
     level = user_mes.level
     use_exp = user_mes.exp
-    hp_speed = 15
-    mp_speed = 15
+    hp_speed = 25
+    mp_speed = 50
 
     max_exp = (
             int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
@@ -131,16 +115,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
     now_time = datetime.now()
     user_cd_message = sql_message.get_user_cd(user_id)
-
-    if user_cd_message is None:
-        # 不存在用户信息
-        await out_closing.finish("没有查到道友的信息，修炼发送【闭关】，进入修炼状态！", at_sender=True)
-
-    elif user_cd_message.type == 0:
-        # 用户状态为0
-        await out_closing.finish("道友现在什么都没干呢~", at_sender=True)
-
-    elif user_cd_message.type == 1:
+    is_type, msg = check_user_type(user_id, 1)
+    if not is_type:
+        await out_closing.finish(msg, at_sender=True)
+    else:
         # 用户状态为1
         in_closing_time = datetime.strptime(
             user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
@@ -209,9 +187,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
                                                           result_msg[1]), at_sender=True
                 )
-
-    elif user_cd_message.type == 2:
-        await out_closing.finish("悬赏令事件进行中，请输入【悬赏令结算】结束！", at_sender=True)
 
 @mind_state.handle()
 async def _(bot: Bot, event: GroupMessageEvent):

@@ -46,6 +46,7 @@ sect_mainbuff_learn = on_command("学习宗门功法", priority=5)
 sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通"}, priority=5)
 sect_secbuff_learn = on_command("学习宗门神通", priority=5)
 sect_buff_info = on_command("宗门功法查看", aliases={"查看宗门功法"}, priority=5)
+sect_users = on_command("宗门成员查看", aliases={"查看宗门成员"}, priority=5)
 
 
 __sect_help__ = f"""
@@ -66,6 +67,7 @@ __sect_help__ = f"""
 14、宗门功法、神通搜寻：宗主可消耗宗门资材和宗门灵石搜寻功法或者神通
 15、学习宗门功法、神通：宗门成员可消耗宗门资材来学习宗门功法或者神通，后接功法名称
 16、宗门功法查看：查看当前宗门已有的功法
+17、宗门成员查看、查看宗门成员：查看所在宗门的成员信息
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
@@ -138,6 +140,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
     else:
         await sect_buff_info.finish(f"道友尚未加入宗门！", at_sender=True)
 
+buffrankkey = {
+    "人阶下品":1,
+    "人阶上品":2,
+    "黄阶下品":3,
+    "黄阶上品":4,
+    "玄阶下品":5,
+    "玄阶上品":6,
+    "地阶下品":7,
+    "地阶上品":8,
+    "天阶下品":9,
+    "天阶上品":10,
+}
+
 @sect_mainbuff_learn.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
@@ -166,7 +181,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
         
             mainbuffconfig = config['宗门主功法参数']
-            mainbuffgear, mainbufftype = get_sectbufftxt(sect_info.sect_scale, mainbuffconfig)
+            mainbuff = BuffJsonDate().get_main_buff(str(mainbuffid))
+            mainbufftype = mainbuff['rank']
+            mainbuffgear = buffrankkey[mainbufftype]
             #获取逻辑
             materialscost = mainbuffgear * mainbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
@@ -291,17 +308,19 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
             secbuffid = get_secnameid(msg, sectsecbuffidlist)
-            if str(userbuffinfo.main_buff) == str(secbuffid):
-                await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
+            if str(userbuffinfo.sec_buff) == str(secbuffid):
+                await sect_secbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
 
             secbuffconfig = config['宗门神通参数']
-            secbuffgear, secbufftype = get_sectbufftxt(sect_info.sect_scale, secbuffconfig)
+            
+            secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
+            secbufftype = secbuff['rank']
+            secbuffgear = buffrankkey[secbufftype]
             #获取逻辑
             materialscost = secbuffgear * secbuffconfig['学习资材消耗']
             if sect_info.sect_materials >= materialscost:
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
                 sql_message.updata_user_sec_buff(user_info.user_id, secbuffid)
-                secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
                 secmsg = get_sec_msg(secbuff)
                 await sect_secbuff_learn.finish(f"本次学习消耗{materialscost}宗门资材，成功学习到本宗{secbufftype}神通：{secbuff['name']}\n{secbuff['name']}：{secmsg}", at_sender=True)
             else:
@@ -366,7 +385,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 await sect_task_refresh.finish(cd_msg(cd), at_sender=True)
             create_user_sect_task(user_id)
             add_cd(event, config['宗门任务刷新cd'], '宗门任务刷新')
-            await sect_task_refresh.finish(f"已刷新，道友当前接取的任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+            await sect_task_refresh.finish(f"已刷新，道友当前接取的任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}", at_sender=True)
         else:
             await sect_task_refresh.finish(f"道友目前还没有宗门任务，请发送指令宗门任务接取来获取吧", at_sender=True)
 
@@ -390,6 +409,32 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
     # await sect_list.finish(msg)
 
+@sect_users.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    """查看所在宗门成员信息"""
+    await data_check_conf(bot, event)
+    
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_users.finish(msg)
+        
+    if user_info:
+        sect_id = user_info.sect_id
+        if sect_id:
+            sect_info = sql_message.get_sect_info(sect_id)
+            userlist = sql_message.get_all_users_by_sect_id(sect_id)
+            msg = f'☆【{sect_info.sect_name}】的成员信息☆\n'
+            i = 1
+            for user in userlist:
+                msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}\n"
+                i += 1
+        else:
+            msg = "一介散修，莫要再问。"              
+    else:
+        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
+    await sect_users.finish(msg)
+
+
 @sect_task.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
@@ -403,15 +448,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if sect_id:
         user_now_num = int(userinfo.sect_task)
         if user_now_num >= config["每日宗门任务次上限"]:
-            await sect_task.finish(f"道友已完成{user_now_num}次，今日无法再获取宗门任务了！")
+            await sect_task.finish(f"道友已完成{user_now_num}次，今日无法再获取宗门任务了！", at_sender=True)
         
         if isUserTask(user_id): #已有任务
-            await sect_task.finish(f"道友当前已接取了任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}")
+            await sect_task.finish(f"道友当前已接取了任务：{userstask[user_id]['任务名称']}\n{userstask[user_id]['任务内容']['desc']}", at_sender=True)
 
         create_user_sect_task(user_id)
-        await sect_task.finish(f"{userstask[user_id]['任务内容']['desc']}")
+        await sect_task.finish(f"{userstask[user_id]['任务内容']['desc']}", at_sender=True)
     else:
-        await sect_task.finish(f"道友尚未加入宗门，请加入宗门后再获取任务！")
+        await sect_task.finish(f"道友尚未加入宗门，请加入宗门后再获取任务！", at_sender=True)
 
 
 @sect_task_complete.handle()
@@ -445,10 +490,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
+            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
-            await sect_task_complete.finish(msg)
+            await sect_task_complete.finish(msg, at_sender=True)
 
         elif userstask[user_id]['任务内容']['type'] == 2:#type=1：需要扣气血，type=2：需要扣灵石
             costls = userstask[user_id]['任务内容']['cost']
@@ -463,10 +509,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
+            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
-            await sect_task_complete.finish(msg)
+            await sect_task_complete.finish(msg, at_sender=True)
     else:
         await sect_task_complete.finish(f"道友尚未加入宗门，请加入宗门后再完成任务！")
 
@@ -578,6 +625,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
                     else:
                         sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
                         sql_message.update_usr_sect(give_user.user_id, None, None)
+                        sql_message.update_user_sect_contribution(user_id, 0)
                         await sect_kick_out.finish(
                             f"传{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}"
                             f"{user_message.user_name}法旨，即日起{give_user.user_name}被"
@@ -616,6 +664,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
                 else:
                     sql_message.update_usr_sect(user_id, None, None)
                     sect_info = sql_message.get_sect_info_by_id(int(sect_out_id[0]))
+                    sql_message.update_user_sect_contribution(user_id, 0)
                     await sect_out.finish(f"道友已退出{sect_info.sect_name}，今后就是自由散修，是福是祸，犹未可知。")
             else:
                 await sect_out.finish(f"道友所在宗门编号为{user_message.sect_id}，与欲退出的宗门编号{int(sect_out_id[0])}不符")
@@ -643,7 +692,8 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             sql_message.update_ls(user_id, int(donate_num[0]), 2)
             sql_message.donate_update(user_message.sect_id, int(donate_num[0]))
-            await sect_donate.finish(f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0]) * 10}，蒸蒸日上！")
+            sql_message.update_user_sect_contribution(user_id, user_message.sect_contribution + int(donate_num[0]))
+            await sect_donate.finish(f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0]) * 10}，宗门贡献度增加：{int(donate_num[0])}点，蒸蒸日上！")
     else:
         await sect_donate.finish("捐献的灵石数量解析异常")
 
@@ -756,6 +806,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     洞天福地：{sect_info.sect_fairyland if sect_info.sect_fairyland else "暂无"}
     宗门位面排名：{top_idx_list.index(sect_id) + 1}
     宗门拥有资材：{sect_info.sect_materials}
+    宗门贡献度：{mess.sect_contribution}
     """
             if sect_position == owner_position:
                 msg += f"\n   宗门储备：{sect_info.sect_used_stone}灵石"
@@ -787,16 +838,19 @@ def isUserTask(user_id):
 
 
 def get_sect_mainbuff_id_list(sect_id):
+    """获取宗门功法id列表"""
     sect_info = sql_message.get_sect_info(sect_id)
     mainbufflist = str(sect_info.mainbuff)[1:-1].split(',')
     return mainbufflist
 
 def get_sect_secbuff_id_list(sect_id):
+    """获取宗门神通id列表"""
     sect_info = sql_message.get_sect_info(sect_id)
     secbufflist = str(sect_info.secbuff)[1:-1].split(',')
     return secbufflist
 
 def set_sect_list(bufflist):
+    """传入ID列表，返回[ID列表]"""
     sqllist1 = ''
     for buff in bufflist:
         if buff == '':
@@ -806,6 +860,7 @@ def set_sect_list(bufflist):
     return sqllist
     
 def get_mainname_list(bufflist):
+    """根据传入的功法列表，返回功法名字列表"""
     namelist = []
     for buff in bufflist:
         mainbuff = BuffJsonDate().get_main_buff(str(buff))
@@ -813,6 +868,7 @@ def get_mainname_list(bufflist):
     return namelist
 
 def get_secname_list(bufflist):
+    """根据传入的神通列表，返回神通名字列表"""
     namelist = []
     for buff in bufflist:
         secbuff = BuffJsonDate().get_sec_buff(buff)
@@ -820,6 +876,7 @@ def get_secname_list(bufflist):
     return namelist
 
 def get_mainnameid(buffname, bufflist):
+    """根据传入的功法名字，获取到功法的id"""
     tempdict = {}
     buffid = 0
     for buff in bufflist:
