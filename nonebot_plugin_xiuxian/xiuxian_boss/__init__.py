@@ -177,8 +177,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['exp'] = userinfo.exp
     
     bossinfo = group_boss[group_id][boss_num - 1]
-    result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo)
     battle_flag[group_id] = True
+    result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo)
     await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
     if victor == bossinfo['name']:
         group_boss[group_id][boss_num - 1] = bossinfo_new
