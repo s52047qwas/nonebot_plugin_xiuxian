@@ -406,7 +406,7 @@ def Player_fight(player1: dict, player2: dict, type_in: 2):
     return play_list, suc
 
 
-def Boss_fight(player1: dict, boss: dict, type_in=2):
+async def Boss_fight(player1: dict, boss: dict, type_in=2):
     """
     回合制战斗
     type_in : 1-切磋，不消耗气血、真元
