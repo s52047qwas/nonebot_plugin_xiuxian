@@ -53,45 +53,12 @@ TREASUREMSG = [
 STORY = {
     "宝物":{
         "type_rate":300,
-        "丹药":{
-            "type_rate":40,
-            "name":{
-                "筑基丹":{
-                    "name":"筑基丹",
-                    "rank":44,
-                    "id":0,
-                },
-                "小回血丹":{
-                    "name":"小回血丹",
-                    "rank":50,
-                    "id":0,
-                },
-                "大回血丹":{
-                    "name":"大回血丹",
-                    "rank":46,
-                    "id":0,
-                },
-                "修炼丹":{
-                    "name":"修炼丹",
-                    "rank":50,
-                    "id":0,
-                },
-            }
-        },
         "功法":{
             "type_rate":20,
         },
         "神通":{
             "type_rate":20,
         },
-        "灵石":{
-            "type_rate":80,
-            "value":5000#基础值，会被秘境等级增幅
-        },
-        "修为":{
-            "type_rate":20,
-            "value":0.008#基础值，会被秘境等级增幅
-        }
         # "法器":{
         #     "type_rate":20,
             
@@ -216,19 +183,8 @@ def get_treasure_info(user_info, rift_rank):
     rift_type = get_goods_type()#功法、神通、灵石、修为、丹药、法器、法宝
     treasure_data = STORY["宝物"]
     dev_msg = '但是没生效捏'#要删掉的
-    if rift_type == "灵石":
-        ls_data = treasure_data["灵石"]
-        give_ls = ls_data["value"] * rift_rank
-        # sql_message.update_ls(user_id, give_ls, 1)
-        temp_msg = f"获得了灵石{give_ls}枚！{dev_msg}"
-        msg = random.choice(TREASUREMSG).format(temp_msg)
-    elif rift_type == "修为":
-        exp_data = treasure_data["修为"]
-        give_exp = int(user_info.exp * exp_data["value"] * rift_rank)
-        # sql_message.update_exp(user_id, give_exp)
-        temp_msg = f"有所感悟，修为增加了：{give_exp}点！{dev_msg}"
-        msg = random.choice(TREASUREMSG).format(temp_msg)
-    elif rift_type == "法器":#todo
+    
+    if rift_type == "法器":#todo
         msg = "法器没做好捏"
         
     elif rift_type == "法宝":#todo
@@ -250,15 +206,6 @@ def get_treasure_info(user_info, rift_rank):
             sec_buff_id = give_sec_info[1]
             sec_buff = BuffJsonDate().get_sec_buff(sec_buff_id)
             temp_msg = f"竟然获得了{sec_buff['rank']}功法：{sec_buff['name']}！{dev_msg}"
-            msg = random.choice(TREASUREMSG).format(temp_msg)
-        else:
-            msg = '竟空手而归！'
-        
-    elif rift_type == "丹药":
-        dy_info = get_dy_info(user_info.level, rift_rank)
-        if dy_info[0]:
-            dy_info = dy_info[1]
-            temp_msg = f"竟然获得了丹药：{dy_info['name']}！丹药id：{dy_info['id']},{dev_msg}"
             msg = random.choice(TREASUREMSG).format(temp_msg)
         else:
             msg = '竟空手而归！'
@@ -294,31 +241,31 @@ def get_goods_type():
     data_dict = STORY['宝物']
     return get_dict_type_rate(data_dict)
 
-def get_dy_info(user_level, rift_rank):
-    """获取丹药事件的信息"""
-    user_rank = USERRANK[user_level] #type=int，用户等级
-    dy_name = get_dy_by_user_level(user_level, rift_rank)
-    dy_info = STORY['宝物']['丹药']['name'][dy_name]
-    init_rate = 40 #初始概率为40
-    finall_rate = init_rate + ((dy_info['rank'] - user_rank + rift_rank) * 5)
-    finall_rate = finall_rate if finall_rate <= 100 else 100
-    is_success = False
-    if random.randint(0, 100) <= finall_rate: #成功
-        is_success = True
-        return is_success, dy_info
-    return is_success, dy_info
+# def get_dy_info(user_level, rift_rank):
+#     """获取丹药事件的信息"""
+#     user_rank = USERRANK[user_level] #type=int，用户等级
+#     dy_name = get_dy_by_user_level(user_level, rift_rank)
+#     dy_info = STORY['宝物']['丹药']['name'][dy_name]
+#     init_rate = 40 #初始概率为40
+#     finall_rate = init_rate + ((dy_info['rank'] - user_rank + rift_rank) * 5)
+#     finall_rate = finall_rate if finall_rate <= 100 else 100
+#     is_success = False
+#     if random.randint(0, 100) <= finall_rate: #成功
+#         is_success = True
+#         return is_success, dy_info
+#     return is_success, dy_info
 
 
-def get_dy_by_user_level(user_level, rift_rank):
-    """根据用户等级、秘境等级随机获取一个丹药"""
-    user_rank = USERRANK[user_level]#type=int，用户等级
-    dy_name = STORY["宝物"]['丹药']['name']
-    get_dy = []#可以获取到丹药的列表
-    for k, v in dy_name.items():
-        if user_rank - rift_rank <= v['rank']:  #秘境等级会增幅用户等级
-            get_dy.append(k)
+# def get_dy_by_user_level(user_level, rift_rank):
+#     """根据用户等级、秘境等级随机获取一个丹药"""
+#     user_rank = USERRANK[user_level]#type=int，用户等级
+#     dy_name = STORY["宝物"]['丹药']['name']
+#     get_dy = []#可以获取到丹药的列表
+#     for k, v in dy_name.items():
+#         if user_rank - rift_rank <= v['rank']:  #秘境等级会增幅用户等级
+#             get_dy.append(k)
 
-    return random.choice(get_dy)
+#     return random.choice(get_dy)
 
 def get_main_info(user_level, rift_rank):
     """获取功法的信息"""

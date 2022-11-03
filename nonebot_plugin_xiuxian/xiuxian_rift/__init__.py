@@ -59,7 +59,7 @@ async def _():
             rift.count = config['rift'][rift.name]['count']
             rift.time = config['rift'][rift.name]['time']
             group_rift[group_id] = rift
-            msg = f"野生的{rift.name}已开启！可探索次数：{group_rift[group_id]['count']}次，请诸位道友发送 探索秘境 来加入吧！"
+            msg = f"野生的{rift.name}已开启！可探索次数：{rift.count}次，请诸位道友发送 探索秘境 来加入吧！"
             await bot.send_group_msg(group_id=int(group_id), message=msg)
 
 @rift_help.handle()
