@@ -74,15 +74,15 @@ STORY = {
             "type_rate":200,
             "Boss数据":{
                 "name":["墨蛟","婴鲤兽","千目妖","鸡冠蛟","妖冠蛇","铁火蚁","天晶蚁","银光鼠","紫云鹰","狗青"],
-                "hp":[2, 3, 4, 5, 6, 10],
+                "hp":[1.2, 1.4, 1.6, 1.8, 2, 3],
                 "mp":10,
-                "atk":[0.1, 0.15, 0.2, 0.25, 0.3, 1],
+                "atk":[0.1, 0.12, 0.14, 0.16, 0.18, 0.5],
             },
             "success":{
                 "desc":"道友大战一番成功战胜{}!",
                 "give":{
                     "exp":[0.01, 0.02, 0.03, 0.04, 0.05],
-                    "stone":[10000, 20000, 30000]
+                    "stone":5000
                 }
             },
             "fail":{
@@ -90,7 +90,7 @@ STORY = {
             }
         },
         "掉血事件":{
-            "type_rate":100,
+            "type_rate":50,
             "desc":[
                 "秘境内竟然散布着浓烈的毒气，道友贸然闯入！{}！",
                 "秘境内竟然藏着一群未知势力，道友被打劫了！{}！"
@@ -117,7 +117,7 @@ STORY = {
 }
 
 
-def get_boss_battle_info(user_info):
+def get_boss_battle_info(user_info, rift_rank):
     """获取Boss战事件的内容"""
     boss_data = STORY['战斗']['Boss战斗']["Boss数据"]
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
@@ -133,17 +133,18 @@ def get_boss_battle_info(user_info):
     base_exp = userinfo.exp
     boss_info = {"name": None, "气血": None, "攻击": None, "真元": None, 'stone':1}
     boss_info["name"] = random.choice(boss_data["name"])
-    boss_info["气血"] = base_exp * random.choice(boss_data["hp"])
-    boss_info["攻击"] = base_exp * random.choice(boss_data["atk"])
+    boss_info["气血"] = int(base_exp * random.choice(boss_data["hp"]))
+    boss_info["攻击"] = int(base_exp * random.choice(boss_data["atk"]))
     boss_info["真元"] = base_exp * boss_data["mp"]
     
     result, victor, bossinfo_new, stone = Boss_fight(player, boss_info, 1)#未开启，1不写入，2写入
     dev_msg = '但是没生效捏'#要删掉的
     if victor == player['道号']:#获胜
+        user_rank = 50 - USERRANK[user_info.level]#50-用户当前等级
         success_info = STORY['战斗']['Boss战斗']["success"]
         msg = success_info['desc'].format(boss_info["name"])
         give_exp = random.choice(success_info["give"]["exp"]) * user_info.exp
-        give_stone = random.choice(success_info["give"]["stone"])
+        give_stone = (rift_rank + user_rank) * success_info["give"]["stone"]
         # sql_message.update_exp(user_info.user_id, get_exp)
         # sql_message.update_ls(user_info.user_id, get_stone, 1)#负数也挺正常
         msg += f"获得了修为：{give_exp}点，灵石：{give_stone}枚！{dev_msg}"
@@ -179,7 +180,7 @@ def get_dxsj_info(rift_type, user_info):
 
 
 def get_treasure_info(user_info, rift_rank):
-    user_id = user_info.user_id
+    user_rank = 50 - USERRANK[user_info.level]#50-用户当前等级
     rift_type = get_goods_type()#功法、神通、灵石、修为、丹药、法器、法宝
     treasure_data = STORY["宝物"]
     dev_msg = '但是没生效捏'#要删掉的
