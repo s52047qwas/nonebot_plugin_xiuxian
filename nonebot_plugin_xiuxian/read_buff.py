@@ -119,9 +119,9 @@ def get_user_buff(user_id):
 
 
 def readf(FILEPATH):
-        with open(FILEPATH, "r", encoding="UTF-8") as f:
-            data = f.read()
-        return json.loads(data)
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
     
 def get_sec_msg(secbuffdata):
     if secbuffdata == None:
