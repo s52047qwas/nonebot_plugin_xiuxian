@@ -55,7 +55,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     DETAIL_baseinfo['副修神通'] = DETAIL_MAP['副修神通']
     DETAIL_baseinfo["攻击力"] = DETAIL_MAP["攻击力"]
     DETAIL_baseinfo["法器"] = DETAIL_MAP["法器"]
-    DETAIL_baseinfo["法宝"] = DETAIL_MAP["法宝"]
+    DETAIL_baseinfo["防具"] = DETAIL_MAP["防具"]
     
     DETAIL_right = {}
     DETAIL_right['道号'] = DETAIL_MAP['道号']

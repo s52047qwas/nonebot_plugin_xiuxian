@@ -103,7 +103,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '主修功法':mainbffname,
     '副修神通':secbuffname,
     "法器":'无',
-    "法宝":'无',
+    "防具":'无',
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
