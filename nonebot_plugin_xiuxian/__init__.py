@@ -729,7 +729,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 #GM改灵根
 @command.gmm_command.handle()
-async def _(bot: Bot, event: GuildMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
     give_qq = None  # 艾特的时候存到这里
     msg = args.extract_plain_text().strip()
 
