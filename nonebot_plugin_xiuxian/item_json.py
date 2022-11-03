@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import random
 
 READPATH = Path() / "data" / "xiuxian" 
 SKILLPATHH = READPATH / "功法"
@@ -19,12 +20,12 @@ class Items:
         self.set_item_data(self.get_sec_buff_data(), "技能")
         self.savef(self.items)
     
-    def readf(FILEPATH):
+    def readf(self, FILEPATH):
         with open(FILEPATH, "r", encoding="UTF-8") as f:
             data = f.read()
         return json.loads(data)
     
-    def savef(data):
+    def savef(self, data):
         FILEPATH = Path() / "data" / "xiuxian" / "items.json"
         data = json.dumps(data, ensure_ascii=False, indent=4)
         save_mode = "w" if os.path.exists(FILEPATH) else "x"
@@ -45,7 +46,7 @@ class Items:
         return self.readf(self.secbuff_jsonpath)
     
     def get_data_by_item_id(self, item_id):
-        return self.items[item_id]
+        return self.items[str(item_id)]
 
     def set_item_data(self, dict_data, item_type):
         for k, v in dict_data.items():
@@ -54,4 +55,23 @@ class Items:
             self.items[k] = v
             self.items[k].update({'item_type':item_type})
         
-    
+    def get_random_id_by_rank_and_item_type(self, fanil_rank, item_type=None):
+        """
+        获取随机一个物品ID，可以指定物品类型，物品等级和用户等级相差9级以上会被抛弃
+        :param fanil_rank：用户的最终rank，最终rank由用户rank和rank增幅事件构成
+        :param item_type：物品类型，可以为空，枚举值：装备、技能
+        :return 随机获得的ID，type：str
+        """
+        l_id = []
+        for k, v in self.items.items():
+            if item_type != None:
+                if item_type == v['item_type'] and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
+                    l_id.append(k)
+                else:
+                    continue
+            else:#全部随机
+                if v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
+                    l_id.append(k)
+                else:
+                    continue
+        return random.choice(l_id)

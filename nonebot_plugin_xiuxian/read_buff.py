@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from .item_json import Items
 
 from .xiuxian2_handle import XiuxianDateManage
 
@@ -53,14 +54,14 @@ class UserBuffDate:
     
     def get_user_main_buff_data(self):
         try:
-            mainbuffdata = BuffJsonDate().get_main_buff(str(self.BuffInfo.main_buff))
+            mainbuffdata = Items().get_data_by_item_id(self.BuffInfo.main_buff)
         except:
             mainbuffdata = None
         return mainbuffdata
     
     def get_user_sec_buff_data(self):
         try:
-            secbuffdata = BuffJsonDate().get_sec_buff(str(self.BuffInfo.sec_buff))
+            secbuffdata = Items().get_data_by_item_id(self.BuffInfo.sec_buff)
         except:
             secbuffdata = None
         return secbuffdata
@@ -75,7 +76,7 @@ def get_weapon_info_msg(weapon_id, weapon_info=None):
     """
     msg = ''
     if weapon_info == None:
-        weapon_info = BuffJsonDate().get_weapon_info(weapon_id)
+        weapon_info = Items().get_data_by_item_id(weapon_id)
     atk_buff_msg = f"提升{int(weapon_info['atk_buff'] * 100)}%攻击力！" if weapon_info['atk_buff'] != 0 else ''
     crit_buff_msg = f"提升{int(weapon_info['crit_buff'] * 100)}%会心率！" if weapon_info['crit_buff'] != 0 else ''
     msg += f"名字：{weapon_info['name']}\n"
@@ -92,7 +93,7 @@ def get_armor_info_msg(armor_id, armor_info=None):
     """
     msg = ''
     if armor_info == None:
-        armor_info = BuffJsonDate().get_armor_info(armor_id)
+        armor_info = Items().get_data_by_item_id(armor_id)
     def_buff_msg = f"提升{int(armor_info['def_buff'] * 100)}%减伤率！"
     msg += f"名字：{armor_info['name']}\n"
     msg += f"品阶：{armor_info['level']}\n"
