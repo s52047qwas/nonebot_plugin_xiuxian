@@ -314,6 +314,33 @@ class XiuxianDateManage:
             cur.execute(sql, (price, user_id))
             self.conn.commit()
 
+    def update_root(self, user_id, key):
+        """更新灵根  1为混沌，2为融合，3为超，4为龙，5为天"""
+        cur = self.conn.cursor()
+        print(user_id)
+        print(key)
+
+        if int(key) == 1:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=? WHERE user_id=?"
+            cur.execute(sql, ("全属性灵根", "混沌灵根", user_id))
+            self.conn.commit()
+        elif int(key) == 2:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=? WHERE user_id=?"
+            cur.execute(sql, ("融合万物灵根", "融合灵根", user_id))
+            self.conn.commit()
+        elif int(key) == 3:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=? WHERE user_id=?"
+            cur.execute(sql, ("月灵根", "超灵根", user_id))
+            self.conn.commit()
+        elif int(key) == 4:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=? WHERE user_id=?"
+            cur.execute(sql, ("言灵灵根", "龙灵根", user_id))
+            self.conn.commit()
+        elif int(key) == 5:
+            sql = f"UPDATE user_xiuxian SET root=?,root_type=? WHERE user_id=?"
+            cur.execute(sql, ("金灵根", "天灵根", user_id))
+            self.conn.commit()            
+            
     def update_ls_all(self, price):
         """所有用户增加灵石"""
         cur = self.conn.cursor()

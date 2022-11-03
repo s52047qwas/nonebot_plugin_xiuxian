@@ -148,7 +148,7 @@ CONFIG = {
          "sect": 18000
       }
     }
-}
+    }
 
 def get_config():
     try:
