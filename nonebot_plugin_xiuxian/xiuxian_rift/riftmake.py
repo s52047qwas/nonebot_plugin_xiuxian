@@ -5,6 +5,7 @@ from .jsondata import read_f
 from ..read_buff import BuffJsonDate, get_main_info_msg, get_sec_msg
 from ..xiuxian2_handle import XiuxianDateManage
 from ..player_fight import Boss_fight
+from ..item_json import Items
 
 sql_message = XiuxianDateManage()
 skill_data = read_f()
@@ -198,7 +199,7 @@ def get_treasure_info(user_info, rift_rank):
         if give_main_info[0]:#获得了
             main_buff_id = give_main_info[1]
             main_buff = BuffJsonDate().get_main_buff(main_buff_id)
-            temp_msg = f"竟然获得了{main_buff['rank']}功法：{main_buff['name']}！{dev_msg}"
+            temp_msg = f"竟然获得了{main_buff['level']}功法：{main_buff['name']}！{dev_msg}"
             msg = random.choice(TREASUREMSG).format(temp_msg)
             #背包sql
         else:
@@ -209,7 +210,7 @@ def get_treasure_info(user_info, rift_rank):
         if give_sec_info[0]:#获得了
             sec_buff_id = give_sec_info[1]
             sec_buff = BuffJsonDate().get_sec_buff(sec_buff_id)
-            temp_msg = f"竟然获得了{sec_buff['rank']}功法：{sec_buff['name']}！{dev_msg}"
+            temp_msg = f"竟然获得了{sec_buff['level']}功法：{sec_buff['name']}！{dev_msg}"
             msg = random.choice(TREASUREMSG).format(temp_msg)
             #背包sql
         else:
@@ -252,7 +253,7 @@ def get_id_by_rank(dict_data, user_level, rift_rank=0):
     final_rank = USERRANK[user_level] - rift_rank #秘境等级，会提高用户的等级
     pass_rank = 6 #最终等级超过次等级会抛弃
     for k, v in dict_data.items():
-        if v["rank"] > final_rank and (v["rank"] - final_rank) <= pass_rank:
+        if v["rank"] >= final_rank and (v["rank"] - final_rank) <= pass_rank:
             l_temp.append(k)
             
     return random.choice(l_temp)
@@ -264,9 +265,9 @@ def get_weapon(user_info, rift_rank=0):
     :param rift_rank：秘境等级
     :return 法器ID, 法器信息json
     """
-    weapon_data = BuffJsonDate().get_weapon_data()
+    weapon_data = Items().get_data_by_item_type(['法器'])
     weapon_id = get_id_by_rank(weapon_data, user_info.level, rift_rank)
-    weapon_info = BuffJsonDate().get_weapon_info(weapon_id)
+    weapon_info = Items().get_data_by_item_id(weapon_id)
     return weapon_id, weapon_info
 
 def get_armor(user_info, rift_rank=0):
@@ -276,9 +277,9 @@ def get_armor(user_info, rift_rank=0):
     :param rift_rank：秘境等级
     :return 防具ID, 防具信息json
     """
-    armor_data = BuffJsonDate().get_armor_data()
+    armor_data = Items().get_data_by_item_type(['防具'])
     armor_id = get_id_by_rank(armor_data, user_info.level, rift_rank)
-    armor_info = BuffJsonDate().get_armor_info(armor_id)
+    armor_info = Items().get_data_by_item_id(armor_id)
     return armor_id, armor_info
 
 def get_main_info(user_level, rift_rank):

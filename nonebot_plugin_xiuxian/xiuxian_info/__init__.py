@@ -85,9 +85,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     mainbffname = '无'
     secbuffname = '无'
     if usermainbufdate != None:
-        mainbffname = f"{usermainbufdate['name']}({usermainbufdate['rank']})"
+        mainbffname = f"{usermainbufdate['name']}({usermainbufdate['level']})"
     if usersecbufdate != None:
-        secbuffname = f"{usersecbufdate['name']}({usersecbufdate['rank']})"
+        secbuffname = f"{usersecbufdate['name']}({usersecbufdate['level']})"
 
     DETAIL_MAP = {
     '道号': f'{user_name}',

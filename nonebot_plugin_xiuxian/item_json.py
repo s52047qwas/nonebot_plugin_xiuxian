@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import random
+from typing import List
 
 READPATH = Path() / "data" / "xiuxian" 
 SKILLPATHH = READPATH / "功法"
@@ -14,10 +15,10 @@ class Items:
         self.weapon_jsonpath = WEAPONPATH / "法器.json"
         self.armor_jsonpath = WEAPONPATH / "防具.json"
         self.items = {}
-        self.set_item_data(self.get_armor_data(), "装备")
-        self.set_item_data(self.get_weapon_data(), "装备")
-        self.set_item_data(self.get_main_buff_data(), "技能")
-        self.set_item_data(self.get_sec_buff_data(), "技能")
+        self.set_item_data(self.get_armor_data(), "防具")
+        self.set_item_data(self.get_weapon_data(), "法器")
+        self.set_item_data(self.get_main_buff_data(), "功法")
+        self.set_item_data(self.get_sec_buff_data(), "神通")
         self.savef(self.items)
     
     def readf(self, FILEPATH):
@@ -54,18 +55,29 @@ class Items:
                 v['rank'], v['level'] = v['level'], v['rank']
             self.items[k] = v
             self.items[k].update({'item_type':item_type})
+            
+    def get_data_by_item_type(self, item_type):
+        temp_dict = {}
+        for k, v in self.items.items():
+            if v['item_type'] in item_type:
+                temp_dict[k] = v
+        return temp_dict
         
-    def get_random_id_by_rank_and_item_type(self, fanil_rank, item_type=None):
+    def get_random_id_by_rank_and_item_type(
+        self, 
+        fanil_rank : int, 
+        item_type : List = None
+        ):
         """
         获取随机一个物品ID，可以指定物品类型，物品等级和用户等级相差9级以上会被抛弃
         :param fanil_rank：用户的最终rank，最终rank由用户rank和rank增幅事件构成
-        :param item_type：物品类型，可以为空，枚举值：装备、技能
+        :param item_type：type：list，物品类型，可以为空，枚举值：法器、防具、神通、功法
         :return 随机获得的ID，type：str
         """
         l_id = []
         for k, v in self.items.items():
             if item_type != None:
-                if item_type == v['item_type'] and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
+                if v['item_type'] in item_type  and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
                     l_id.append(k)
                 else:
                     continue
