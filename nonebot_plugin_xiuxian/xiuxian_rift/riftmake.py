@@ -266,9 +266,9 @@ def get_weapon(user_info, rift_rank=0):
     :param rift_rank：秘境等级
     :return 法器ID, 法器信息json
     """
-    weapon_data = Items().get_data_by_item_type(['法器'])
+    weapon_data = items.get_data_by_item_type(['法器'])
     weapon_id = get_id_by_rank(weapon_data, user_info.level, rift_rank)
-    weapon_info = Items().get_data_by_item_id(weapon_id)
+    weapon_info = items.get_data_by_item_id(weapon_id)
     return weapon_id, weapon_info
 
 def get_armor(user_info, rift_rank=0):
@@ -278,9 +278,9 @@ def get_armor(user_info, rift_rank=0):
     :param rift_rank：秘境等级
     :return 防具ID, 防具信息json
     """
-    armor_data = Items().get_data_by_item_type(['防具'])
+    armor_data = items.get_data_by_item_type(['防具'])
     armor_id = get_id_by_rank(armor_data, user_info.level, rift_rank)
-    armor_info = Items().get_data_by_item_id(armor_id)
+    armor_info = items.get_data_by_item_id(armor_id)
     return armor_id, armor_info
 
 def get_main_info(user_level, rift_rank):
