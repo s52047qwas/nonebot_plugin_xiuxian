@@ -15,12 +15,13 @@ from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from nonebot.params import CommandArg, RegexGroup
 from ..utils import data_check_conf, check_user, send_forward_msg
-from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
 from .back_util import get_user_back_msg
 from .backconfig import get_config, savef
 import random
+from datetime import datetime
 from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
 
 items = Items()
@@ -174,14 +175,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     auction_info = items.get_data_by_item_id(auction_id)
     msg = '本次拍卖的物品为：\n'   
     msg += get_auction_msg(auction_id)
-    msg += f"底价为{config['auction_config']['auction_start_prict']}灵石"
+    msg += f"\n底价为{config['auction_config']['auction_start_prict']}灵石"
     msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
+    msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
     
     auction['id'] = auction_id
     auction['user_id'] = 0
     auction['now_price'] = config['auction_config']['auction_start_prict']
     auction['name'] = auction_info['name']
     auction['type'] = auction_info['type']
+    auction['start_time'] = datetime.now()
     
     for group_id in groups:
         await bot.send_group_msg(group_id=int(group_id), message=msg)
@@ -192,7 +195,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         auction = {}
         for group_id in groups:
             await bot.send_group_msg(group_id=int(group_id), message=msg)
-        creat_auction.stop_propagation(bot.self_id)
+        await creat_auction.finish()
     
     user_info = sql_message.get_user_message(auction['user_id'])
     msg = "本次拍卖会结束！"
@@ -231,7 +234,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     auction['user_id'] = user_info.user_id
     auction['now_price'] = price
-    msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！"
+    now_time = datetime.now()
+    dif_time = OtherSet().date_diff(now_time, auction['start_time'])
+    msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！竞拍剩余时间：{int(AUCTIONSLEEPTIME - dif_time)}秒"
     
     for group_id in groups:
         await bot.send_group_msg(group_id=int(group_id), message=msg)
