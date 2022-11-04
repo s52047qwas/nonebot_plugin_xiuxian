@@ -1,3 +1,4 @@
+import asyncio
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import (
     PRIVATE_FRIEND,
@@ -8,19 +9,40 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment,
 )
+from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from nonebot.params import CommandArg, RegexGroup
 from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage
+from ..item_json import Items
 from ..data_source import jsondata
+from .back_util import get_user_back_msg
+from .backconfig import get_config, savef
+import random
+from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
 
+items = Items()
+config = get_config()
+groups = config['open'] #list，群拍卖行使用
+auction = {}
+AUCTIONSLEEPTIME = 60
 
 shop = on_command("坊市", priority=5)
-mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5)
+mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP and SUPERUSER)
 use = on_command("使用", priority=5)
 buy = on_command("购买", priority=5)
+set_auction = on_command("群拍卖行", priority=5, permission= GROUP)
+creat_auction = on_command("举行拍卖会", priority=5, permission= GROUP)
+offer_auction = on_command("出价", priority=5, permission= GROUP)
 
 sql_message = XiuxianDateManage()  # sql类
+
+__back_help__ = f"""
+背包帮助信息:
+指令：
+非指令：
+
+""".strip()
 
 @buy.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -55,7 +77,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 async def _(bot: Bot, event: GroupMessageEvent):
     """坊市"""
     await data_check_conf(bot, event)
-
+    msg = '坊市未开启！'
+    await shop.finish(msg, at_sender=True)
+    
     data = jsondata.shop_data()
 
     def sends(s):
@@ -85,16 +109,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if not isUser:
         await buy.finish(msg, at_sender=True)
     user_id = user_info.user_id
-    data = jsondata.shop_data()  # 物品json信息
-    back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息
 
     # ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
     #  "remake", "day_num", "all_num", "action_time", "state"]
-    msg = f"{user_info.user_name}的背包\n"
-    for i in back_msg:
-        msg += f"名称：{i[2]},类型：{i[3]},数量：{i[4]}," \
-              f"效果：{data[str(i[1])]['desc']},售价：{data[str(i[1])]['selling']}\n"
-    await mind_back.finish(msg)
+    msg = get_user_back_msg(user_id)
+    await send_forward_msg(bot, event, '背包', bot.self_id, msg)
     
 @use.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -115,3 +134,142 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     for i in back_msg:
         if i[2] == get_goods:
             pass
+        
+@creat_auction.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    group_id = event.group_id
+    
+    if group_id not in groups:
+        msg = '本群尚未开启拍卖会功能，请联系管理员开启！'
+        await creat_auction.finish(msg, at_sender=True)
+    
+    global auction
+    if auction != {}:
+        await creat_auction.finish(f'本群已存在一场拍卖会，请等待拍卖会结束！')
+    
+    try:
+        auction_id_list = config['auction_config']['auction_id_list']
+        auction_id = random.choice(auction_id_list)
+    except IndexError:
+        msg = "获取不到拍卖物品的信息，请检查配置文件！"
+        await creat_auction.finish(msg, at_sender=True)
+    
+    auction_info = items.get_data_by_item_id(auction_id)
+    msg = '本次拍卖的物品为：\n'   
+    msg += get_auction_msg(auction_id)
+    msg += f"底价为{config['auction_config']['auction_start_prict']}灵石"
+    msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
+    
+    auction['id'] = auction_id
+    auction['user_id'] = 0
+    auction['now_price'] = config['auction_config']['auction_start_prict']
+    auction['name'] = auction_info['name']
+    auction['type'] = auction_info['type']
+    
+    for group_id in groups:
+        await bot.send_group_msg(group_id=int(group_id), message=msg)
+    await asyncio.sleep(AUCTIONSLEEPTIME)
+    
+    if auction['user_id'] == 0:
+        msg = "很可惜，本次拍卖会流拍了！"
+        auction = {}
+        for group_id in groups:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        creat_auction.stop_propagation(bot.self_id)
+    
+    user_info = sql_message.get_user_message(auction['user_id'])
+    msg = "本次拍卖会结束！"
+    msg += f"恭喜{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+    auction = {}
+    await creat_auction.finish(msg)
+
+
+@offer_auction.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    group_id = event.group_id
+    if group_id not in groups:
+        msg = '本群尚未开启拍卖会功能，请联系管理员开启！'
+        await offer_auction.finish(msg, at_sender=True)
+        
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await offer_auction.finish(msg, at_sender=True)
+    
+    global auction
+    if auction == {}:
+        msg = f'本群不存在拍卖会，请等待拍卖会开启！'
+        await offer_auction.finish(msg, at_sender=True)
+    
+    price = args.extract_plain_text().strip()
+    try:
+        price = int(price)
+    except ValueError:
+        msg = f"请发送正确的灵石数量"
+        await offer_auction.finish(msg, at_sender=True)
+    
+    if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
+        msg = f"走开走开，别捣乱！小心清空你灵石捏！"
+        await offer_auction.finish(msg, at_sender=True)
+    
+    auction['user_id'] = user_info.user_id
+    auction['now_price'] = price
+    msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！"
+    
+    for group_id in groups:
+        await bot.send_group_msg(group_id=int(group_id), message=msg)
+        
+
+@set_auction.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    mode = args.extract_plain_text().strip()
+    group_id = event.group_id
+    is_in_group = is_in_groups(event) #True在，False不在
+
+    if mode == '开启':
+        if is_in_group:
+            await set_auction.finish(f'本群已开启群拍卖行，请勿重复开启!')
+        else:
+            config['open'].append(group_id)
+            savef(config)
+            await set_auction.finish(f'已开启本群拍卖行!')
+
+    elif mode == '关闭':
+        if is_in_group:
+            config['open'].remove(group_id)
+            savef(config)
+            await set_auction.finish(f'已关闭本群拍卖行!')
+        else:
+            await set_auction.finish(f'本群未开启群拍卖行!')
+    
+    else:
+        await set_auction.finish(__back_help__) 
+
+
+def is_in_groups(event: GroupMessageEvent):
+    return event.group_id in groups
+
+def get_auction_msg(auction_id):
+    item_info = items.get_data_by_item_id(auction_id)
+    _type = item_info['type']
+    if _type == "装备":
+        if item_info['item_type'] == "防具":
+            msg = get_armor_info_msg(auction_id, item_info)
+        if item_info['item_type'] == '法器':
+            msg = get_weapon_info_msg(auction_id, item_info)
+    
+    if _type == "技能":
+        if item_info['item_type'] == '神通':
+            msg = f"{item_info['level']}神通-{item_info['name']}："
+            msg += get_sec_msg(item_info)
+        if item_info['item_type'] == '功法':
+            msg = f"{item_info['level']}功法-"
+            msg += get_main_info_msg(auction_id)[1]
+    
+    if _type == "丹药":
+        msg = f"名字：{item_info['name']}"
+        msg += f"效果:{item_info['desc']}"
+    
+    return msg

@@ -752,7 +752,12 @@ class XiuxianDateManage:
         # msg = f"你的背包\n"
         # for i in result:
         #     msg += f"{i},"
-        return result
+        results = []
+        if result == []:
+            results = None
+        for r in result:
+            results.append(back(*r))
+        return results
 
     def goods_num(self, user_id, goods_id):
         """
@@ -898,6 +903,14 @@ class XiuxianDateManage:
             VALUES (?,?,?,?,?,?,?)"""
             cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time))
             self.conn.commit()
+            
+    def get_item_by_good_id_and_user_id(self, user_id, goods_id):
+        """根据物品id、用户id获取物品信息"""
+        sql = f"select * from back where user_id=? and goods_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id, goods_id))
+        result = cur.fetchone()
+        return back(*result)
 
     def update_back(self, user_id, goods_id, msg):
         """使用物品"""
