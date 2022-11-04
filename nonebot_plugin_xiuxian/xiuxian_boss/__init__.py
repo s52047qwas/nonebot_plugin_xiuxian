@@ -13,12 +13,10 @@ from nonebot.adapters.onebot.v11 import (
 
 )
 from nonebot.permission import SUPERUSER
-from .boss_handle import BossDateManage, readf, savef
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss
-import json
-from .bossconfig import get_config
+from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
 from ..utils import data_check_conf
 
@@ -48,12 +46,8 @@ __boss_help__ = f"""
 """.strip()
 
 group_boss = {}
-groups = {}
+groups = config['open']
 battle_flag = {}
-try:
-    groups = readf()
-except:
-    groups['open'] = []
 
 
 # 定时任务生成世界boss
@@ -62,8 +56,8 @@ except:
                        minutes=boss_time['minutes'])
 async def _():
     bot = get_bot()
-    if groups['open'] != []:
-        for g in groups['open']:
+    if groups != []:
+        for g in groups:
             try:
                 group_boss[g]
             except:
@@ -269,14 +263,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if isInGroup:
             await set_group_boss.finish(f'本群已开启世界Boss，请勿重复开启!')
         else:
-            groups['open'].append(group_id)
-            savef(json.dumps(groups, ensure_ascii=False))
+            config['open'].append(group_id)
+            savef(config)
             await set_group_boss.finish(f'已开启本群世界Boss!')
 
     elif mode == '关闭':
         if isInGroup:
-            groups['open'].remove(group_id)
-            savef(json.dumps(groups, ensure_ascii=False))
+            config['open'].remove(group_id)
+            savef(config)
             await set_group_boss.finish(f'已关闭本群世界Boss!')
         else:
             await set_group_boss.finish(f'本群未开启世界Boss!')
@@ -328,4 +322,4 @@ async def send_forward_msg(
         )
 
 def isInGroups(event: GroupMessageEvent):
-    return event.group_id in groups['open']
+    return event.group_id in groups

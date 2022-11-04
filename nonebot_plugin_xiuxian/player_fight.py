@@ -687,7 +687,7 @@ def isEnableUserSikll(player, hpcost, mpcost, turncost, skillrate):  # 是否满
 def get_skill_hp_mp_data(player, secbuffdata):
     hpcost = int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0
     mpcost = int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0
-    return hpcost, mpcost, secbuffdata['type'], secbuffdata['rate']
+    return hpcost, mpcost, secbuffdata['skill_type'], secbuffdata['rate']
 
 
 def calculate_skill_cost(player, hpcost, mpcost):
@@ -705,7 +705,7 @@ def get_persistent_skill_msg(username, skillname, sh, turn):
 
 def get_skill_sh_data(player, secbuffdata):
     skillmsg = ''
-    if secbuffdata['type'] == 1:  # 连续攻击类型
+    if secbuffdata['skill_type'] == 1:  # 连续攻击类型
         turncost = -secbuffdata['turncost']
         isCrit, turnatk = get_turnatk(player)
         atkvalue = secbuffdata['atkvalue']  # 列表
@@ -727,7 +727,7 @@ def get_skill_sh_data(player, secbuffdata):
 
         return skillmsg, skillsh, turncost
 
-    elif secbuffdata['type'] == 2:  # 持续伤害类型
+    elif secbuffdata['skill_type'] == 2:  # 持续伤害类型
         turncost = secbuffdata['turncost']
         isCrit, turnatk = get_turnatk(player)
         skillsh = int(secbuffdata['atkvalue'] * player['攻击'])  # 改动
@@ -739,7 +739,7 @@ def get_skill_sh_data(player, secbuffdata):
 
         return skillmsg, skillsh, turncost
 
-    elif secbuffdata['type'] == 3:  # 持续buff类型
+    elif secbuffdata['skill_type'] == 3:  # 持续buff类型
         turncost = secbuffdata['turncost']
         skillsh = secbuffdata['buffvalue']
         atkmsg = ''
@@ -750,7 +750,7 @@ def get_skill_sh_data(player, secbuffdata):
 
         return skillmsg, skillsh, turncost
 
-    elif secbuffdata['type'] == 4:  # 封印类技能
+    elif secbuffdata['skill_type'] == 4:  # 封印类技能
         turncost = secbuffdata['turncost']
         if random.randint(0, 100) <= secbuffdata['success']:  # 命中
             skillsh = True

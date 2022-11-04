@@ -53,6 +53,7 @@ class Items:
         for k, v in dict_data.items():
             if item_type == '功法' or item_type == '神通':
                 v['rank'], v['level'] = v['level'], v['rank']
+                v['type'] = '技能'
             self.items[k] = v
             self.items[k].update({'item_type':item_type})
             

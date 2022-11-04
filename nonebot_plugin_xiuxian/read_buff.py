@@ -132,7 +132,7 @@ def get_sec_msg(secbuffdata):
     hpmsg = f"，消耗当前血量{int(secbuffdata['hpcost'] * 100)}%" if secbuffdata['hpcost'] != 0 else ''
     mpmsg = f"，消耗真元{int(secbuffdata['mpcost'] * 100)}%" if secbuffdata['mpcost'] != 0 else ''
 
-    if secbuffdata['type'] == 1:
+    if secbuffdata['skill_type'] == 1:
         shmsg = ''
         for value in secbuffdata['atkvalue']:
             shmsg += f"{value}倍、"
@@ -140,14 +140,14 @@ def get_sec_msg(secbuffdata):
             msg = f"攻击{len(secbuffdata['atkvalue'])}次，造成{shmsg[:-1]}伤害{hpmsg}{mpmsg}，释放概率：{secbuffdata['rate']}%"
         else:
             msg = f"连续攻击{len(secbuffdata['atkvalue'])}次，造成{shmsg[:-1]}伤害{hpmsg}{mpmsg}，休息{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
-    elif secbuffdata['type'] == 2:
+    elif secbuffdata['skill_type'] == 2:
         msg = f"持续伤害，造成{secbuffdata['atkvalue']}倍攻击力伤害{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
-    elif secbuffdata['type'] == 3:
-        if secbuffdata['bufftype'] == 1:
+    elif secbuffdata['skill_type'] == 3:
+        if secbuffdata['buffskill_type'] == 1:
             msg = f"增强自身，提高{secbuffdata['buffvalue']}倍攻击力{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
-        elif secbuffdata['bufftype'] == 2:
+        elif secbuffdata['buffskill_type'] == 2:
             msg = f"增强自身，提高{secbuffdata['buffvalue'] * 100}%减伤率{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
-    elif secbuffdata['type'] == 4:
+    elif secbuffdata['skill_type'] == 4:
         msg = f"封印对手{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%，命中成功率{secbuffdata['success']}%"
 
     return msg

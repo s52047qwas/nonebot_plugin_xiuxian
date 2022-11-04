@@ -1,7 +1,7 @@
 {
     "8001":{
         "name":"灵光印",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.2, 1.2],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -13,7 +13,7 @@
     },
     "8002":{
         "name":"落石阵",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[2.4],
         "hpcost":0,
         "mpcost":0.3,
@@ -25,7 +25,7 @@
     },
     "8003":{
         "name":"真金印",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.4,
         "hpcost":0,
         "mpcost":0.3,
@@ -37,8 +37,8 @@
     },
     "8004":{
         "name":"惊涛剑诀",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.4,
         "hpcost":0,
         "mpcost":0.3,
@@ -50,8 +50,8 @@
     },
     "8005":{
         "name":"鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.05,
         "hpcost":0,
         "mpcost":0.3,
@@ -63,7 +63,7 @@
     },
     "8101":{
         "name":"化尘剑法",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.3, 1.3],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -75,7 +75,7 @@
     },
     "8102":{
         "name":"三昧真火",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[2.6],
         "hpcost":0,
         "mpcost":0.3,
@@ -87,7 +87,7 @@
     },
     "8103":{
         "name":"截脉",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.44,
         "hpcost":0,
         "mpcost":0.3,
@@ -99,8 +99,8 @@
     },
     "8104":{
         "name":"灵息术",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.44,
         "hpcost":0,
         "mpcost":0.3,
@@ -112,8 +112,8 @@
     },
     "8105":{
         "name":"鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.1,
         "hpcost":0,
         "mpcost":0.3,
@@ -125,7 +125,7 @@
     },
     "8201":{
         "name":"竹山剑法",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.4, 1.4],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -137,7 +137,7 @@
     },
     "8202":{
         "name":"碎剑诀",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[2.8],
         "hpcost":0,
         "mpcost":0.3,
@@ -149,7 +149,7 @@
     },
     "8203":{
         "name":"灵体印",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.47,
         "hpcost":0,
         "mpcost":0.3,
@@ -161,8 +161,8 @@
     },
     "8204":{
         "name":"拟剑",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.47,
         "hpcost":0,
         "mpcost":0.3,
@@ -174,8 +174,8 @@
     },
     "8205":{
         "name":"鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.15,
         "hpcost":0,
         "mpcost":0.3,
@@ -187,7 +187,7 @@
     },
     "8301":{
         "name":"五毒摄魂阵",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.5, 1.5],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -199,7 +199,7 @@
     },
     "8302":{
         "name":"矢神刺",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[3],
         "hpcost":0,
         "mpcost":0.3,
@@ -211,7 +211,7 @@
     },
     "8303":{
         "name":"摧血掌",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
@@ -223,8 +223,8 @@
     },
     "8304":{
         "name":"归元剑气",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
@@ -236,8 +236,8 @@
     },
     "8305":{
         "name":"鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.2,
         "hpcost":0,
         "mpcost":0.3,
@@ -249,7 +249,7 @@
     },
     "8401":{
         "name":"降魔锁骨阵",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.6, 1.6],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -261,7 +261,7 @@
     },
     "8402":{
         "name":"鹤喙针",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[3.2],
         "hpcost":0,
         "mpcost":0.3,
@@ -273,7 +273,7 @@
     },
     "8403":{
         "name":"祭血罩",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.54,
         "hpcost":0,
         "mpcost":0.3,
@@ -285,8 +285,8 @@
     },
     "8404":{
         "name":"分金印",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.54,
         "hpcost":0,
         "mpcost":0.3,
@@ -298,8 +298,8 @@
     },
     "8405":{
         "name":"鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.25,
         "hpcost":0,
         "mpcost":0.3,
@@ -311,7 +311,7 @@
     },
     "8501":{
         "name":"苍云荫月",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.7, 1.7],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -323,7 +323,7 @@
     },
     "8502":{
         "name":"寸芒",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[3.4],
         "hpcost":0,
         "mpcost":0.3,
@@ -335,7 +335,7 @@
     },
     "8503":{
         "name":"月华流照",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.57,
         "hpcost":0,
         "mpcost":0.3,
@@ -347,8 +347,8 @@
     },
     "8504":{
         "name":"九转游身剑",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.57,
         "hpcost":0,
         "mpcost":0.3,
@@ -360,8 +360,8 @@
     },
     "8505":{
         "name":"鳖鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.3,
         "hpcost":0,
         "mpcost":0.3,
@@ -373,7 +373,7 @@
     },
     "8601":{
         "name":"开山诀",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.8, 1.8],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -385,7 +385,7 @@
     },
     "8602":{
         "name":"离火绝炎",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[3.6],
         "hpcost":0,
         "mpcost":0.3,
@@ -397,7 +397,7 @@
     },
     "8603":{
         "name":"凝水归流",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.6,
         "hpcost":0,
         "mpcost":0.3,
@@ -409,8 +409,8 @@
     },
     "8604":{
         "name":"五行颠倒术",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.6,
         "hpcost":0,
         "mpcost":0.3,
@@ -422,8 +422,8 @@
     },
     "8605":{
         "name":"鳖鳖鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.35,
         "hpcost":0,
         "mpcost":0.3,
@@ -435,7 +435,7 @@
     },
     "8701":{
         "name":"怒水天殇",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.9, 1.9],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -447,7 +447,7 @@
     },
     "8702":{
         "name":"炙炎轮回",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[3.8],
         "hpcost":0,
         "mpcost":0.3,
@@ -459,7 +459,7 @@
     },
     "8703":{
         "name":"血魂煞",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.64,
         "hpcost":0,
         "mpcost":0.3,
@@ -471,8 +471,8 @@
     },
     "8704":{
         "name":"万剑诀",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.64,
         "hpcost":0,
         "mpcost":0.3,
@@ -484,8 +484,8 @@
     },
     "8705":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.4,
         "hpcost":0,
         "mpcost":0.3,
@@ -497,7 +497,7 @@
     },
     "8801":{
         "name":"天星若雨",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[2, 2],
         "hpcost":0.1,
         "mpcost":0.3,
@@ -509,7 +509,7 @@
     },
     "8802":{
         "name":"金虹贯日",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[4],
         "hpcost":0,
         "mpcost":0.3,
@@ -521,7 +521,7 @@
     },
     "8803":{
         "name":"都天烈火仙阵",
-        "type":2,
+        "skill_type":2,
         "atkvalue":0.67,
         "hpcost":0,
         "mpcost":0.3,
@@ -533,8 +533,8 @@
     },
     "8804":{
         "name":"星微神灭诀",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":0.67,
         "hpcost":0,
         "mpcost":0.3,
@@ -546,8 +546,8 @@
     },
     "8805":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.45,
         "hpcost":0,
         "mpcost":0.3,
@@ -559,7 +559,7 @@
     },
     "8901":{
         "name":"横扫千军",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[1.6, 1.7, 1.8],
         "hpcost":0.1,
         "mpcost":0.2,
@@ -571,7 +571,7 @@
     },
     "8902":{
         "name":"玄冰凝骨术",
-        "type":1,
+        "skill_type":1,
         "atkvalue":[4.2],
         "hpcost":0,
         "mpcost":0.3,
@@ -583,7 +583,7 @@
     },
     "8903":{
         "name":"凤灵妖火",
-        "type":2,
+        "skill_type":2,
         "atkvalue":1.3,
         "hpcost":0,
         "mpcost":0.3,
@@ -595,8 +595,8 @@
     },
     "8904":{
         "name":"大吞焰术",
-        "type":3,
-        "bufftype":1,
+        "skill_type":3,
+        "buffskill_type":1,
         "buffvalue":1.0,
         "hpcost":0,
         "mpcost":0.3,
@@ -608,8 +608,8 @@
     },
     "8905":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
-        "type":3,
-        "bufftype":2,
+        "skill_type":3,
+        "buffskill_type":2,
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
@@ -621,7 +621,7 @@
     },
     "8906":{
         "name":"日月乾坤",
-        "type":4,
+        "skill_type":4,
         "hpcost":0,
         "mpcost":0.3,
         "turncost":3,
