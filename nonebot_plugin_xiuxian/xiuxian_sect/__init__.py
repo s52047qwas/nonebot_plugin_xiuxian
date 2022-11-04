@@ -126,7 +126,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             mainmsg = '\n☆------宗门功法------☆\n'
             for main in mainbufflist:
                 mainbuff, mainbuffmsg = get_main_info_msg(str(main))
-                mainmsg += f"{mainbuff['rank']}：{mainbuffmsg}\n"
+                mainmsg += f"{mainbuff['level']}：{mainbuffmsg}\n"
             msg += mainmsg
             
         if sect_info.secbuff != 0:
@@ -135,7 +135,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             for sec in secbufflist:
                 secbuff = items.get_data_by_item_id(sec)
                 secbuffmsg = get_sec_msg(secbuff)
-                secmsg += f"{secbuff['rank']}：{secbuff['name']} {secbuffmsg}\n"
+                secmsg += f"{secbuff['level']}：{secbuff['name']} {secbuffmsg}\n"
             msg += secmsg
                 
         await sect_buff_info.finish(msg, at_sender=True)
@@ -184,7 +184,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         
             mainbuffconfig = config['宗门主功法参数']
             mainbuff = items.get_data_by_item_id(mainbuffid)
-            mainbufftype = mainbuff['rank']
+            mainbufftype = mainbuff['level']
             mainbuffgear = buffrankkey[mainbufftype]
             #获取逻辑
             materialscost = mainbuffgear * mainbuffconfig['学习资材消耗']
@@ -316,7 +316,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             secbuffconfig = config['宗门神通参数']
             
             secbuff = items.get_data_by_item_id(secbuffid)
-            secbufftype = secbuff['rank']
+            secbufftype = secbuff['level']
             secbuffgear = buffrankkey[secbufftype]
             #获取逻辑
             materialscost = secbuffgear * secbuffconfig['学习资材消耗']
