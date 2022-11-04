@@ -12,7 +12,7 @@ from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from ..xiuxian_config import XiuConfig, JsonConfig
 from ..utils import check_user
 from ..data_source import jsondata
-from ..read_buff import BuffJsonDate, UserBuffDate, get_main_info_msg, get_user_buff, get_sec_msg
+from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_msg
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight

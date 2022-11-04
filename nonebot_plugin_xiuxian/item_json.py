@@ -51,7 +51,7 @@ class Items:
 
     def set_item_data(self, dict_data, item_type):
         for k, v in dict_data.items():
-            if item_type == "技能":
+            if item_type == '功法' or item_type == '神通':
                 v['rank'], v['level'] = v['level'], v['rank']
             self.items[k] = v
             self.items[k].update({'item_type':item_type})

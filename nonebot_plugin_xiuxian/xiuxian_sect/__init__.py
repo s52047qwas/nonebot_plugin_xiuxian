@@ -20,7 +20,9 @@ import random
 from ..cd_manager import add_cd, check_cd, cd_msg
 from ..utils import check_user,send_forward_msg, data_check_conf
 from ..read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
+from ..item_json import Items
 
+items = Items()
 config = get_config()
 LEVLECOST = config["LEVLECOST"]
 
@@ -131,7 +133,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             secbufflist = get_sect_secbuff_id_list(sect_id)
             secmsg = '☆------宗门神通------☆\n'
             for sec in secbufflist:
-                secbuff = BuffJsonDate().get_sec_buff(str(sec))
+                secbuff = items.get_data_by_item_id(sec)
                 secbuffmsg = get_sec_msg(secbuff)
                 secmsg += f"{secbuff['rank']}：{secbuff['name']} {secbuffmsg}\n"
             msg += secmsg
@@ -181,7 +183,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await sect_mainbuff_learn.finish(f"道友请勿重复学习！", at_sender=True)
         
             mainbuffconfig = config['宗门主功法参数']
-            mainbuff = BuffJsonDate().get_main_buff(str(mainbuffid))
+            mainbuff = items.get_data_by_item_id(mainbuffid)
             mainbufftype = mainbuff['rank']
             mainbuffgear = buffrankkey[mainbufftype]
             #获取逻辑
@@ -270,7 +272,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     secbuffidlist.append(secbuffid)         
                     sql = set_sect_list(secbuffidlist)
                     sql_message.update_sect_secbuff(sect_id, sql)
-                    secbuff = BuffJsonDate().get_sec_buff(secbuffid)
+                    secbuff = items.get_data_by_item_id(secbuffid)
                     secmsg = get_sec_msg(secbuff)
                     await sect_secbuff_get.finish(f"本次搜寻消耗{stonecost}宗门灵石，{materialscost}宗门资材，成功获取到{secbufftype}神通：{secbuff['name']}\n{secmsg}", at_sender=True)
                 else:
@@ -313,7 +315,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
             secbuffconfig = config['宗门神通参数']
             
-            secbuff = BuffJsonDate().get_sec_buff(str(secbuffid))
+            secbuff = items.get_data_by_item_id(secbuffid)
             secbufftype = secbuff['rank']
             secbuffgear = buffrankkey[secbufftype]
             #获取逻辑
@@ -863,7 +865,7 @@ def get_mainname_list(bufflist):
     """根据传入的功法列表，返回功法名字列表"""
     namelist = []
     for buff in bufflist:
-        mainbuff = BuffJsonDate().get_main_buff(str(buff))
+        mainbuff = items.get_data_by_item_id(buff)
         namelist.append(mainbuff['name'])
     return namelist
 
@@ -871,7 +873,7 @@ def get_secname_list(bufflist):
     """根据传入的神通列表，返回神通名字列表"""
     namelist = []
     for buff in bufflist:
-        secbuff = BuffJsonDate().get_sec_buff(buff)
+        secbuff = items.get_data_by_item_id(buff)
         namelist.append(secbuff['name'])
     return namelist
 
@@ -880,7 +882,7 @@ def get_mainnameid(buffname, bufflist):
     tempdict = {}
     buffid = 0
     for buff in bufflist:
-        mainbuff = BuffJsonDate().get_main_buff(buff)
+        mainbuff = items.get_data_by_item_id(buff)
         tempdict[mainbuff['name']] = buff
     for k, v in tempdict.items():
         if buffname == k:
@@ -891,7 +893,7 @@ def get_secnameid(buffname, bufflist):
     tempdict = {}
     buffid = 0
     for buff in bufflist:
-        secbuff = BuffJsonDate().get_sec_buff(buff)
+        secbuff = items.get_data_by_item_id(buff)
         tempdict[secbuff['name']] = buff
     for k, v in tempdict.items():
         if buffname == k:

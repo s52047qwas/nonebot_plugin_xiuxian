@@ -2,12 +2,13 @@ import random
 from .riftconfig import get_config
 from ..xiuxian2_handle import OtherSet
 from .jsondata import read_f
-from ..read_buff import BuffJsonDate, get_main_info_msg, get_sec_msg
+from ..read_buff import get_main_info_msg, get_sec_msg
 from ..xiuxian2_handle import XiuxianDateManage
 from ..player_fight import Boss_fight
 from ..item_json import Items
 
 sql_message = XiuxianDateManage()
+items = Items()
 skill_data = read_f()
 USERRANK = {
     '江湖好手':50,
@@ -198,7 +199,7 @@ def get_treasure_info(user_info, rift_rank):
         give_main_info = get_main_info(user_info.level, rift_rank)
         if give_main_info[0]:#获得了
             main_buff_id = give_main_info[1]
-            main_buff = BuffJsonDate().get_main_buff(main_buff_id)
+            main_buff = items.get_data_by_item_id(main_buff_id)
             temp_msg = f"竟然获得了{main_buff['level']}功法：{main_buff['name']}！{dev_msg}"
             msg = random.choice(TREASUREMSG).format(temp_msg)
             #背包sql
@@ -209,7 +210,7 @@ def get_treasure_info(user_info, rift_rank):
         give_sec_info = get_sec_info(user_info.level, rift_rank)
         if give_sec_info[0]:#获得了
             sec_buff_id = give_sec_info[1]
-            sec_buff = BuffJsonDate().get_sec_buff(sec_buff_id)
+            sec_buff = items.get_data_by_item_id(sec_buff_id)
             temp_msg = f"竟然获得了{sec_buff['level']}功法：{sec_buff['name']}！{dev_msg}"
             msg = random.choice(TREASUREMSG).format(temp_msg)
             #背包sql

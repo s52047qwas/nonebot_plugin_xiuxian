@@ -10,6 +10,7 @@ READPATH = Path() / "data" / "xiuxian"
 SKILLPATHH = READPATH / "功法"
 WEAPONPATH = READPATH / "装备"
 
+items = Items()
 class BuffJsonDate:
 
     def __init__(self):
@@ -54,14 +55,14 @@ class UserBuffDate:
     
     def get_user_main_buff_data(self):
         try:
-            mainbuffdata = Items().get_data_by_item_id(self.BuffInfo.main_buff)
+            mainbuffdata = items.get_data_by_item_id(self.BuffInfo.main_buff)
         except:
             mainbuffdata = None
         return mainbuffdata
     
     def get_user_sec_buff_data(self):
         try:
-            secbuffdata = Items().get_data_by_item_id(self.BuffInfo.sec_buff)
+            secbuffdata = items.get_data_by_item_id(self.BuffInfo.sec_buff)
         except:
             secbuffdata = None
         return secbuffdata
@@ -76,7 +77,7 @@ def get_weapon_info_msg(weapon_id, weapon_info=None):
     """
     msg = ''
     if weapon_info == None:
-        weapon_info = Items().get_data_by_item_id(weapon_id)
+        weapon_info = items.get_data_by_item_id(weapon_id)
     atk_buff_msg = f"提升{int(weapon_info['atk_buff'] * 100)}%攻击力！" if weapon_info['atk_buff'] != 0 else ''
     crit_buff_msg = f"提升{int(weapon_info['crit_buff'] * 100)}%会心率！" if weapon_info['crit_buff'] != 0 else ''
     msg += f"名字：{weapon_info['name']}\n"
@@ -93,7 +94,7 @@ def get_armor_info_msg(armor_id, armor_info=None):
     """
     msg = ''
     if armor_info == None:
-        armor_info = Items().get_data_by_item_id(armor_id)
+        armor_info = items.get_data_by_item_id(armor_id)
     def_buff_msg = f"提升{int(armor_info['def_buff'] * 100)}%减伤率！"
     msg += f"名字：{armor_info['name']}\n"
     msg += f"品阶：{armor_info['level']}\n"
@@ -101,7 +102,7 @@ def get_armor_info_msg(armor_id, armor_info=None):
     return  msg
 
 def get_main_info_msg(id):
-    mainbuff = BuffJsonDate().get_main_buff(id)
+    mainbuff = items.get_data_by_item_id(id)
     hpmsg = f"提升{round(mainbuff['hpbuff'] * 100, 0)}%气血" if mainbuff['hpbuff'] != 0 else ''
     mpmsg = f"提升{round(mainbuff['mpbuff'] * 100, 0)}%真元" if mainbuff['mpbuff'] != 0 else ''
     atkmsg = f"提升{round(mainbuff['atkbuff'] * 100, 0)}%攻击力" if mainbuff['atkbuff'] != 0 else ''
