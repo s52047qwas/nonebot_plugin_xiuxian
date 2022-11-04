@@ -1247,18 +1247,26 @@ class OtherSet(XiuConfig):
         return msg, hp_mp
 
 from .read_buff import UserBuffDate
-def final_user_data(userdata):
+from .item_json import Items
+items = Items()
+def final_user_data(user_data):
     """传入用户当前信息、buff信息，返回最终信息"""
-    userdata = list(userdata)
-    mainbuffdata = UserBuffDate(userdata[1]).get_user_main_buff_data()
-    mainhpbuff = mainbuffdata['hpbuff'] if mainbuffdata != None else 0
-    mainmpbuff = mainbuffdata['mpbuff'] if mainbuffdata != None else 0
-    mainatkbuff = mainbuffdata['atkbuff'] if mainbuffdata != None else 0
-    userdata[15] = int(userdata[15] * (1 + mainhpbuff))#hp 
-    userdata[16] = int(userdata[16] * (1 + mainmpbuff))#mp
-    userdata[17] = int(userdata[17] * (userdata[18] * 0.1 + 1) * (1 + mainatkbuff))#每级+10%攻击
-    userdata = tuple(userdata)
-    return userdata
+    user_data = list(user_data)
+    user_buff_data = UserBuffDate(user_data[1]).BuffInfo
+    if int(user_buff_data.faqi_buff) == 0:
+        weapon_atk_buff = 0
+    else:
+        weapon_info = items.get_data_by_item_id(user_buff_data.faqi_buff) 
+        weapon_atk_buff = weapon_info['atk_buff']
+    main_buff_data = UserBuffDate(user_data[1]).get_user_main_buff_data()
+    main_hp_buff = main_buff_data['hpbuff'] if main_buff_data != None else 0
+    main_mp_buff = main_buff_data['mpbuff'] if main_buff_data != None else 0
+    main_atk_buff = main_buff_data['atkbuff'] if main_buff_data != None else 0
+    user_data[15] = int(user_data[15] * (1 + main_hp_buff))#hp 
+    user_data[16] = int(user_data[16] * (1 + main_mp_buff))#mp
+    user_data[17] = int(user_data[17] * (user_data[18] * 0.1 + 1) * (1 + main_atk_buff) * (1 + weapon_atk_buff))#每级+10%攻击
+    user_data = tuple(user_data)
+    return user_data
     
     
 if __name__ == '__main__':

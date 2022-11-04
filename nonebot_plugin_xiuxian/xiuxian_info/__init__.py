@@ -80,14 +80,24 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 exp_meg = "还需{}修为可突破！".format(get_exp)
         else:
             exp_meg = "可突破！"
-    usermainbufdate =  UserBuffDate(user_id).get_user_main_buff_data()
-    usersecbufdate = UserBuffDate(user_id).get_user_sec_buff_data()
-    mainbffname = '无'
-    secbuffname = '无'
-    if usermainbufdate != None:
-        mainbffname = f"{usermainbufdate['name']}({usermainbufdate['level']})"
-    if usersecbufdate != None:
-        secbuffname = f"{usersecbufdate['name']}({usersecbufdate['level']})"
+    
+    user_buff_data = UserBuffDate(user_id)
+    user_main_buff_date = user_buff_data.get_user_main_buff_data()
+    user_sec_buff_date = user_buff_data.get_user_sec_buff_data()
+    user_weapon_data = user_buff_data.get_user_weapon_data()
+    user_armor_data = user_buff_data.get_user_armor_buff_data()
+    main_buff_name = '无'
+    sec_buff_name = '无'
+    weapon_name = '无'
+    armor_name = '无'
+    if user_main_buff_date != None:
+        main_buff_name = f"{user_main_buff_date['name']}({user_main_buff_date['level']})"
+    if user_sec_buff_date != None:
+        sec_buff_name = f"{user_sec_buff_date['name']}({user_sec_buff_date['level']})"
+    if user_weapon_data != None:
+        weapon_name = f"{user_weapon_data['name']}({user_weapon_data['level']})"
+    if user_armor_data != None:
+        armor_name = f"{user_armor_data['name']}({user_armor_data['level']})"
 
     DETAIL_MAP = {
     '道号': f'{user_name}',
@@ -100,10 +110,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '攻击力': f'{mess.atk}，攻修等级{mess.atkpractice}级',
     '所在宗门':sectmsg,
     '宗门职位':sectzw,
-    '主修功法':mainbffname,
-    '副修神通':secbuffname,
-    "法器":'无',
-    "防具":'无',
+    '主修功法':main_buff_name,
+    '副修神通':sec_buff_name,
+    "法器":weapon_name,
+    "防具":armor_name,
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)

@@ -65,13 +65,23 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2 = {"user_id": None, "道号": None, "气血": None,
                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
         user1 = sql_message.get_user_real_info(user_id)
+        user1_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
+        if user1_weapon_data != None:
+            player1['会心'] = int(user1_weapon_data['crit_buff'] * 100)
+        else:
+            player1['会心'] = 1
+
         user2 = sql_message.get_user_real_info(give_qq)
+        user2_weapon_data = UserBuffDate(give_qq).get_user_weapon_data()
+        if user2_weapon_data != None:
+            player2['会心'] = int(user2_weapon_data['crit_buff'] * 100)
+        else:
+            player2['会心'] = 1
         player1['user_id'] = user1.user_id
         player1['道号'] = user1.user_name
         player1['气血'] = user1.hp
         player1['攻击'] = user1.atk
         player1['真元'] = user1.mp
-        player1['会心'] = 1
         player1['exp'] = user1.exp
 
         player2['user_id'] = user2.user_id
@@ -79,7 +89,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2['气血'] = user2.hp
         player2['攻击'] = user2.atk
         player2['真元'] = user2.mp
-        player2['会心'] = 1
         player2['exp'] = user2.exp
         
         result, victor = Player_fight(player1, player2, 1)
@@ -204,16 +213,30 @@ async def _(bot: Bot, event: GroupMessageEvent):
     
     level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
     realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
-    mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
-    mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0
-    mainhpbuff = mainbuffdata['hpbuff'] if mainbuffdata != None else 0
-    mainmpbuff = mainbuffdata['mpbuff'] if mainbuffdata != None else 0
+    main_buff_data = UserBuffDate(user_id).get_user_main_buff_data()
+    user_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
+    if user_weapon_data != None:
+        crit_buff = int(user_weapon_data['crit_buff'] * 100)
+    else:
+        crit_buff = 1
+    
+    user_armor_data = UserBuffDate(user_id).get_user_armor_buff_data()
+    if user_armor_data != None:
+        def_buff = int(user_armor_data['def_buff'] * 100)
+    else:
+        def_buff = 0
+
+    main_buff_rate_buff = main_buff_data['ratebuff'] if main_buff_data != None else 0
+    main_hp_buff = main_buff_data['hpbuff'] if main_buff_data != None else 0
+    main_mp_buff = main_buff_data['mpbuff'] if main_buff_data != None else 0
     user = f"""道号：{user_msg.user_name}
-气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + mainhpbuff))}
-真元：{user_msg.mp}/{int((user_msg.exp) * (1 + mainmpbuff))}
+气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + main_hp_buff))}
+真元：{user_msg.mp}/{int((user_msg.exp) * (1 + main_mp_buff))}
 攻击：{user_msg.atk}
 攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
-修炼效率：{int((level_rate * realm_rate) * (1 + mainbuffratebuff)  * 100)}%
+修炼效率：{int((level_rate * realm_rate) * (1 + main_buff_rate_buff)  * 100)}%
+会心：{crit_buff}%
+减伤率：{def_buff}%
 """
 
     await mind_state.finish(user, at_sender=True)

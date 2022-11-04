@@ -55,17 +55,32 @@ class UserBuffDate:
     
     def get_user_main_buff_data(self):
         try:
-            mainbuffdata = items.get_data_by_item_id(self.BuffInfo.main_buff)
+            main_buff_data = items.get_data_by_item_id(self.BuffInfo.main_buff)
         except:
-            mainbuffdata = None
-        return mainbuffdata
+            main_buff_data = None
+        return main_buff_data
     
     def get_user_sec_buff_data(self):
         try:
-            secbuffdata = items.get_data_by_item_id(self.BuffInfo.sec_buff)
+            sec_buff_data = items.get_data_by_item_id(self.BuffInfo.sec_buff)
         except:
-            secbuffdata = None
-        return secbuffdata
+            sec_buff_data = None
+        return sec_buff_data
+
+    def get_user_weapon_data(self):
+        try:
+            weapon_data = items.get_data_by_item_id(self.BuffInfo.faqi_buff)
+        except:
+            weapon_data = None
+        return weapon_data
+    
+    def get_user_armor_buff_data(self):
+        try:
+            armor_buff_data = items.get_data_by_item_id(self.BuffInfo.armor_buff)
+        except:
+            armor_buff_data = None
+        return armor_buff_data
+
 
 
 def get_weapon_info_msg(weapon_id, weapon_info=None):

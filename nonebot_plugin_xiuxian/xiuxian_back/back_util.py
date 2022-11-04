@@ -33,21 +33,20 @@ def get_use_equipment_sql(user_id, goods_id):
     item_info = items.get_data_by_item_id(goods_id)
     user_buff_info = UserBuffDate(user_id).BuffInfo
     now_time = datetime.now()
-    now_time = str(now_time)[:-7]
     item_type = ''
     if item_info['item_type'] == "法器":
         item_type = "法器"
         in_use_id = user_buff_info.faqi_buff
-        sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
+        sql_str.append(f"UPDATE back set update_time='{now_time}',action_time='{now_time}',state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
         if in_use_id != 0:
-            sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
+            sql_str.append(f"UPDATE back set update_time='{now_time}',action_time='{now_time}',state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
             
     if item_info['item_type'] == "防具":
         item_type = "防具"
         in_use_id = user_buff_info.armor_buff
-        sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
+        sql_str.append(f"UPDATE back set update_time='{now_time}',action_time='{now_time}',state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
         if in_use_id != 0:
-            sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
+            sql_str.append(f"UPDATE back set update_time='{now_time}',action_time='{now_time}',state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
     
     return sql_str, item_type
     
@@ -116,9 +115,9 @@ def get_equipment_msg(l_msg, user_id, goods_id):
         
     is_use = check_equipment_use_msg(user_id, goods_id)
     if is_use:
-        msg += f"\n已使用"
+        msg += f"\n已装备"
     else:
-        msg += f"\n可使用"
+        msg += f"\n可装备"
     l_msg.append(msg)
     return l_msg
 
