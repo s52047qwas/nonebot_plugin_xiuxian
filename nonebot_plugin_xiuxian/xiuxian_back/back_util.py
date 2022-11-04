@@ -2,15 +2,13 @@ from ..item_json import Items
 from ..xiuxian2_handle import XiuxianDateManage
 from ..read_buff import UserBuffDate, get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
 from .backconfig import get_config
+from datetime import datetime
 
 items = Items()
 sql_message = XiuxianDateManage()
 
-
-
-def check_equipment_use(user_id, goods_id):
+def check_equipment_can_use(user_id, goods_id):
     """
-    检测装备是否可用
     装备数据库字段：
         good_type -> '装备'
         state -> 0-未使用，1-已使用
@@ -23,6 +21,40 @@ def check_equipment_use(user_id, goods_id):
         state = 1, goods_num = 1, all_num =1  已使用
         state = 1, goods_num = 2, all_num =2  已装备，多余的，不可重复使用
     顶用：
+    """
+    flag = False
+    back_equipment = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
+    if back_equipment.state == 0:
+        flag = True
+    return flag
+
+def get_use_equipment_sql(user_id, goods_id):
+    sql_str = []
+    item_info = items.get_data_by_item_id(goods_id)
+    user_buff_info = UserBuffDate(user_id).BuffInfo
+    now_time = datetime.now()
+    now_time = str(now_time)[:-7]
+    item_type = ''
+    if item_info['item_type'] == "法器":
+        item_type = "法器"
+        in_use_id = user_buff_info.faqi_buff
+        sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
+        if in_use_id != 0:
+            sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
+            
+    if item_info['item_type'] == "防具":
+        item_type = "防具"
+        in_use_id = user_buff_info.armor_buff
+        sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=1 WHERE user_id={user_id} and goods_id={goods_id}")#装备
+        if in_use_id != 0:
+            sql_str.append(f"UPDATE back set update_time={now_time},action_time={now_time},state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
+    
+    return sql_str, item_type
+    
+
+def check_equipment_use_msg(user_id, goods_id):
+    """
+    检测装备是否已用
     """
     user_back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
     now_num = user_back.goods_num
@@ -82,7 +114,7 @@ def get_equipment_msg(l_msg, user_id, goods_id):
     elif item_info['item_type'] == '法器':
         msg = get_weapon_info_msg(goods_id, item_info)
         
-    is_use = check_equipment_use(user_id, goods_id)
+    is_use = check_equipment_use_msg(user_id, goods_id)
     if is_use:
         msg += f"\n已使用"
     else:
@@ -103,7 +135,7 @@ def get_skill_msg(l_msg, user_id, goods_id):
         msg = f"{item_info['level']}功法-"
         msg += get_main_info_msg(goods_id)[1]
         
-    is_use = check_equipment_use(user_id, goods_id)
+    is_use = check_equipment_use_msg(user_id, goods_id)
     if is_use:
         msg += f"\n已学习"
     else:

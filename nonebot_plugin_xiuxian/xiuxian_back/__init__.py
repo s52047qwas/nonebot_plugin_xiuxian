@@ -18,7 +18,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -141,16 +141,47 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await buy.finish(msg, at_sender=True)
+        await use.finish(msg, at_sender=True)
     user_id = user_info.user_id
-    await use.finish('调试中，未开启！')
-    get_goods = str(args)
-    data = jsondata.shop_data()  # 物品json信息
-    back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息
+    # await use.finish('调试中，未开启！')
+    arg = args.extract_plain_text().strip()
+    
+    back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
+    if back_msg == None:
+        msg = "道友的背包空空如也！"
+        await use.finish(msg, at_sender=True)
+    in_flag = False #判断指令是否正确，道具是否在背包内
+    for back in back_msg:
+        if arg == back.goods_name:
+            in_flag = True
+            goods_id = back.goods_id
+            goods_type = back.goods_type
+            break
+    if not in_flag:
+        msg = f"请检查该道具 {arg} 是否在背包内！"
+        await use.finish(msg, at_sender=True)
+    
+    
+    if goods_type == "装备":
+        if not check_equipment_can_use(user_id, goods_id):
+            msg = f"该装备已被装备，请勿重复装备！"
+            await use.finish(msg, at_sender=True)
+        else:#可以装备
+            sql_str, item_type = get_use_equipment_sql(user_id, goods_id)
+            for sql in sql_str:
+                sql_message.update_back_equipment(sql)
+            if item_type == "法器":
+                sql_message.updata_user_faqi_buff(user_id, goods_id)
+            if item_type == "防具":
+                sql_message.updata_user_armor_buff(user_id, goods_id)
+            msg = f"成功装备{arg}！"
+            await use.finish(msg, at_sender=True)
+    else:
+        await use.finish('该类型物品调试中，未开启！')
+            
+        
+            
 
-    for i in back_msg:
-        if i[2] == get_goods:
-            pass
         
 @creat_auction.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

@@ -39,6 +39,7 @@ class XiuConfig:
         self.sql_user_xiuxian = ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
                            "sect_task", "sect_contribution"]  # 数据库字段校验
         self.sql_sects = ["sect_materials", "mainbuff", "secbuff"]
+        self.sql_buff = ["armor_buff"]
 
         # sql_table: ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo"]  # 数据库表校验
         # sql_user_xiuxian: ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
