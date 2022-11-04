@@ -8,6 +8,8 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     GroupMessageEvent,
     MessageSegment,
+    GROUP_ADMIN,
+    GROUP_OWNER
 )
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
@@ -31,18 +33,32 @@ shop = on_command("坊市", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP and SUPERUSER)
 use = on_command("使用", priority=5)
 buy = on_command("购买", priority=5)
-set_auction = on_command("群拍卖行", priority=5, permission= GROUP)
-creat_auction = on_command("举行拍卖会", priority=5, permission= GROUP)
+set_auction = on_command("群拍卖行", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+creat_auction = on_command("举行拍卖会", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 offer_auction = on_command("出价", priority=5, permission= GROUP)
+back_help = on_command("背包帮助", priority=5, permission= GROUP)
 
 sql_message = XiuxianDateManage()  # sql类
 
 __back_help__ = f"""
 背包帮助信息:
 指令：
+1、我的背包、我的物品：查看自身背包信息
+2、使用+物品名字：使用物品
+3、购买+物品名字：购买坊市内的物品
+4、坊市：查询坊市在售物品
+5、群拍卖行开启、关闭：开启拍卖行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报拍卖行消息
+6、举行拍卖会：管理员指令，会立刻生成一次拍卖会
+7、出价+金额：对本次排行会的物品进行出价
+8、背包帮助：获取背包帮助指令
 非指令：
 
 """.strip()
+
+@back_help.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    await back_help.finish(__back_help__)
 
 @buy.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
