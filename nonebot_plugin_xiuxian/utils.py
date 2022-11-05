@@ -88,6 +88,24 @@ async def send_forward_msg(
             "send_private_forward_msg", user_id=event.user_id, messages=messages
         )
 
+async def send_forward_msg_list(
+    bot: Bot,
+    event: MessageEvent,
+    messages: list,  # 格式[*dict] 例[*{"type": "node", "data": {"name": name, "uin": uin, "content": msg}}]
+):
+    """
+    合并消息转发
+    区分人
+    """
+
+    if isinstance(event, GroupMessageEvent):
+        await bot.call_api(
+            "send_group_forward_msg", group_id=event.group_id, messages=messages
+        )
+    else:
+        await bot.call_api(
+            "send_private_forward_msg", user_id=event.user_id, messages=messages
+        )
 
 async def data_check_conf(bot, event):
     """

@@ -18,7 +18,7 @@ from ..xiuxian2_handle import XiuxianDateManage
 from .makeboss import createboss
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
-from ..utils import data_check_conf
+from ..utils import data_check_conf, send_forward_msg_list
 
 config = get_config()
 # 定时任务
@@ -172,8 +172,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     bossinfo = group_boss[group_id][boss_num - 1]
     battle_flag[group_id] = True
-    result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo)
-    await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
+    result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
+    # await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
+    await send_forward_msg_list(bot, event, result)
     if victor == bossinfo['name']:
         group_boss[group_id][boss_num - 1] = bossinfo_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
@@ -320,6 +321,7 @@ async def send_forward_msg(
         await bot.call_api(
             "send_private_forward_msg", user_id=event.user_id, messages=messages
         )
+
 
 def isInGroups(event: GroupMessageEvent):
     return event.group_id in groups

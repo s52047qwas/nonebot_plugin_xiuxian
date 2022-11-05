@@ -16,7 +16,7 @@ from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg, Txt2Img, data_check_conf, check_user_type
+from ..utils import send_forward_msg_list, Txt2Img, data_check_conf, check_user_type
 from ..cd_manager import add_cd, check_cd, cd_msg
 
 buffinfo = on_command("我的功法", priority=5)
@@ -91,9 +91,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2['真元'] = user2.mp
         player2['exp'] = user2.exp
         
-        result, victor = Player_fight(player1, player2, 1)
+        result, victor = Player_fight(player1, player2, 1, bot.self_id)
         add_cd(event, 300, '切磋')
-        await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
+        # await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
+        await send_forward_msg_list(bot, event, result)
         await qc.finish(f"获胜的是{victor}")
     else:
         await qc.finish("没有对方的信息！")
