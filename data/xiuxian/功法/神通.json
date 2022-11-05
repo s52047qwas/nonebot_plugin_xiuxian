@@ -38,7 +38,7 @@
     "8004":{
         "name":"惊涛剑诀",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.4,
         "hpcost":0,
         "mpcost":0.3,
@@ -51,7 +51,7 @@
     "8005":{
         "name":"鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.05,
         "hpcost":0,
         "mpcost":0.3,
@@ -100,7 +100,7 @@
     "8104":{
         "name":"灵息术",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.44,
         "hpcost":0,
         "mpcost":0.3,
@@ -113,7 +113,7 @@
     "8105":{
         "name":"鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.1,
         "hpcost":0,
         "mpcost":0.3,
@@ -162,7 +162,7 @@
     "8204":{
         "name":"拟剑",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.47,
         "hpcost":0,
         "mpcost":0.3,
@@ -175,7 +175,7 @@
     "8205":{
         "name":"鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.15,
         "hpcost":0,
         "mpcost":0.3,
@@ -224,7 +224,7 @@
     "8304":{
         "name":"归元剑气",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
@@ -237,7 +237,7 @@
     "8305":{
         "name":"鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.2,
         "hpcost":0,
         "mpcost":0.3,
@@ -286,7 +286,7 @@
     "8404":{
         "name":"分金印",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.54,
         "hpcost":0,
         "mpcost":0.3,
@@ -299,7 +299,7 @@
     "8405":{
         "name":"鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.25,
         "hpcost":0,
         "mpcost":0.3,
@@ -348,7 +348,7 @@
     "8504":{
         "name":"九转游身剑",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.57,
         "hpcost":0,
         "mpcost":0.3,
@@ -361,7 +361,7 @@
     "8505":{
         "name":"鳖鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.3,
         "hpcost":0,
         "mpcost":0.3,
@@ -410,7 +410,7 @@
     "8604":{
         "name":"五行颠倒术",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.6,
         "hpcost":0,
         "mpcost":0.3,
@@ -423,7 +423,7 @@
     "8605":{
         "name":"鳖鳖鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.35,
         "hpcost":0,
         "mpcost":0.3,
@@ -472,7 +472,7 @@
     "8704":{
         "name":"万剑诀",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.64,
         "hpcost":0,
         "mpcost":0.3,
@@ -485,7 +485,7 @@
     "8705":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.4,
         "hpcost":0,
         "mpcost":0.3,
@@ -534,7 +534,7 @@
     "8804":{
         "name":"星微神灭诀",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":0.67,
         "hpcost":0,
         "mpcost":0.3,
@@ -547,7 +547,7 @@
     "8805":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.45,
         "hpcost":0,
         "mpcost":0.3,
@@ -596,7 +596,7 @@
     "8904":{
         "name":"大吞焰术",
         "skill_type":3,
-        "buffskill_type":1,
+        "bufftype":1,
         "buffvalue":1.0,
         "hpcost":0,
         "mpcost":0.3,
@@ -609,7 +609,7 @@
     "8905":{
         "name":"鳖鳖鳖鳖鳖鳖鳖鳖鳖鳖住",
         "skill_type":3,
-        "buffskill_type":2,
+        "bufftype":2,
         "buffvalue":0.5,
         "hpcost":0,
         "mpcost":0.3,
