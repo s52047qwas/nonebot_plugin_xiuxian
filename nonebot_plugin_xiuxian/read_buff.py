@@ -158,9 +158,9 @@ def get_sec_msg(secbuffdata):
     elif secbuffdata['skill_type'] == 2:
         msg = f"持续伤害，造成{secbuffdata['atkvalue']}倍攻击力伤害{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
     elif secbuffdata['skill_type'] == 3:
-        if secbuffdata['buffskill_type'] == 1:
+        if secbuffdata['bufftype'] == 1:
             msg = f"增强自身，提高{secbuffdata['buffvalue']}倍攻击力{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
-        elif secbuffdata['buffskill_type'] == 2:
+        elif secbuffdata['bufftype'] == 2:
             msg = f"增强自身，提高{secbuffdata['buffvalue'] * 100}%减伤率{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%"
     elif secbuffdata['skill_type'] == 4:
         msg = f"封印对手{hpmsg}{mpmsg}，持续{secbuffdata['turncost']}回合，释放概率：{secbuffdata['rate']}%，命中成功率{secbuffdata['success']}%"
