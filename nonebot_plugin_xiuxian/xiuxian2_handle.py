@@ -917,7 +917,7 @@ class XiuxianDateManage:
             all_num = goods_num
             sql = """
                     INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, all_num, create_time, update_time)
-            VALUES (?,?,?,?,?,?,?)"""
+            VALUES (?,?,?,?,?,?,?,?)"""
             cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, all_num, now_time, now_time))
             self.conn.commit()
             

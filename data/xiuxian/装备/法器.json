@@ -11,7 +11,7 @@
         "name":"桃木符剑",
         "atk_buff":0,
         "crit_buff":0.08,
-        "rank":50,
+        "rank":47,
         "level":"下品符器",
         "type":"装备"
     },
@@ -19,7 +19,7 @@
         "name":"精元符剑",
         "atk_buff":0.02,
         "crit_buff":0.04,
-        "rank":50,
+        "rank":47,
         "level":"下品符器",
         "type":"装备"
     },
@@ -27,7 +27,7 @@
         "name":"火铜符剑",
         "atk_buff":0.06,
         "crit_buff":0,
-        "rank":45,
+        "rank":42,
         "level":"上品符器",
         "type":"装备"
     },
@@ -35,7 +35,7 @@
         "name":"青玉符剑",
         "atk_buff":0,
         "crit_buff":0.12,
-        "rank":45,
+        "rank":42,
         "level":"上品符器",
         "type":"装备"
     },
@@ -43,7 +43,7 @@
         "name":"灵气剑",
         "atk_buff":0.03,
         "crit_buff":0.06,
-        "rank":45,
+        "rank":42,
         "level":"上品符器",
         "type":"装备"
     },
@@ -51,7 +51,7 @@
         "name":"辟邪惊雷尺",
         "atk_buff":0.08,
         "crit_buff":0,
-        "rank":42,
+        "rank":39,
         "level":"下品法器",
         "type":"装备"
     },
@@ -59,7 +59,7 @@
         "name":"七星剑",
         "atk_buff":0,
         "crit_buff":0.16,
-        "rank":42,
+        "rank":39,
         "level":"下品法器",
         "type":"装备"
     },
@@ -67,7 +67,7 @@
         "name":"流光剑",
         "atk_buff":0.04,
         "crit_buff":0.08,
-        "rank":42,
+        "rank":39,
         "level":"下品法器",
         "type":"装备"
     },
@@ -75,7 +75,7 @@
         "name":"金光镜",
         "atk_buff":0.1,
         "crit_buff":0,
-        "rank":39,
+        "rank":36,
         "level":"上品法器",
         "type":"装备"
     },
@@ -83,7 +83,7 @@
         "name":"阴阳夺魂针",
         "atk_buff":0,
         "crit_buff":0.2,
-        "rank":39,
+        "rank":36,
         "level":"上品法器",
         "type":"装备"
     },
@@ -91,7 +91,7 @@
         "name":"山河鼎",
         "atk_buff":0.05,
         "crit_buff":0.1,
-        "rank":39,
+        "rank":36,
         "level":"上品法器",
         "type":"装备"
     },
@@ -99,7 +99,7 @@
         "name":"离地焰光旗",
         "atk_buff":0.12,
         "crit_buff":0.1,
-        "rank":36,
+        "rank":33,
         "level":"下品纯阳法器",
         "type":"装备"
     },
@@ -107,7 +107,7 @@
         "name":"青萍剑",
         "atk_buff":0,
         "crit_buff":0.24,
-        "rank":36,
+        "rank":33,
         "level":"下品纯阳法器",
         "type":"装备"
     },
@@ -115,7 +115,7 @@
         "name":"千重峰",
         "atk_buff":0.06,
         "crit_buff":0.12,
-        "rank":36,
+        "rank":33,
         "level":"下品纯阳法器",
         "type":"装备"
     },
@@ -123,7 +123,7 @@
         "name":"五火七禽扇",
         "atk_buff":0.14,
         "crit_buff":0,
-        "rank":33,
+        "rank":30,
         "level":"上品纯阳法器",
         "type":"装备"
     },
@@ -131,7 +131,7 @@
         "name":"青莲宝色旗",
         "atk_buff":0,
         "crit_buff":0.28,
-        "rank":33,
+        "rank":30,
         "level":"上品纯阳法器",
         "type":"装备"
     },
@@ -139,7 +139,7 @@
         "name":"嗜魂幡",
         "atk_buff":0.07,
         "crit_buff":0.14,
-        "rank":33,
+        "rank":30,
         "level":"上品纯阳法器",
         "type":"装备"
     },
@@ -147,7 +147,7 @@
         "name":"绝仙剑",
         "atk_buff":0.16,
         "crit_buff":0,
-        "rank":30,
+        "rank":27,
         "level":"下品通天法器",
         "type":"装备"
     },
@@ -155,7 +155,7 @@
         "name":"落魂钟",
         "atk_buff":0,
         "crit_buff":0.32,
-        "rank":30,
+        "rank":27,
         "level":"下品通天法器",
         "type":"装备"
     },
@@ -163,7 +163,7 @@
         "name":"乾天剑",
         "atk_buff":0.08,
         "crit_buff":0.16,
-        "rank":30,
+        "rank":27,
         "level":"下品通天法器",
         "type":"装备"
     },
@@ -171,7 +171,7 @@
         "name":"乾坤尺",
         "atk_buff":0.18,
         "crit_buff":0,
-        "rank":27,
+        "rank":24,
         "level":"上品通天法器",
         "type":"装备"
     },
@@ -179,7 +179,7 @@
         "name":"天地五方旗",
         "atk_buff":0,
         "crit_buff":0.36,
-        "rank":27,
+        "rank":24,
         "level":"上品通天法器",
         "type":"装备"
     },
@@ -187,7 +187,7 @@
         "name":"红线遁光针",
         "atk_buff":0.09,
         "crit_buff":0.18,
-        "rank":27,
+        "rank":24,
         "level":"上品通天法器",
         "type":"装备"
     },
@@ -195,7 +195,7 @@
         "name":"陨仙",
         "atk_buff":0.2,
         "crit_buff":0,
-        "rank":24,
+        "rank":21,
         "level":"下品仙器",
         "type":"装备"
     },
@@ -203,7 +203,7 @@
         "name":"惊雷",
         "atk_buff":0,
         "crit_buff":0.4,
-        "rank":24,
+        "rank":21,
         "level":"下品仙器",
         "type":"装备"
     },
@@ -211,7 +211,7 @@
         "name":"承影",
         "atk_buff":0.1,
         "crit_buff":0.2,
-        "rank":24,
+        "rank":21,
         "level":"下品仙器",
         "type":"装备"
     }

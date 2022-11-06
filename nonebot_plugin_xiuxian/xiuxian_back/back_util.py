@@ -79,9 +79,9 @@ def get_user_back_msg(user_id):
         return l_msg
     for user_back in user_backs:
         if user_back.goods_type == "装备":
-            l_equipment_msg = get_equipment_msg(l_equipment_msg, user_id, user_back.goods_id)
+            l_equipment_msg = get_equipment_msg(l_equipment_msg, user_id, user_back.goods_id, user_back.goods_num)
         elif user_back.goods_type == "技能":
-            l_skill_msg = get_skill_msg(l_skill_msg, user_id, user_back.goods_id)
+            l_skill_msg = get_skill_msg(l_skill_msg, user_id, user_back.goods_id, user_back.goods_num)
         elif user_back.goods_type == "丹药":
             l_elixir_msg = get_elixir_msg(l_elixir_msg, user_back.goods_id, user_back.goods_num)
     if l_equipment_msg != []:
@@ -101,7 +101,7 @@ def get_user_back_msg(user_id):
     
     return l_msg
 
-def get_equipment_msg(l_msg, user_id, goods_id):
+def get_equipment_msg(l_msg, user_id, goods_id, goods_num):
     """
     获取背包内的装备信息
     """
@@ -111,7 +111,7 @@ def get_equipment_msg(l_msg, user_id, goods_id):
         msg = get_armor_info_msg(goods_id, item_info)
     elif item_info['item_type'] == '法器':
         msg = get_weapon_info_msg(goods_id, item_info)
-        
+    msg += f"\n拥有数量：{goods_num}"
     is_use = check_equipment_use_msg(user_id, goods_id)
     if is_use:
         msg += f"\n已装备"
@@ -120,7 +120,7 @@ def get_equipment_msg(l_msg, user_id, goods_id):
     l_msg.append(msg)
     return l_msg
 
-def get_skill_msg(l_msg, user_id, goods_id):
+def get_skill_msg(l_msg, user_id, goods_id, goods_num):
     """
     获取背包内的技能信息
     """
@@ -132,7 +132,7 @@ def get_skill_msg(l_msg, user_id, goods_id):
     elif item_info['item_type'] == '功法':
         msg = f"{item_info['level']}功法-"
         msg += get_main_info_msg(goods_id)[1]
-        
+    msg += f"\n拥有数量：{goods_num}"
     is_use = check_equipment_use_msg(user_id, goods_id)
     if is_use:
         msg += f"\n已学习"
@@ -148,6 +148,6 @@ def get_elixir_msg(l_msg, goods_id, goods_num):
     item_info = items.get_data_by_item_id(goods_id)
     msg = f"名字：{item_info['name']}\n"
     msg +=f"效果：{item_info['desc']}\n"
-    msg += f"数量：{goods_num}"
+    msg += f"拥有数量：{goods_num}"
     l_msg.append(msg)
     return l_msg

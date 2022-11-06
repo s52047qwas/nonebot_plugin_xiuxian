@@ -12,7 +12,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
-from ..utils import data_check_conf, check_user, send_forward_msg, check_user_type
+from ..utils import data_check_conf, check_user, send_forward_msg, check_user_type, send_forward_msg_list
 from .riftconfig import get_config, savef
 from .jsondata import save_rift_data, read_rift_data
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, get_boss_battle_info, get_treasure_info
@@ -186,8 +186,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                     msg = get_dxsj_info("掉血事件", user_info)
                     await complete_rift.finish(msg, at_sender=True)
                 elif rift_type == "Boss战斗":
-                    result, msg = get_boss_battle_info(user_info, rift_rank)
-                    await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
+                    result, msg = await get_boss_battle_info(user_info, rift_rank, bot.self_id)
+                    await send_forward_msg_list(bot, event, result)
                     await complete_rift.finish(msg, at_sender=True)
             elif rift_type == "宝物":
                 msg = get_treasure_info(user_info, rift_rank)

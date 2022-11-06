@@ -135,7 +135,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await mind_back.finish()
     else:
         msg = '道友的背包空空如也！'
-        await mind_back.finish(msg)
+        await mind_back.finish(msg, at_sender=True)
     
 @use.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
