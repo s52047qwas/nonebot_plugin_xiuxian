@@ -83,8 +83,7 @@ def get_user_back_msg(user_id):
         elif user_back.goods_type == "技能":
             l_skill_msg = get_skill_msg(l_skill_msg, user_id, user_back.goods_id)
         elif user_back.goods_type == "丹药":
-            #处理丹药信息逻辑
-            pass
+            l_elixir_msg = get_elixir_msg(l_elixir_msg, user_back.goods_id, user_back.goods_num)
     if l_equipment_msg != []:
         l_msg.append("☆------装备------☆")
         for msg in l_equipment_msg:
@@ -139,5 +138,16 @@ def get_skill_msg(l_msg, user_id, goods_id):
         msg += f"\n已学习"
     else:
         msg += f"\n可学习"
+    l_msg.append(msg)
+    return l_msg
+
+def get_elixir_msg(l_msg, goods_id, goods_num):
+    """
+    获取背包内的丹药信息
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    msg = f"名字：{item_info['name']}\n"
+    msg +=f"效果：{item_info['desc']}\n"
+    msg += f"数量：{goods_num}"
     l_msg.append(msg)
     return l_msg
