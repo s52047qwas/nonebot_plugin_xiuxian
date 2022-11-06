@@ -31,7 +31,7 @@ auction = {}
 AUCTIONSLEEPTIME = 60
 
 shop = on_command("坊市", priority=5)
-mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP and SUPERUSER)
+mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP)
 use = on_command("使用", priority=5)
 buy = on_command("购买", priority=5)
 set_auction = on_command("群拍卖行", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
@@ -130,7 +130,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     # ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
     #  "remake", "day_num", "all_num", "action_time", "state"]
     msg = get_user_back_msg(user_id)
-    await send_forward_msg(bot, event, '背包', bot.self_id, msg)
+    if msg != []:
+        await send_forward_msg(bot, event, '背包', bot.self_id, msg)
+        await mind_back.finish()
+    else:
+        msg = '道友的背包空空如也！'
+        await mind_back.finish(msg)
     
 @use.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

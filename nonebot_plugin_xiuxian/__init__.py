@@ -339,12 +339,13 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     user_backs = sql_message.get_back_msg(user_id) #list(back)
     items = Items()
     pause_flag = False
-    for back in user_backs:
-        if int(back.goods_id) == 1999:#检测到有对应丹药
-            pause_flag = True
-            elixir_name = back.goods_name
-            elixir_desc = items.get_data_by_item_id(1999)['desc']
-            break
+    if user_backs != None:
+        for back in user_backs:
+            if int(back.goods_id) == 1999:#检测到有对应丹药
+                pause_flag = True
+                elixir_name = back.goods_name
+                elixir_desc = items.get_data_by_item_id(1999)['desc']
+                break
     if pause_flag:
         msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 突破使用 或 突破不使用 来进行突破！本次突破概率为：{level_rate + user_leveluprate}%"
         await level_up.pause(prompt=msg)

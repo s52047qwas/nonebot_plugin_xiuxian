@@ -70,13 +70,13 @@ def get_user_back_msg(user_id):
     """
     获取背包内的所有物品信息
     """
-    user_info = sql_message.get_user_message(user_id)
-    user_buff_info = UserBuffDate(user_id).BuffInfo #type(BuffInfo)
     l_equipment_msg = []
     l_skill_msg = []
     l_elixir_msg = []
     l_msg = []
     user_backs = sql_message.get_back_msg(user_id) #list(back)
+    if user_backs == None:
+        return l_msg
     for user_back in user_backs:
         if user_back.goods_type == "装备":
             l_equipment_msg = get_equipment_msg(l_equipment_msg, user_id, user_back.goods_id)
