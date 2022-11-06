@@ -16,7 +16,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.log import logger
 from typing import Any, Tuple
-from nonebot.params import CommandArg, RegexGroup
+from nonebot.params import CommandArg, RegexGroup, EventPlainText
 
 from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
@@ -347,7 +347,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
                 elixir_desc = items.get_data_by_item_id(1999)['desc']
                 break
     if pause_flag:
-        msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 突破使用 或 突破不使用 来进行突破！本次突破概率为：{level_rate + user_leveluprate}%"
+        msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 使用、不使用或取消来选择突破！本次突破概率为：{level_rate + user_leveluprate}%"
         await level_up.pause(prompt=msg)
     
     le = OtherSet().get_type(exp, level_rate + user_leveluprate, level_name)
@@ -389,8 +389,9 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         await level_up.finish(le)
 
 @command.level_up.handle()
-async def update_level_end(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    arg = args.extract_plain_text().strip()
+async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = EventPlainText()):
+    if mode not in ['使用', '不使用', '取消']:
+        await level_up.reject(prompt="指令错误，应该为 使用、不使用或取消！")
     user_id, group_id, user_msg = await data_check(bot, event)
 
     level_name = user_msg.level  # 用户境界
@@ -403,7 +404,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, args: Message = C
     
     items = Items()
     elixir_name = items.get_data_by_item_id(1999)['name']
-    if arg == "使用":
+    if mode == "使用":
         if le == "失败":
             # 突破失败
             sql_message.updata_level_cd(user_id)  # 更新突破CD
@@ -428,7 +429,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, args: Message = C
             # 最高境界
             await level_up.finish(le)
 
-    elif arg == "不使用":
+    elif mode == "不使用":
         if le == "失败":
             # 突破失败
             sql_message.updata_level_cd(user_id)  # 更新突破CD
@@ -466,7 +467,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, args: Message = C
             await level_up.finish(le)
 
     else:
-        msg = "指令错误，应该为 使用 或 不使用，本次突破取消！"
+        msg = "本次突破取消！"
         await level_up.finish(msg)
 
 @command.user_leveluprate.handle()
