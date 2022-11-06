@@ -227,7 +227,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                 play_list.append(get_msg_dict(player1, player1_init_hp, f"☆------{player1['道号']}动弹不得！------☆"))
 
         if player2['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append(get_msg_dict(player1, player1_init_hp, "{}胜利".format(player1['道号'])))
+            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
             suc = f"{player1['道号']}"
             if isSql:
                 XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1_hp_buff)),
@@ -399,7 +399,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                 play_list.append(get_msg_dict(player2, player2_init_hp, f"☆------{player2['道号']}动弹不得！------☆"))
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append(get_msg_dict(player2, player2_init_hp, "{}胜利".format(player2['道号'])))
+            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player2['道号'])}})
             suc = f"{player2['道号']}"
             if isSql:
                 XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1_mp_buff)))
@@ -539,7 +539,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                                 sh += player1_sh
 
                         elif user1skill_type == 4:  # 封印类技能
-                            play_list.append(skillmsg)
+                            play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
                             player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
 
                             if user1_skill_sh:  # 命中
@@ -617,7 +617,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         player1_turn_cost = player1_turn_cost - 1
                         skillmsg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
                                                             player1_turn_cost)
-                        play_list.append(skillmsg)
+                        play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
                         isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -641,7 +641,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                     user1_turn_skip = True
 
         else:  # 没有技能的derB
-            play_list.append(f"☆------{player1['道号']}的回合------☆")
+            play_list.append(get_msg_dict(player1, player_init_hp, f"☆------{player1['道号']}的回合------☆"))
             isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
             if isCrit:
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -655,7 +655,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             sh += player1_sh
 
         if boss['气血'] <= 0:  # boss气血小于0，结算
-            play_list.append(get_msg_dict(player1, player_init_hp, "{}胜利".format(player1['道号'])))
+            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
             suc = f"{player1['道号']}"
             get_stone = boss_now_stone
             if isSql:
@@ -684,7 +684,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             play_list.append(get_boss_dict(boss, qx, f"☆------{boss['name']}动弹不得！------☆", bot_id))
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append(get_boss_dict(boss, qx, "{}胜利".format(boss['name']), bot_id))
+            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(boss['name'])}})
             suc = f"{boss['name']}"
             get_stone = int(boss_now_stone * (sh / qx))
             boss['stone'] = boss_now_stone - get_stone
@@ -701,7 +701,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
     return play_list, suc, boss, get_stone
 
 def get_msg_dict(player, player_init_hp, msg):
-    return {"type": "node", "data": {"name": f"{player['道号']}道友，当前血量：{int(player['气血'])} / {int(player_init_hp)}", "uin": int(player['user_id']), "content": msg}}
+    return {"type": "node", "data": {"name": f"{player['道号']}，当前血量：{int(player['气血'])} / {int(player_init_hp)}", "uin": int(player['user_id']), "content": msg}}
 
 def get_boss_dict(boss, boss_init_hp, msg, bot_id):
     return {"type": "node", "data": {"name": f"{boss['name']}当前血量：{int(boss['气血'])} / {int(boss_init_hp)}", "uin": int(bot_id), "content": msg}}
