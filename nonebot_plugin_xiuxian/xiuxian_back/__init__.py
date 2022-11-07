@@ -28,14 +28,14 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群拍卖行使用
 auction = {}
-AUCTIONSLEEPTIME = 60
+AUCTIONSLEEPTIME = 1800
 
 shop = on_command("坊市", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP)
 use = on_command("使用", priority=5)
 buy = on_command("购买", priority=5)
 set_auction = on_command("群拍卖行", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-creat_auction = on_command("举行拍卖会", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+creat_auction = on_command("举行拍卖会", priority=5, permission= GROUP and (SUPERUSER))
 offer_auction = on_command("出价", priority=5, permission= GROUP)
 back_help = on_command("背包帮助", priority=5, permission= GROUP)
 
