@@ -909,7 +909,7 @@ class XiuxianDateManage:
             # 判断是否存在，存在则update
             goods_nums = int(result[0]) + goods_num
             all_num = int(result[1]) + goods_num
-            sql = f"UPDATE back set goods_num=?, all_num=? update_time=? WHERE user_id=? and goods_id=?"
+            sql = f"UPDATE back set goods_num=?, all_num=?,update_time=? WHERE user_id=? and goods_id=?"
             cur.execute(sql, (goods_nums, all_num, now_time, user_id, goods_id))
             self.conn.commit()
         else:
