@@ -948,7 +948,7 @@ class XiuxianDateManage:
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
         goods_num = back.goods_num - num
         now_time = datetime.datetime.now()
-        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},state=0 WHERE user_id={user_id} and goods_id={goods_id}"
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num} WHERE user_id={user_id} and goods_id={goods_id}"
         cur = self.conn.cursor()
         cur.execute(sql_str)
         self.conn.commit()
