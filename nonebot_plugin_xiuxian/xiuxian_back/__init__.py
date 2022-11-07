@@ -286,7 +286,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         price = int(price)
     except ValueError:
         msg = f"请发送正确的灵石数量"
-        await offer_auction.finish(m群拍卖行开启sg, at_sender=True)
+        await offer_auction.finish(msg, at_sender=True)
     
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"

@@ -48,7 +48,7 @@ group_rift = {} #dict
 groups = config['open'] #list
     
 # 定时任务生成群秘境
-@set_rift.scheduled_job("cron", hour=20, minute=30)
+@set_rift.scheduled_job("cron", hour=18, minute=30)
 async def _():
     bot = get_bot()
     if groups != []:
