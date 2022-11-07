@@ -6,7 +6,7 @@ from .bossconfig import get_config
 
 config = get_config()
 DATEPATH = Path() / "data" / "xiuxian"
-jingjie = ['练气境', '筑基境', '结丹境', '元婴境', '化神境', '炼虚境', '合体境', '大乘境', '渡劫境']
+jingjie = ['练气境', '筑基境', '结丹境', '元婴境', '化神境', '炼虚境', '合体境', '大乘境', '渡劫境','真仙境','金仙境','太乙境']
 sql_message = XiuxianDateManage()  # sql类
 
 def createboss():

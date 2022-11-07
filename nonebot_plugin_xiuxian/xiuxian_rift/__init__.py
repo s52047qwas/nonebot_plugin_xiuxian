@@ -27,7 +27,7 @@ set_rift = require("nonebot_plugin_apscheduler").scheduler
 set_group_rift = on_command("群秘境", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 explore_rift = on_command("探索秘境", priority=5, permission= GROUP)
 rift_help = on_command("秘境帮助", priority=5, permission= GROUP)
-create_rift = on_command("生成秘境", priority=5, permission= GROUP and SUPERUSER)
+create_rift = on_command("生成秘境", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 complete_rift = on_command("秘境结算", aliases={"结算秘境"}, priority=5, permission= GROUP)
 break_rift = on_command("秘境探索终止", aliases={"终止探索秘境"}, priority=5, permission= GROUP)
 

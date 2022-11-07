@@ -534,6 +534,15 @@ class XiuxianDateManage:
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
+        WHEN level = '太乙境圆满' THEN '11'
+        WHEN level = '太乙境中期' THEN '12'
+        WHEN level = '太乙境初期' THEN '13'
+        WHEN level = '金仙境圆满' THEN '14'
+        WHEN level = '金仙境中期' THEN '15'
+        WHEN level = '金仙境初期' THEN '16'
+        WHEN level = '真仙境圆满' THEN '17'
+        WHEN level = '真仙境中期' THEN '18'
+        WHEN level = '真仙境初期' THEN '19'
         WHEN level = '半步真仙' THEN '20'
         WHEN level = '渡劫境圆满' THEN '21'
         WHEN level = '渡劫境中期' THEN '22'
