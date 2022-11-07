@@ -929,20 +929,29 @@ class XiuxianDateManage:
         result = cur.fetchone()
         return back(*result)
 
-    def update_back(self, user_id, goods_id, msg):
-        """使用物品"""
-        check_sql = f"select goods_num from back where user_id=? and goods_id=?"
-        cur = self.conn.cursor()
-        cur.execute(check_sql, (user_id, goods_id))
-        result = cur.fetchone()
+    # def update_back(self, user_id, goods_id, msg):
+    #     """使用物品"""
+    #     check_sql = f"select goods_num from back where user_id=? and goods_id=?"
+    #     cur = self.conn.cursor()
+    #     cur.execute(check_sql, (user_id, goods_id))
+    #     result = cur.fetchone()
         
     def update_back_equipment(self, sql_str):
-        """使用物品"""
+        """更新背包，传入sql"""
         print(f"执行的sql：{sql_str}")
         cur = self.conn.cursor()
         cur.execute(sql_str)
         self.conn.commit()
-
+        
+    def update_back_j(self, user_id, goods_id, num=1):
+        """使用物品，减少数量默认1"""
+        back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
+        goods_num = back.goods_num - num
+        now_time = datetime.datetime.now()
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num} WHERE user_id={user_id} and goods_id={goods_id}"
+        cur = self.conn.cursor()
+        cur.execute(sql_str)
+        self.conn.commit()
 
 class XiuxianJsonDate:
     def __init__(self):

@@ -53,18 +53,6 @@ def get_use_equipment_sql(user_id, goods_id):
             sql_str.append(f"UPDATE back set update_time='{now_time}',action_time='{now_time}',state=0 WHERE user_id={user_id} and goods_id={in_use_id}")#取下原有的
     
     return sql_str, item_type
-
-def get_use_skill_sql(user_id, goods_id):
-    """
-    使用技能
-    返回sql
-    """
-    back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
-    goods_num = back.goods_num - 1
-    
-    now_time = datetime.now()
-    sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num} WHERE user_id={user_id} and goods_id={goods_id}"
-    return sql_str
     
 
 def check_equipment_use_msg(user_id, goods_id):

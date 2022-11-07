@@ -18,7 +18,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_use_skill_sql
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -189,16 +189,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(user_buff_info.sec_buff) == int(goods_id):
                 msg = f"道友已学会该神通：{skill_info['name']}，请勿重复学习！"
             else:#学习sql
-                sql_str = get_use_skill_sql(user_id, goods_id)
-                sql_message.update_back_equipment(sql_str)
+                sql_message.update_back_j(user_id, goods_id)
                 sql_message.updata_user_sec_buff(user_id, goods_id)
                 msg = f"恭喜道友学会神通：{skill_info['name']}！"
         elif skill_type == "功法":
             if int(user_buff_info.main_buff) == int(goods_id):
                 msg = f"道友已学会该功法：{skill_info['name']}，请勿重复学习！"
             else:#学习sql
-                sql_str = get_use_skill_sql(user_id, goods_id)
-                sql_message.update_back_equipment(sql_str)
+                sql_message.update_back_j(user_id, goods_id)
                 sql_message.updata_user_main_buff(user_id, goods_id)
                 msg = f"恭喜道友学会功法：{skill_info['name']}！"
         else:
@@ -260,8 +258,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_info = sql_message.get_user_message(auction['user_id'])
     msg = "本次拍卖会结束！"
     msg += f"恭喜{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
-    sql_message.send_back(auction['user_id'], auction['id'], auction['name'], auction['type'], 1)
-    sql_message.update_ls(auction['user_id'],auction['now_price'],2)
     auction = {}
     await creat_auction.finish(msg)
 
