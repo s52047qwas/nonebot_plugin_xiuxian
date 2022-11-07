@@ -258,6 +258,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_info = sql_message.get_user_message(auction['user_id'])
     msg = "本次拍卖会结束！"
     msg += f"恭喜{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+    sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
+    sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
     auction = {}
     await creat_auction.finish(msg)
 
