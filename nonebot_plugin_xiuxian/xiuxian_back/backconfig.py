@@ -6,7 +6,7 @@ configkey = ["open", "auction_config"]
 CONFIG = {
     "open":[],
     "auction_config":{
-        "auction_id_list":[1999],
+        "auction_id_list":[1999,6001,6011,6031,7001,7002,7003,7011],
         "auction_start_prict":100000,
     }
     

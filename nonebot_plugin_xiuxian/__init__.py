@@ -427,6 +427,8 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             # sql_message.update_user_attribute(user_id, )
             sql_message.update_levelrate(user_id, 0)
             sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
+            # 丹药减少的sql
+            sql_message.update_back_j(user_id, 1999)
             await level_up.finish("恭喜道友突破{}成功".format(le[0]))
         else:
             # 最高境界

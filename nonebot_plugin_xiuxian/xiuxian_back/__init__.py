@@ -258,8 +258,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_info = sql_message.get_user_message(auction['user_id'])
     msg = "本次拍卖会结束！"
     msg += f"恭喜{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
-    sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
-    sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
     auction = {}
     await creat_auction.finish(msg)
 
@@ -286,7 +284,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         price = int(price)
     except ValueError:
         msg = f"请发送正确的灵石数量"
-        await offer_auction.finish(msg, at_sender=True)
+        await offer_auction.finish(m群拍卖行开启sg, at_sender=True)
     
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
