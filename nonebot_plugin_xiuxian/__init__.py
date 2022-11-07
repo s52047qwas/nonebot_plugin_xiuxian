@@ -47,6 +47,8 @@ load_all_plugins(
             f'{src}nonebot_plugin_xiuxian.xiuxian_sect',
             f'{src}nonebot_plugin_xiuxian.xiuxian_info',
             f'{src}nonebot_plugin_xiuxian.xiuxian_buff',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_back',
+            f'{src}nonebot_plugin_xiuxian.xiuxian_rift',
         ],
         [],
     )
@@ -347,7 +349,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
                 elixir_desc = items.get_data_by_item_id(1999)['desc']
                 break
     if pause_flag:
-        msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 使用、不使用或取消来选择突破！本次突破概率为：{level_rate + user_leveluprate}%"
+        msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 使用、不使用或取消来选择是否使用丹药或取消突破！本次突破概率为：{level_rate + user_leveluprate}%"
         await level_up.pause(prompt=msg)
     
     le = OtherSet().get_type(exp, level_rate + user_leveluprate, level_name)

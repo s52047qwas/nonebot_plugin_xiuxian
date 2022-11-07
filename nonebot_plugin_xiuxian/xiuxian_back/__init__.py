@@ -18,11 +18,11 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_use_skill_sql
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
-from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
+from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg, UserBuffDate
 
 items = Items()
 config = get_config()
@@ -47,7 +47,7 @@ __back_help__ = f"""
 1、我的背包、我的物品：查看自身背包信息
 2、使用+物品名字：使用物品
 3、购买+物品名字：购买坊市内的物品
-4、坊市：查询坊市在售物品
+4、坊市：查询坊市在售物品（未实现）
 5、群拍卖行开启、关闭：开启拍卖行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报拍卖行消息
 6、举行拍卖会：管理员指令，会立刻生成一次拍卖会
 7、出价+金额：对本次排行会的物品进行出价
@@ -181,6 +181,30 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.updata_user_armor_buff(user_id, goods_id)
             msg = f"成功装备{arg}！"
             await use.finish(msg, at_sender=True)
+    elif goods_type == "技能":
+        user_buff_info = UserBuffDate(user_id).BuffInfo
+        skill_info = items.get_data_by_item_id(goods_id)
+        skill_type = skill_info['item_type']
+        if skill_type == "神通":
+            if int(user_buff_info.sec_buff) == int(goods_id):
+                msg = f"道友已学会该神通：{skill_info['name']}，请勿重复学习！"
+            else:#学习sql
+                sql_str = get_use_skill_sql(user_id, goods_id)
+                sql_message.update_back_equipment(sql_str)
+                sql_message.updata_user_sec_buff(user_id, goods_id)
+                msg = f"恭喜道友学会神通：{skill_info['name']}！"
+        elif skill_type == "功法":
+            if int(user_buff_info.main_buff) == int(goods_id):
+                msg = f"道友已学会该功法：{skill_info['name']}，请勿重复学习！"
+            else:#学习sql
+                sql_str = get_use_skill_sql(user_id, goods_id)
+                sql_message.update_back_equipment(sql_str)
+                sql_message.updata_user_main_buff(user_id, goods_id)
+                msg = f"恭喜道友学会功法：{skill_info['name']}！"
+        else:
+            msg = "发生未知错误！"
+        
+        await use.finish(msg)
     else:
         await use.finish('该类型物品调试中，未开启！')
             

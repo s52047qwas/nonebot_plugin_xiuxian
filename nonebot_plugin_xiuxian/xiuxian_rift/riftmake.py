@@ -56,22 +56,26 @@ STORY = {
     "宝物":{
         "type_rate":300,
         "功法":{
-            "type_rate":10,
+            "type_rate":25,
         },
         "神通":{
-            "type_rate":10,
+            "type_rate":25,
         },
         "法器":{
-            "type_rate":100,
+            "type_rate":50,
         },
         "防具":{
-            "type_rate":200,
+            "type_rate":50,
         },
+        "灵石":{
+            "type_rate":150,
+            "stone":5000
+        }
     },
     "战斗":{
-        "type_rate":10000,
+        "type_rate":100,
         "Boss战斗":{
-            "type_rate":20000,
+            "type_rate":200,
             "Boss数据":{
                 "name":["墨蛟","婴鲤兽","千目妖","鸡冠蛟","妖冠蛇","铁火蚁","天晶蚁","银光鼠","紫云鹰","狗青"],
                 "hp":[1.2, 1.4, 1.6, 1.8, 2, 3],
@@ -154,10 +158,8 @@ async def get_boss_battle_info(user_info, rift_rank, bot_id):
         sql_message.update_ls(user_info.user_id, give_stone, 1)#负数也挺正常
         msg += f"获得了修为：{give_exp}点，灵石：{give_stone}枚！"
     else:#输了
-
         fail_info = STORY['战斗']['Boss战斗']["fail"]
         msg = fail_info['desc'].format(boss_info["name"])
-
     return result, msg
 
 
@@ -166,22 +168,26 @@ def get_dxsj_info(rift_type, user_info):
     battle_data = STORY['战斗']
     cost_type = get_dict_type_rate(battle_data[rift_type]['cost'])
     value = random.choice(battle_data[rift_type]['cost'][cost_type]['value'])
-    dev_msg = '但是没生效捏'#要删掉的
     if cost_type == "exp":
         exp = int(user_info.exp * value)
-        # sql_message.update_j_exp(user_info.user_id, exp)
-        msg = random.choice(battle_data[rift_type]['desc']).format(f"修为减少了：{exp}点！{dev_msg}")
+        sql_message.update_j_exp(user_info.user_id, exp)
+        
+        nowhp = user_info.hp - (exp / 2) if (user_info.hp - (exp / 2)) > 0 else 1
+        nowmp = user_info.mp - exp if (user_info.mp - exp) > 0 else 1
+        sql_message.update_user_hp_mp(user_info.user_id, nowhp, nowmp)  # 修为掉了，血量、真元也要掉
+        
+        msg = random.choice(battle_data[rift_type]['desc']).format(f"修为减少了：{exp}点！=")
     elif cost_type == "hp":
         cost_hp = int((user_info.exp / 2) * value)
         now_hp = user_info.hp - cost_hp
         if now_hp < 0:
             now_hp = 1
-        # sql_message.update_user_hp_mp(user_info.user_id, now_hp, user_info.mp)
-        msg = random.choice(battle_data[rift_type]['desc']).format(f"气血减少了：{cost_hp}点！{dev_msg}")#要删掉的
+        sql_message.update_user_hp_mp(user_info.user_id, now_hp, user_info.mp)
+        msg = random.choice(battle_data[rift_type]['desc']).format(f"气血减少了：{cost_hp}点！")
     elif cost_type == "stone":
         cost_stone = value
-        # sql_message.update_ls(user_info.user_id, cost_stone, 2)#负数也挺正常
-        msg = random.choice(battle_data[rift_type]['desc']).format(f"灵石减少了：{cost_stone}枚！{dev_msg}")#要删掉的
+        sql_message.update_ls(user_info.user_id, cost_stone, 2)#负数也挺正常
+        msg = random.choice(battle_data[rift_type]['desc']).format(f"灵石减少了：{cost_stone}枚！")
     return msg
 
 
@@ -224,6 +230,15 @@ def get_treasure_info(user_info, rift_rank):
             #背包sql
         else:
             msg = '竟空手而归！'
+    
+    elif rift_type == "灵石":
+        stone_base = STORY['宝物']['灵石']['stone']
+        user_rank = 50 - USERRANK[user_info.level]#50-用户当前等级
+        give_stone = (rift_rank + user_rank) * stone_base
+        sql_message.update_ls(user_info.user_id, give_stone, 1)
+        temp_msg = f"竟然获得了灵石：{give_stone}枚！"
+        msg = random.choice(TREASUREMSG).format(temp_msg)
+    
     return msg
 
 def get_dict_type_rate(data_dict):
