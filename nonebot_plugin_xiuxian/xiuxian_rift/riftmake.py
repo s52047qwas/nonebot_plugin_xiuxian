@@ -324,11 +324,12 @@ def get_main_info(user_level, rift_rank):
     finall_rate = init_rate + rift_rank * 5
     finall_rate = finall_rate if finall_rate <= 100 else 100
     is_success = False
+    main_buff_id = 0
     if random.randint(0, 100) <= finall_rate: #成功
         is_success = True
         main_buff_id = random.choice(main_buff_id_list)
         return is_success, main_buff_id
-    return is_success
+    return is_success, main_buff_id
 
 def get_sec_info(user_level, rift_rank):
     """获取神通的信息"""
@@ -339,11 +340,12 @@ def get_sec_info(user_level, rift_rank):
     finall_rate = init_rate + rift_rank * 5
     finall_rate = finall_rate if finall_rate <= 100 else 100
     is_success = False
+    sec_buff_id = 0
     if random.randint(0, 100) <= finall_rate: #成功
         is_success = True
         sec_buff_id = random.choice(sec_buff_id_list)
         return is_success, sec_buff_id
-    return is_success
+    return is_success, sec_buff_id
 
 def get_skill_by_rank(user_level, rift_rank):
     """根据用户等级、秘境等级随机获取一个技能"""
