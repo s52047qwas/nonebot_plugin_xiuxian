@@ -411,6 +411,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             # 突破失败
             sql_message.updata_level_cd(user_id)  # 更新突破CD
             #todu，丹药减少的sql
+            sql_message.update_back_j(user_id, 1999)
 
             update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
                 level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
