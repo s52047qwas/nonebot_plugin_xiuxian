@@ -181,11 +181,12 @@ def get_item_msg(goods_id):
     return msg
 
 
-def get_shop_data():
+def get_shop_data(group_id):
     try:
         data = read_shop()
     except:
         data = {}
+        data[group_id] = {}
         save_shop(data)
     return data
 
