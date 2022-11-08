@@ -543,7 +543,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
         await offer_auction.finish(msg, at_sender=True)
-    if price < min_price:
+    if price - now_price < min_price:
         msg = f"出价不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}！"
         await offer_auction.finish(msg, at_sender=True)
     
