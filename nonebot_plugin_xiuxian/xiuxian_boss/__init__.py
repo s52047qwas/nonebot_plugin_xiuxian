@@ -19,6 +19,7 @@ from .makeboss import createboss
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
 from ..utils import data_check_conf, send_forward_msg_list
+from ..read_buff import UserBuffDate
 
 config = get_config()
 # 定时任务
@@ -162,12 +163,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
     userinfo = XiuxianDateManage().get_user_real_info(user_id)
+    user_weapon_data = UserBuffDate(userinfo.user_id).get_user_weapon_data()
+    if user_weapon_data != None:
+        player['会心'] = int(user_weapon_data['crit_buff'] * 100)
+    else:
+        player['会心'] = 1
     player['user_id'] = userinfo.user_id
     player['道号'] = userinfo.user_name
     player['气血'] = userinfo.hp
     player['攻击'] = userinfo.atk
     player['真元'] = userinfo.mp
-    player['会心'] = 1
     player['exp'] = userinfo.exp
     
     bossinfo = group_boss[group_id][boss_num - 1]
