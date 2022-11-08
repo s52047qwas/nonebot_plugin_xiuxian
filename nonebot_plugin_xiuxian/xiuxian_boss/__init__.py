@@ -173,7 +173,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['气血'] = userinfo.hp
     player['攻击'] = userinfo.atk
     player['真元'] = userinfo.mp
-    player['会心'] = 1
     player['exp'] = userinfo.exp
     
     bossinfo = group_boss[group_id][boss_num - 1]
