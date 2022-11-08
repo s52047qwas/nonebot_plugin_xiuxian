@@ -82,7 +82,7 @@ async def _():
             return
         else:
             try:
-                auction_id_list = config['auction_config']['auction_id_list']
+                auction_id_list = get_auction_id_list()
                 auction_id = random.choice(auction_id_list)
             except IndexError:
                 msg = "获取不到拍卖物品的信息，请检查配置文件！"
@@ -91,12 +91,12 @@ async def _():
             auction_info = items.get_data_by_item_id(auction_id)
             msg = '本次拍卖的物品为：\n'   
             msg += get_auction_msg(auction_id)
-            msg += f"\n底价为{config['auction_config']['auction_start_prict']}灵石"
+            msg += f"\n底价为{config['auctions']['auction_start_prict']}灵石"
             msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
             msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
             auction['id'] = auction_id
             auction['user_id'] = 0
-            auction['now_price'] = config['auction_config']['auction_start_prict']
+            auction['now_price'] = get_auction_price_by_id(auction_id)['start_price']
             auction['name'] = auction_info['name']
             auction['type'] = auction_info['type']
             auction['start_time'] = datetime.now()
@@ -456,7 +456,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await creat_auction.finish(f'本群已存在一场拍卖会，请等待拍卖会结束！')
     
     try:
-        auction_id_list = config['auction_config']['auction_id_list']
+        auction_id_list = get_auction_id_list()
         auction_id = random.choice(auction_id_list)
     except IndexError:
         msg = "获取不到拍卖物品的信息，请检查配置文件！"
@@ -471,7 +471,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     auction['id'] = auction_id
     auction['user_id'] = 0
-    auction['now_price'] = config['auction_config']['auction_start_prict']
+    auction['now_price'] = get_auction_price_by_id(auction_id)['start_price']
     auction['name'] = auction_info['name']
     auction['type'] = auction_info['type']
     auction['start_time'] = datetime.now()
@@ -536,8 +536,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         msg = f"请发送正确的灵石数量"
         await offer_auction.finish(msg, at_sender=True)
     
+    now_price = auction['now_price']
+    min_price = int(now_price * 0.05)#最低加价5%
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
+        await offer_auction.finish(msg, at_sender=True)
+    if price < min_price:
+        msg = f"出价不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}！"
         await offer_auction.finish(msg, at_sender=True)
     
     global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
@@ -591,6 +596,21 @@ def reset_dict_num(dict):
         temp_dict[i]['编号'] = i
         i += 1
     return temp_dict
+
+def get_auction_id_list():
+    auctions = config['auctions']
+    auction_id_list = []
+    for k, v in auctions.items():
+        auction_id_list.append(v['id'])
+    return auction_id_list
+
+def get_auction_price_by_id(id):
+    auctions = config['auctions']
+    for k, v in auctions.items():
+        if int(v['id']) == id:
+            auction_info = auctions[k]
+            break
+    return auction_info
 
 def is_in_groups(event: GroupMessageEvent):
     return event.group_id in groups
