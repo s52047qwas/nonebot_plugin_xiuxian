@@ -27,7 +27,7 @@ set_rift = require("nonebot_plugin_apscheduler").scheduler
 set_group_rift = on_command("群秘境", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 explore_rift = on_command("探索秘境", priority=5, permission= GROUP)
 rift_help = on_command("秘境帮助", priority=5, permission= GROUP)
-create_rift = on_command("生成秘境", priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+create_rift = on_command("生成秘境", priority=5, permission= GROUP and (SUPERUSER))
 complete_rift = on_command("秘境结算", aliases={"结算秘境"}, priority=5, permission= GROUP)
 break_rift = on_command("秘境探索终止", aliases={"终止探索秘境"}, priority=5, permission= GROUP)
 
@@ -35,7 +35,7 @@ __rift_help__ = f"""
 秘境帮助信息:
 指令：
 1、群秘境开启、关闭：开启本群的秘境生成，管理员权限
-2、生成秘境：生成一个随机秘境，管理员权限
+2、生成秘境：生成一个随机秘境，超管权限
 3、探索秘境：探索秘境获取随机奖励
 4、秘境结算、结算秘境：结算秘境奖励
 5、秘境探索终止、终止探索秘境：终止秘境事件
