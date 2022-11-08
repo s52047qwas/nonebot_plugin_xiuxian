@@ -612,7 +612,7 @@
     "bufftype": 2,
     "buffvalue": 0.75,
     "hpcost": 0,
-    "mpcost": 0.3,
+    "mpcost": 0.4,
     "turncost": 3,
     "desc": "不说了，开鳖!",
     "rate": 100,
@@ -636,7 +636,7 @@
     "skill_type": 1,
     "atkvalue": [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 ],
     "hpcost": 0.2,
-    "mpcost": 0.3,
+    "mpcost": 0.4,
     "turncost": 0,
     "desc": "吔屎啦！",
     "rate": 70,
@@ -654,5 +654,17 @@
     "rate": 10,
     "rank": "天阶上品",
     "level": "21"
+  },
+  "8911": {
+    "name": "大罗仙印",
+    "skill_type": 1,
+    "atkvalue": [ 1.0,2.0,3.0 ],
+    "hpcost": 0.0,
+    "mpcost": 0.4,
+    "turncost": 0,
+    "desc": "吔屎啦！",
+    "rate": 70,
+    "rank": "仙阶上品",
+    "level": "18"
   }
 }
