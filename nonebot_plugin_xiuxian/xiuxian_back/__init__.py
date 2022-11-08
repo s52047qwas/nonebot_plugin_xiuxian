@@ -257,6 +257,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             goods_id = back.goods_id
             goods_type = back.goods_type
             goods_state = back.state
+            goods_num = back.goods_num
             break
     if not in_flag:
         msg = f"请检查该道具 {goods_name} 是否在背包内！"
@@ -282,7 +283,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     except IndexError:
         pass
     
-    if goods_type == "装备" and int(goods_state) == 1:
+    if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
         await shop_added.finish(msg, at_sender=True)
     
