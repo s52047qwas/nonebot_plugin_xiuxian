@@ -35,7 +35,7 @@ boss_time = config["Boss生成时间参数"]
 __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
-1、生成世界boss：生成一只随机大境界的世界Boss,管理员权限
+1、生成世界boss：生成一只随机大境界的世界Boss,超管权限
 2、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
 3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
 4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
