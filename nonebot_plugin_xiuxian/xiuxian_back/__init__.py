@@ -71,13 +71,12 @@ __back_help__ = f"""
 
 # 定时任务生成拍卖会
 @set_auction_by_scheduler.scheduled_job("interval", 
-                       hours=2, 
+                       hours=1, 
                        minutes=0)
 async def _():
     bot = get_bot()
     if groups != []:
         if auction == {}:
-            global auction
             try:
                 if auction != {}:
                     try:
