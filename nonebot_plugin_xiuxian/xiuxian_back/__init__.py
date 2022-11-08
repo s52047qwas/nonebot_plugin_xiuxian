@@ -72,7 +72,7 @@ __back_help__ = f"""
 
 # 定时任务生成拍卖会
 @set_auction_by_scheduler.scheduled_job("cron", 
-                       hours=auction_time_config['hours'])
+                       hour=auction_time_config['hours'])
 async def _():
     bot = get_bot()
     if groups != []:
