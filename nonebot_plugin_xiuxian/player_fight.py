@@ -21,19 +21,6 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
     user2_main_buff_data = user2_buff_date.get_user_main_buff_data()
     user2_hp_buff = user2_main_buff_data['hpbuff'] if user2_main_buff_data != None else 0
     user2_mp_buff = user2_main_buff_data['mpbuff'] if user2_main_buff_data != None else 0
-
-    user1_armor_data = UserBuffDate(player1['user_id']).get_user_armor_buff_data()
-    if user1_armor_data != None:
-        user1_def_buff = user1_armor_data['def_buff']
-    else:
-        user1_def_buff = 0
-
-    user2_armor_data = UserBuffDate(player2['user_id']).get_user_armor_buff_data()
-    if user2_armor_data != None:
-        user2_def_buff = user2_armor_data['def_buff']
-    else:
-        user2_def_buff = 0
-
     # 有技能，则开启技能模式
 
     player1_skil_open = False
@@ -57,8 +44,8 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
 
     player1_turn_cost = 0  # 先设定为初始值 0
     player2_turn_cost = 0  # 先设定为初始值 0
-    player1_f_js = round(1 - user1_def_buff, 2) #初始减伤率
-    player2_f_js = round(1 - user2_def_buff, 2)#初始减伤率
+    player1_f_js = get_user_def_buff(player1['user_id'])
+    player2_f_js = get_user_def_buff(player2['user_id'])
     player1_js = player1_f_js
     player2_js = player2_f_js
     user1_skill_sh = 0
@@ -116,7 +103,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                 play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                                 player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
                                 play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
-                                player1_js = player1_f_js - user1_skill_sh
+                                player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
 
                         elif user1_skill_type == 4:  # 封印类技能
                             play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
@@ -183,7 +170,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                             play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                             player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
-                            player1_js = player2_f_js - user1_skill_sh
+                            player1_js = player1_f_js - user1_skill_sh if player2_f_js - user1_skill_sh > 0.1 else 0.1
 
                     elif user1_skill_type == 4:  # 封印类技能
                         player1_turn_cost = player1_turn_cost - 1
@@ -287,7 +274,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                 play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                                 player1['气血'] = player1['气血'] - int(player2_sh * player1_js)
                                 play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
-                                player2_js = player2_f_js - user2_skill_sh
+                                player2_js = player2_f_js - user2_skill_sh if player2_f_js - user2_skill_sh > 0.1 else 0.1
                                 player2 = calculate_skill_cost(player2, user2_hp_cost, user2_mp_cost)
 
 
@@ -356,7 +343,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                             player1['气血'] = player1['气血'] - int(player2_sh * player1_js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
-                            player2_js = player2_f_js - user2_skill_sh
+                            player2_js = player2_f_js - user2_skill_sh  if player2_f_js - user2_skill_sh > 0.1 else 0.1
 
                     elif user2_skill_type == 4:  # 封印类技能
                         player2_turn_cost = player2_turn_cost - 1
@@ -443,12 +430,6 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
         user1_skill_date = user1_buff_date.get_user_sec_buff_data()
         player1_skil_open = True
 
-    user1_armor_data = UserBuffDate(player1['user_id']).get_user_armor_buff_data()
-    if user1_armor_data != None:
-        user1_def_buff = user1_armor_data['def_buff']
-    else:
-        user1_def_buff = 0
-
     play_list = []
     player_init_hp = player1['气血']
     suc = None
@@ -458,7 +439,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
     user1_turn_skip = True
     boss_turn_skip = True
     player1_turn_cost = 0  # 先设定为初始值 0
-    player1_f_js = round(1 - user1_def_buff, 2) #初始减伤率
+    player1_f_js = get_user_def_buff(player1['user_id'])
     player1_js = player1_f_js  # 减伤率
     boss['减伤'] = 1  # boss减伤率
     user1_skill_sh = 0
@@ -705,6 +686,14 @@ def get_msg_dict(player, player_init_hp, msg):
 
 def get_boss_dict(boss, boss_init_hp, msg, bot_id):
     return {"type": "node", "data": {"name": f"{boss['name']}当前血量：{int(boss['气血'])} / {int(boss_init_hp)}", "uin": int(bot_id), "content": msg}}
+
+def get_user_def_buff(user_id):
+    user_armor_data = UserBuffDate(user_id).get_user_armor_buff_data()
+    if user_armor_data != None:
+        def_buff = user_armor_data['def_buff']
+    else:
+        def_buff = 0
+    return round(1 - def_buff, 2)#初始减伤率
 
 
 def get_turnatk(player, buff=0):
