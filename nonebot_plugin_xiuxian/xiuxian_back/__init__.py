@@ -28,7 +28,12 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群拍卖行使用
 auction = {}
-AUCTIONSLEEPTIME = 1800
+AUCTIONSLEEPTIME = 60#拍卖初始等待时间（秒）
+
+auction_offer_flag = False #出价标志
+AUCTIONOFFERSLEEPTIME = 10#每次出价增加拍卖剩余的时间（秒）
+auction_offer_time_count = 0 #计算剩余时间
+auction_offer_all_count = 0 #控制线程等待时间
 
 shop = on_command("坊市", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP)
@@ -243,10 +248,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     auction['name'] = auction_info['name']
     auction['type'] = auction_info['type']
     auction['start_time'] = datetime.now()
+    auction['group_id'] = group_id
     
     for group_id in groups:
         await bot.send_group_msg(group_id=int(group_id), message=msg)
-    await asyncio.sleep(AUCTIONSLEEPTIME)
+    await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
+    
+    global auction_offer_flag
+    while auction_offer_flag:#有人出价
+        global auction_offer_all_count
+        if auction_offer_all_count == 0:
+            auction_offer_flag = False
+            break
+        first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
+        auction_offer_all_count = 0
+        await asyncio.sleep(first_time)
     
     if auction['user_id'] == 0:
         msg = "很可惜，本次拍卖会流拍了！"
@@ -257,10 +273,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     user_info = sql_message.get_user_message(auction['user_id'])
     msg = "本次拍卖会结束！"
-    msg += f"恭喜{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+    msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+    for group_id in groups:
+        await bot.send_group_msg(group_id=int(group_id), message=msg)
+        
     sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
     sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
     auction = {}
+    global auction_offer_time_count
+    auction_offer_time_count = 0
     await creat_auction.finish(msg)
 
 
@@ -292,15 +313,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
         await offer_auction.finish(msg, at_sender=True)
     
+    global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
+    auction_offer_flag = True#有人出价
+    auction_offer_time_count += 1
+    auction_offer_all_count += 1
     auction['user_id'] = user_info.user_id
     auction['now_price'] = price
+    auction['group_id'] = group_id
     now_time = datetime.now()
     dif_time = OtherSet().date_diff(now_time, auction['start_time'])
-    msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！竞拍剩余时间：{int(AUCTIONSLEEPTIME - dif_time)}秒"
-    
+    msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！" \
+        f"竞拍时间增加：{AUCTIONOFFERSLEEPTIME}秒，竞拍剩余时间：{int(AUCTIONSLEEPTIME - dif_time + AUCTIONOFFERSLEEPTIME * auction_offer_time_count)}秒"
     for group_id in groups:
         await bot.send_group_msg(group_id=int(group_id), message=msg)
         
+    await offer_auction.finish()
 
 @set_auction.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

@@ -392,6 +392,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
 
 @command.level_up.handle()
 async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = EventPlainText()):
+    await data_check_conf(bot, event)
     if mode not in ['使用', '不使用', '取消']:
         await level_up.reject(prompt="指令错误，应该为 使用、不使用或取消！")
     user_id, group_id, user_msg = await data_check(bot, event)
