@@ -952,12 +952,13 @@ class XiuxianDateManage:
         cur.execute(sql_str)
         self.conn.commit()
         
-    def update_back_j(self, user_id, goods_id, num=1):
+    def update_back_j(self, user_id, goods_id, num=1, all_num=0):
         """使用物品，减少数量默认1"""
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
         goods_num = back.goods_num - num
+        all_num = back.all_num - all_num
         now_time = datetime.datetime.now()
-        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num} WHERE user_id={user_id} and goods_id={goods_id}"
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},all_num={all_num} WHERE user_id={user_id} and goods_id={goods_id}"
         cur = self.conn.cursor()
         cur.execute(sql_str)
         self.conn.commit()

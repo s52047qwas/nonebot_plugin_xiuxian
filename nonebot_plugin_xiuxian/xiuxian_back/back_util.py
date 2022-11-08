@@ -1,8 +1,10 @@
 from ..item_json import Items
 from ..xiuxian2_handle import XiuxianDateManage
 from ..read_buff import UserBuffDate, get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
-from .backconfig import get_config
 from datetime import datetime
+import json
+import os
+from pathlib import Path
 
 items = Items()
 sql_message = XiuxianDateManage()
@@ -150,3 +152,54 @@ def get_elixir_msg(l_msg, goods_id, goods_num):
     msg += f"拥有数量：{goods_num}"
     l_msg.append(msg)
     return l_msg
+
+def get_item_msg(goods_id):
+    """
+    获取单个物品的消息
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    if item_info['type'] == '丹药':
+        msg = f"名字：{item_info['name']}\n"
+        msg +=f"效果：{item_info['desc']}"
+        
+    elif item_info['item_type'] == '神通':
+        msg = f"名字：{item_info['name']}\n"
+        msg += f"品阶：{item_info['level']}\n"
+        msg += f"效果：{get_sec_msg(item_info)}"
+    
+    elif item_info['item_type'] == '功法':
+        msg = f"名字：{item_info['name']}\n"
+        msg += f"品阶：{item_info['level']}\n"
+        msg += f"效果：{get_main_info_msg(goods_id)[1]}"
+        
+    
+    elif item_info['item_type'] == '防具':
+        msg = get_armor_info_msg(goods_id, item_info)
+        
+    elif item_info['item_type'] == '法器':
+        msg = get_weapon_info_msg(goods_id, item_info)
+    return msg
+
+
+def get_shop_data():
+    try:
+        data = read_shop()
+    except:
+        data = {}
+        save_shop(data)
+    return data
+
+PATH = Path(__file__).parent
+FILEPATH = PATH / 'shop.json'
+def read_shop():
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
+
+
+def save_shop(data):
+    data = json.dumps(data, ensure_ascii=False, indent=4)
+    savemode = "w" if os.path.exists(FILEPATH) else "x"
+    with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
+        f.write(data)
+    return True
