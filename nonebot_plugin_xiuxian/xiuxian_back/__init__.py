@@ -511,7 +511,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     auction = {}
     global auction_offer_time_count
     auction_offer_time_count = 0
-    await creat_auction.finish(msg)
+    await creat_auction.finish()
 
 
 @offer_auction.handle()
