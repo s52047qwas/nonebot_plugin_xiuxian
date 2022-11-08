@@ -609,7 +609,7 @@ def get_auction_id_list():
 def get_auction_price_by_id(id):
     auctions = config['auctions']
     for k, v in auctions.items():
-        if int(v['id']) == id:
+        if int(v['id']) == int(id):
             auction_info = auctions[k]
             break
     return auction_info
