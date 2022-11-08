@@ -518,5 +518,35 @@
     "desc": "",
     "rank": "天阶上品",
     "level": "21"
+  },
+  "9910": {
+    "name": "元磁神光",
+    "hpbuff": 0.9,
+    "mpbuff": 0.9,
+    "atkbuff": 0.9,
+    "ratebuff": 0.9,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
+  },
+  "9911": {
+    "name": "天罗真功",
+    "hpbuff": 2.0,
+    "mpbuff": 2.0,
+    "atkbuff": 0.8,
+    "ratebuff": 0.8,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
+  },
+  "9912": {
+    "name": "托天魔功",
+    "hpbuff": 0.6,
+    "mpbuff": 0.6,
+    "atkbuff": 0.8,
+    "ratebuff": 1.0,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
   }
 }
