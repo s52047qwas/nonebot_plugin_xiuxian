@@ -89,14 +89,15 @@ async def _():
                 logger.info(msg)
                 return
             auction_info = items.get_data_by_item_id(auction_id)
+            start_price = get_auction_price_by_id(auction_id)['start_price']
             msg = '本次拍卖的物品为：\n'   
             msg += get_auction_msg(auction_id)
-            msg += f"\n底价为{config['auctions']['auction_start_prict']}灵石"
+            msg += f"\n底价为{start_price}灵石"
             msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
             msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
             auction['id'] = auction_id
             auction['user_id'] = 0
-            auction['now_price'] = get_auction_price_by_id(auction_id)['start_price']
+            auction['now_price'] = start_price
             auction['name'] = auction_info['name']
             auction['type'] = auction_info['type']
             auction['start_time'] = datetime.now()
@@ -463,15 +464,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await creat_auction.finish(msg, at_sender=True)
     
     auction_info = items.get_data_by_item_id(auction_id)
+    start_price = get_auction_price_by_id(auction_id)['start_price']
     msg = '本次拍卖的物品为：\n'   
     msg += get_auction_msg(auction_id)
-    msg += f"\n底价为{config['auction_config']['auction_start_prict']}灵石"
+    msg += f"\n底价为{start_price}灵石"
     msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
     msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
     
     auction['id'] = auction_id
     auction['user_id'] = 0
-    auction['now_price'] = get_auction_price_by_id(auction_id)['start_price']
+    auction['now_price'] = start_price
     auction['name'] = auction_info['name']
     auction['type'] = auction_info['type']
     auction['start_time'] = datetime.now()
