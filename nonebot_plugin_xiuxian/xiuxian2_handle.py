@@ -896,6 +896,12 @@ class XiuxianDateManage:
         cur.execute(sql, (id, user_id,))
         self.conn.commit()
     
+    def day_num_reset(self):
+        """重置丹药每日使用次数"""
+        sql = f"UPDATE back SET day_num=0 where goods_type='丹药'"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        self.conn.commit()
     
     def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num):
         """
@@ -917,17 +923,16 @@ class XiuxianDateManage:
         if result:
             # 判断是否存在，存在则update
             goods_nums = int(result[0]) + goods_num
-            all_num = int(result[1]) + goods_num
-            sql = f"UPDATE back set goods_num=?, all_num=?,update_time=? WHERE user_id=? and goods_id=?"
-            cur.execute(sql, (goods_nums, all_num, now_time, user_id, goods_id))
+            sql = f"UPDATE back set goods_num=?,update_time=? WHERE user_id=? and goods_id=?"
+            cur.execute(sql, (goods_nums, now_time, user_id, goods_id))
             self.conn.commit()
         else:
             # 判断是否存在，不存在则INSERT
             all_num = goods_num
             sql = """
-                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, all_num, create_time, update_time)
-            VALUES (?,?,?,?,?,?,?,?)"""
-            cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, all_num, now_time, now_time))
+                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time)
+            VALUES (?,?,?,?,?,?,?)"""
+            cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time))
             self.conn.commit()
             
     def get_item_by_good_id_and_user_id(self, user_id, goods_id):
@@ -952,13 +957,21 @@ class XiuxianDateManage:
         cur.execute(sql_str)
         self.conn.commit()
         
-    def update_back_j(self, user_id, goods_id, num=1, all_num=0):
-        """使用物品，减少数量默认1"""
+    def update_back_j(self, user_id, goods_id, num=1):
+        """
+        使用物品
+        :减少数量 num 默认1
+        """
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
+        if back.goods_type == "丹药":#丹药要判断耐药性、日使用上限
+            day_num = back.day_num + num
+            all_num = back.all_num + num
+        else:
+            day_num = back.day_num
+            all_num = back.all_num
         goods_num = back.goods_num - num
-        all_num = back.all_num - all_num
         now_time = datetime.datetime.now()
-        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},all_num={all_num} WHERE user_id={user_id} and goods_id={goods_id}"
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},day_num={day_num},all_num={all_num} WHERE user_id={user_id} and goods_id={goods_id}"
         cur = self.conn.cursor()
         cur.execute(sql_str)
         self.conn.commit()

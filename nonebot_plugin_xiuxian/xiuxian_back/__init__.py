@@ -18,7 +18,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -28,7 +28,7 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群拍卖行使用
 auction = {}
-AUCTIONSLEEPTIME = 60#拍卖初始等待时间（秒）
+AUCTIONSLEEPTIME = 120#拍卖初始等待时间（秒）
 
 auction_offer_flag = False #出价标志
 AUCTIONOFFERSLEEPTIME = 10#每次出价增加拍卖剩余的时间（秒）
@@ -38,6 +38,7 @@ auction_offer_all_count = 0 #控制线程等待时间
 
 # 定时任务
 set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
+reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 shop = on_command("坊市查看", aliases={'查看坊市'}, priority=5)
 shop_added = on_command("坊市上架", priority=5)
@@ -69,6 +70,17 @@ __back_help__ = f"""
 1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
 """.strip()
 
+# 重置丹药每日使用次数
+@reset_day_num_scheduler.scheduled_job(
+    "cron",
+    hour=0,
+    minute=0,
+)
+async def _():
+    sql_message.day_num_reset()
+    logger.info("每日丹药使用次数重置成功！")
+    
+
 # 定时任务生成拍卖会
 @set_auction_by_scheduler.scheduled_job("cron", 
                        hour=auction_time_config['hours'])
@@ -81,21 +93,22 @@ async def _():
             return
         else:
             try:
-                auction_id_list = config['auction_config']['auction_id_list']
+                auction_id_list = get_auction_id_list()
                 auction_id = random.choice(auction_id_list)
             except IndexError:
                 msg = "获取不到拍卖物品的信息，请检查配置文件！"
                 logger.info(msg)
                 return
             auction_info = items.get_data_by_item_id(auction_id)
+            start_price = get_auction_price_by_id(auction_id)['start_price']
             msg = '本次拍卖的物品为：\n'   
             msg += get_auction_msg(auction_id)
-            msg += f"\n底价为{config['auction_config']['auction_start_prict']}灵石"
+            msg += f"\n底价为{start_price}灵石"
             msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
             msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
             auction['id'] = auction_id
             auction['user_id'] = 0
-            auction['now_price'] = config['auction_config']['auction_start_prict']
+            auction['now_price'] = start_price
             auction['name'] = auction_info['name']
             auction['type'] = auction_info['type']
             auction['start_time'] = datetime.now()
@@ -300,7 +313,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     shop_data[group_id][id]['desc'] = get_item_msg(goods_id)
     shop_data[group_id][id]['price'] = price
     shop_data[group_id][id]['user_name'] = user_info.user_name
-    sql_message.update_back_j(user_id, goods_id, all_num = 1)
+    sql_message.update_back_j(user_id, goods_id)
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
     await shop_added.finish(msg)
@@ -438,6 +451,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             msg = "发生未知错误！"
         
         await use.finish(msg)
+    elif goods_type == "丹药":
+        msg = check_use_elixir(user_id, goods_id)
+        await use.finish(msg)
     else:
         await use.finish('该类型物品调试中，未开启！')
         
@@ -455,22 +471,23 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await creat_auction.finish(f'本群已存在一场拍卖会，请等待拍卖会结束！')
     
     try:
-        auction_id_list = config['auction_config']['auction_id_list']
+        auction_id_list = get_auction_id_list()
         auction_id = random.choice(auction_id_list)
     except IndexError:
         msg = "获取不到拍卖物品的信息，请检查配置文件！"
         await creat_auction.finish(msg, at_sender=True)
     
     auction_info = items.get_data_by_item_id(auction_id)
+    start_price = get_auction_price_by_id(auction_id)['start_price']
     msg = '本次拍卖的物品为：\n'   
     msg += get_auction_msg(auction_id)
-    msg += f"\n底价为{config['auction_config']['auction_start_prict']}灵石"
+    msg += f"\n底价为{start_price}灵石"
     msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
     msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
     
     auction['id'] = auction_id
     auction['user_id'] = 0
-    auction['now_price'] = config['auction_config']['auction_start_prict']
+    auction['now_price'] = start_price
     auction['name'] = auction_info['name']
     auction['type'] = auction_info['type']
     auction['start_time'] = datetime.now()
@@ -508,7 +525,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     auction = {}
     global auction_offer_time_count
     auction_offer_time_count = 0
-    await creat_auction.finish(msg)
+    await creat_auction.finish()
 
 
 @offer_auction.handle()
@@ -535,8 +552,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         msg = f"请发送正确的灵石数量"
         await offer_auction.finish(msg, at_sender=True)
     
+    now_price = auction['now_price']
+    min_price = int(now_price * 0.05)#最低加价5%
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
+        await offer_auction.finish(msg, at_sender=True)
+    if price - now_price < min_price:
+        msg = f"出价不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}！"
         await offer_auction.finish(msg, at_sender=True)
     
     global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
@@ -591,6 +613,21 @@ def reset_dict_num(dict):
         i += 1
     return temp_dict
 
+def get_auction_id_list():
+    auctions = config['auctions']
+    auction_id_list = []
+    for k, v in auctions.items():
+        auction_id_list.append(v['id'])
+    return auction_id_list
+
+def get_auction_price_by_id(id):
+    auctions = config['auctions']
+    for k, v in auctions.items():
+        if int(v['id']) == int(id):
+            auction_info = auctions[k]
+            break
+    return auction_info
+
 def is_in_groups(event: GroupMessageEvent):
     return event.group_id in groups
 
@@ -612,7 +649,7 @@ def get_auction_msg(auction_id):
             msg += get_main_info_msg(auction_id)[1]
     
     if _type == "丹药":
-        msg = f"名字：{item_info['name']}"
+        msg = f"名字：{item_info['name']}\n"
         msg += f"效果:{item_info['desc']}"
     
     return msg

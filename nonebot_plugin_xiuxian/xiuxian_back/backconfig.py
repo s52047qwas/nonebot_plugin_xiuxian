@@ -2,12 +2,38 @@ import json
 import os
 from pathlib import Path
 
-configkey = ["open", "auction_config", "拍卖会定时参数"]
+configkey = ["open", "拍卖会定时参数", "auctions"]
 CONFIG = {
     "open":[],
-    "auction_config":{
-        "auction_id_list":[1999,6001,6011,6031,7001,7002,7003,7011],#之后会修改
-        "auction_start_prict":100000,
+    "auctions":{
+        "渡厄丹":{
+            "id":1999,
+            "start_price":100000,
+        },
+        "冰心丹":{
+            "id":1500,
+            "start_price":50000,
+        },
+        "明心丹":{
+            "id":1501,
+            "start_price":100000,
+        },
+        "幻心玄丹":{
+            "id":1502,
+            "start_price":120000,
+        },
+        "鬼面炼心丹":{
+            "id":1503,
+            "start_price":150000,
+        },
+        "少阴清灵丹":{
+            "id":1504,
+            "start_price":180000,
+        },
+        "天命炼心丹":{
+            "id":1505,
+            "start_price":200000,
+        },
     },
     "拍卖会定时参数":{#拍卖会生成的时间，每天的10-15点
         "hours":"10-15"
