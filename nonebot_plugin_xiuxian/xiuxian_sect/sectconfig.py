@@ -77,7 +77,7 @@ CONFIG = {
                 },
                 "give_level":{
                     "give_num":1,#每日领取的丹药数量
-                    "rank_up":1#rank增幅等级，影响丹药获取品质，目前高于6会无法获得丹药
+                    "rank_up":0#rank增幅等级，影响丹药获取品质，目前高于6会无法获得丹药
                 }
             },
             "2":{
@@ -88,7 +88,7 @@ CONFIG = {
                 },
                 "give_level":{
                     "give_num":2,
-                    "rank_up":2
+                    "rank_up":1
                 }
             },
             "3":{
@@ -99,7 +99,7 @@ CONFIG = {
                 },
                 "give_level":{
                     "give_num":3,
-                    "rank_up":3
+                    "rank_up":1
                 }
             },
             "4":{
@@ -110,7 +110,7 @@ CONFIG = {
                 },
                 "give_level":{
                     "give_num":4,
-                    "rank_up":4
+                    "rank_up":1
                 }
             },
             "5":{
@@ -121,7 +121,7 @@ CONFIG = {
                 },
                 "give_level":{
                     "give_num":5,
-                    "rank_up":5
+                    "rank_up":1
                 }
             }
         }
