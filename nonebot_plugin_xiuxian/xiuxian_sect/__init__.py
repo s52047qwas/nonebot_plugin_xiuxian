@@ -12,7 +12,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.params import CommandArg, RegexGroup
 from ..data_source import jsondata
-from ..xiuxian_config import XiuConfig
+from ..xiuxian_config import XiuConfig, USERRANK
 from ..utils import Txt2Img
 import re
 from .sectconfig import get_config
@@ -49,6 +49,8 @@ sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通
 sect_secbuff_learn = on_command("学习宗门神通", priority=5)
 sect_buff_info = on_command("宗门功法查看", aliases={"查看宗门功法"}, priority=5)
 sect_users = on_command("宗门成员查看", aliases={"查看宗门成员"}, priority=5)
+sect_elixir_room_make = on_command("宗门丹房建设", aliases={"建设宗门丹房"}, priority=5)
+sect_elixir_get = on_command("宗门丹药领取", aliases={"领取宗门丹药领取"}, priority=5)
 
 
 __sect_help__ = f"""
@@ -60,7 +62,7 @@ __sect_help__ = f"""
 5、宗门捐献：建设宗门，提高宗门建设度，每{config["等级建设度"]}建设度会提高1级攻击修炼等级上限
 6、退出宗门：退出当前宗门
 7、踢出宗门：踢出对应宗门成员
-8、宗门传位：宗主可以传位宗门成员
+8、宗主传位：宗主可以传位宗门成员
 9、升级攻击修炼：升级道友的攻击修炼等级，每级修炼等级提升10%攻击力
 10、宗门列表：查看所有宗门列表
 11、宗门任务接取、我的宗门任务：接取宗门任务，可以增加宗门建设度和资材，每日上限：{config["每日宗门任务次上限"]}次
@@ -70,6 +72,8 @@ __sect_help__ = f"""
 15、学习宗门功法、神通：宗门成员可消耗宗门资材来学习宗门功法或者神通，后接功法名称
 16、宗门功法查看：查看当前宗门已有的功法
 17、宗门成员查看、查看宗门成员：查看所在宗门的成员信息
+18、宗门丹房建设、建设宗门丹房：建设宗门丹房，可以让每个宗门成员每日领取丹药
+19、宗门丹药领取、领取宗门丹药领取：领取宗门丹药
 非指令：
 1、拥有定时任务：每日{config["发放宗门资材"]["时间"]}点发放{config["发放宗门资材"]["倍率"]}倍对应宗门建设度的资材
 """.strip()
@@ -101,12 +105,113 @@ async def _():
     logger.info('已更新所有宗门的资材')
 
 
-#每日0点重置用户宗门任务次数
+#每日0点重置用户宗门任务次数、宗门丹药领取次数
 @resetusertask.scheduled_job("cron", hour=0, minute=0)
 async def _():
     sql_message.sect_task_reset()
-    logger.info('已重置用户宗门任务次数')
+    sql_message.sect_elixir_get_num_reset()
+    logger.info('已重置用户宗门任务次数、宗门丹药领取次数')
 
+@sect_elixir_room_make.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_elixir_room_make.finish(msg, at_sender=True)
+    sect_id = user_info.sect_id
+    if sect_id:
+        sect_position = user_info.sect_position
+        owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "宗主"]
+        owner_position = int(owner_idx[0]) if len(owner_idx) == 1 else 0
+        if sect_position == owner_position:
+            elixir_room_config = config['宗门丹房参数']
+            elixir_room_level_up_config = elixir_room_config['elixir_room_level']
+            sect_info = sql_message.get_sect_info(sect_id)
+            elixir_room_level = sect_info.elixir_room_level#宗门丹房等级
+            if int(elixir_room_level) == len(elixir_room_level_up_config):
+                msg = f"宗门丹房等级已经达到最高等级，无法继续建设了！"
+                await sect_elixir_room_make.finish(msg, at_sender=True)
+            to_up_level = int(elixir_room_level) + 1
+            elixir_room_level_up_sect_scale_cost = elixir_room_level_up_config[str(to_up_level)]['level_up_cost']['建设度']
+            elixir_room_level_up_use_stone_cost = elixir_room_level_up_config[str(to_up_level)]['level_up_cost']['stone']
+            if elixir_room_level_up_use_stone_cost > int(sect_info.sect_used_stone):
+                msg = f"宗门可用灵石不满足升级条件，当前升级需要消耗宗门灵石：{elixir_room_level_up_use_stone_cost}枚！"
+                await sect_elixir_room_make.finish(msg, at_sender=True)
+            elif elixir_room_level_up_sect_scale_cost > int(sect_info.sect_scale):
+                msg = f"宗门建设度不满足升级条件，当前升级需要消耗宗门建设度：{elixir_room_level_up_sect_scale_cost}点！"
+                await sect_elixir_room_make.finish(msg, at_sender=True)
+            else:
+                msg = f"宗门消耗：{elixir_room_level_up_sect_scale_cost}建设度，{elixir_room_level_up_use_stone_cost}宗门灵石\n"
+                msg += f"成功升级宗门丹房，当前丹房为：{elixir_room_level_up_config[str(to_up_level)]['name']}！"
+                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - elixir_room_level_up_use_stone_cost, sect_info.sect_scale - elixir_room_level_up_sect_scale_cost)
+                sql_message.update_sect_elixir_room_level(sect_id, to_up_level)
+                await sect_elixir_room_make.finish(msg, at_sender=True)
+        else:
+            await sect_elixir_room_make.finish(f"道友不是宗主，无法使用该命令！", at_sender=True)
+    else:
+        await sect_elixir_room_make.finish(f"道友尚未加入宗门！", at_sender=True)
+        
+@sect_elixir_get.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await sect_elixir_get.finish(msg, at_sender=True)
+
+    sect_id = user_info.sect_id
+    if sect_id:
+        sect_position = user_info.sect_position
+        elixir_room_config = config['宗门丹房参数']
+        if sect_position == 4:
+            await sect_elixir_get.finish(f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足学习!", at_sender=True)
+        else:
+            sect_info = sql_message.get_sect_info(sect_id)
+            if int(sect_info.elixir_room_level)  == 0:
+                msg = f"道友的宗门目前还未建设丹房！"
+                await sect_elixir_get.finish(msg, at_sender=True)
+            if int(user_info.sect_contribution) < elixir_room_config['领取贡献度要求']:
+                msg = f"道友的宗门贡献度不满足领取条件，当前宗门贡献度要求：{elixir_room_config['领取贡献度要求']}点！"
+                await sect_elixir_get.finish(msg, at_sender=True)
+            if int(user_info.sect_elixir_get) == 1:
+                msg = f"道友已经领取过了，不要贪心哦~"
+                await sect_elixir_get.finish(msg, at_sender=True)
+            if int(sect_info.elixir_room_level)  == 1:
+                msg = f"\n道友成功领取到丹药：渡厄丹！"
+                sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 1)#1级丹房送1个渡厄丹
+                await sect_elixir_get.finish(msg, at_sender=True)
+            else:
+                elixir_room_level_up_config = elixir_room_config['elixir_room_level']
+                sect_now_room_config = elixir_room_level_up_config[str(sect_info.elixir_room_level)]
+                give_num = sect_now_room_config['give_level']['give_num'] - 1
+                rank_up = sect_now_room_config['give_level']['rank_up']
+                give_dict = {}
+                give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(fanil_rank=USERRANK[user_info.level] - rank_up, item_type = ['丹药'])
+                if give_elixir_id_list == []:#没有合适的ID，全部给渡厄丹
+                    msg = f"道友成功领取到丹药：渡厄丹 {give_num + 1} 枚！"
+                    sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", give_num + 1)#送1个渡厄丹
+                    await sect_elixir_get.finish(msg, at_sender=True)
+                i = 1
+                while i <= give_num:
+                    id = random.choice(give_elixir_id_list)
+                    if int(id) == 1999:#不给渡厄丹了
+                        continue
+                    else:
+                        try:
+                            give_dict[id] += 1
+                            i += 1
+                        except:
+                            give_dict[id] = 1
+                            i += 1
+                msg = f"\n道友成功领取到丹药：渡厄丹 1 枚！\n"
+                sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 1)#送1个渡厄丹
+                for k, v in give_dict.items():
+                    goods_info = items.get_data_by_item_id(k)
+                    msg += f"道友成功领取到丹药：{goods_info['name']} {v} 枚！\n"
+                    sql_message.send_back(user_info.user_id, k, goods_info['name'], '丹药', v)
+                sql_message.update_user_sect_elixir_get_num(user_info.user_id)
+                await sect_elixir_get.finish(msg, at_sender=True)
+    else:
+        await sect_elixir_get.finish(f"道友尚未加入宗门！", at_sender=True)
 
 @sect_buff_info.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -416,10 +521,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     """查看所在宗门成员信息"""
     await data_check_conf(bot, event)
     
+    msg = ''
+    msg_list = []
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await sect_users.finish(msg)
-        
+
     if user_info:
         sect_id = user_info.sect_id
         if sect_id:
@@ -429,12 +536,14 @@ async def _(bot: Bot, event: GroupMessageEvent):
             i = 1
             for user in userlist:
                 msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}\n"
+                msg_list.append(
+                    f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}")
                 i += 1
         else:
-            msg = "一介散修，莫要再问。"              
+            msg_list.append("一介散修，莫要再问。")
     else:
-        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
-    await sect_users.finish(msg)
+        msg_list.append("未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!")
+    await send_forward_msg(bot, event, '宗门成员', bot.self_id, msg_list)
 
 
 @sect_task.handle()
@@ -492,8 +601,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
-            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone))
+            msg = f"道友大战一番，气血减少：{costhp}，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg, at_sender=True)
@@ -511,8 +620,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.donate_update(userinfo.sect_id, sect_stone)
             sql_message.update_sect_materials(sect_id, sect_stone * 10, 1)
             sql_message.update_user_sect_task(user_id, 1)
-            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone / 10))
-            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone / 10)}"
+            sql_message.update_user_sect_contribution(user_id, userinfo.sect_contribution + int(sect_stone))
+            msg = f"道友为了完成任务购买宝物消耗灵石：{costls}枚，获得修为：{get_exp}，所在宗门建设度增加：{sect_stone}，资材增加：{sect_stone * 10}, 宗门贡献度增加：{int(sect_stone)}"
             userstask[user_id] = {}
             add_cd(event, config['宗门任务完成cd'], '宗门任务')
             await sect_task_complete.finish(msg, at_sender=True)
@@ -790,6 +899,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
         return
 
     if mess:
+        elixir_room_level_up_config = config['宗门丹房参数']['elixir_room_level']
         sect_id = mess.sect_id
         sect_position = mess.sect_position
         user_name = mess.user_name
@@ -799,6 +909,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
         if sect_id:
             _, sql_res = sql_message.scale_top()
             top_idx_list = [_[0] for _ in sql_res]
+            if int(sect_info.elixir_room_level) == 0:
+                elixir_room_name = "暂无"
+            else:
+                elixir_room_name= elixir_room_level_up_config[str(sect_info.elixir_room_level)]['name']
             msg = f"""{user_name}所在宗门
     宗门名讳：{sect_info.sect_name}
     宗门编号：{sect_id}
@@ -809,6 +923,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     宗门位面排名：{top_idx_list.index(sect_id) + 1}
     宗门拥有资材：{sect_info.sect_materials}
     宗门贡献度：{mess.sect_contribution}
+    宗门丹房：{elixir_room_name}
     """
             if sect_position == owner_position:
                 msg += f"\n   宗门储备：{sect_info.sect_used_stone}灵石"
