@@ -412,7 +412,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             # 突破失败
             sql_message.updata_level_cd(user_id)  # 更新突破CD
             #todu，丹药减少的sql
-            sql_message.update_back_j(user_id, 1999)
+            sql_message.update_back_j(user_id, 1999, use_key=1)
 
             update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
                 level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
@@ -429,7 +429,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             sql_message.update_levelrate(user_id, 0)
             sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
             # 丹药减少的sql
-            sql_message.update_back_j(user_id, 1999)
+            sql_message.update_back_j(user_id, 1999, use_key=1)
             await level_up.finish("恭喜道友突破{}成功".format(le[0]))
         else:
             # 最高境界

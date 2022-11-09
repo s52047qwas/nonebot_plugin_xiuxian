@@ -270,6 +270,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             goods_type = back.goods_type
             goods_state = back.state
             goods_num = back.goods_num
+            goods_bind_num = back.bind_num
             break
     if not in_flag:
         msg = f"请检查该道具 {goods_name} 是否在背包内！"
@@ -297,6 +298,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
+        await shop_added.finish(msg, at_sender=True)
+    
+    if goods_type == "丹药" and goods_num <= goods_bind_num:
+        msg = f"该物品是绑定物品，无法上架！"
         await shop_added.finish(msg, at_sender=True)
     
     group_id = str(event.group_id)

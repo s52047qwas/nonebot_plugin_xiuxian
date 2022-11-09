@@ -28,7 +28,7 @@ BuffInfo = namedtuple("BuffInfo",
                       ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff"])
 
 back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
-                           "remake", "day_num", "all_num", "action_time", "state"])
+                           "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
 
 num = '578043031'
 
@@ -177,6 +177,14 @@ class XiuxianDateManage:
                 c.execute(f"select {m} from BuffInfo")
             except sqlite3.OperationalError:
                 sql = f"ALTER TABLE BuffInfo ADD COLUMN {m} INTEGER DEFAULT 0;"
+                print(sql)
+                c.execute(sql)
+                
+        for b in XiuConfig().sql_back:
+            try:
+                c.execute(f"select {b} from BuffInfo")
+            except sqlite3.OperationalError:
+                sql = f"ALTER TABLE BuffInfo ADD COLUMN {b} INTEGER DEFAULT 0;"
                 print(sql)
                 c.execute(sql)
 
@@ -931,7 +939,7 @@ class XiuxianDateManage:
         cur.execute(sql, )
         self.conn.commit()
     
-    def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num):
+    def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num, bind_flag=0):
         """
         插入物品至背包
         :param user_id: 用户qq
@@ -939,28 +947,33 @@ class XiuxianDateManage:
         :param goods_name: 物品名称
         :param goods_type: 物品类型
         :param goods_num: 物品数量
+        :param bind_flag: 是否绑定物品，0-非绑定，1-绑定
         :return: None
         """
         now_time = datetime.datetime.now()
         # 检查物品是否存在，存在则update
-        check_sql = f"select goods_num, all_num from back where user_id=? and goods_id=?"
         cur = self.conn.cursor()
-        cur.execute(check_sql, (user_id, goods_id))
-        result = cur.fetchone()
-
-        if result:
+        back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
+        if back:
             # 判断是否存在，存在则update
-            goods_nums = int(result[0]) + goods_num
-            sql = f"UPDATE back set goods_num=?,update_time=? WHERE user_id=? and goods_id=?"
+            if bind_flag == 1:
+                bind_num = back.bind_num + goods_num
+            else:
+                bind_num = back.bind_num
+            goods_nums = back.goods_num + goods_num
+            sql = f"UPDATE back set goods_num=?,update_time=?,bind_num={bind_num} WHERE user_id=? and goods_id=?"
             cur.execute(sql, (goods_nums, now_time, user_id, goods_id))
             self.conn.commit()
         else:
             # 判断是否存在，不存在则INSERT
-            all_num = goods_num
+            if bind_flag == 1:
+                bind_num = goods_num
+            else:
+                bind_num = 0
             sql = """
-                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time)
-            VALUES (?,?,?,?,?,?,?)"""
-            cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time))
+                    INSERT INTO back (user_id, goods_id, goods_name, goods_type, goods_num, create_time, update_time, bind_num)
+            VALUES (?,?,?,?,?,?,?,?)"""
+            cur.execute(sql, (user_id, goods_id, goods_name, goods_type, goods_num, now_time, now_time, bind_num))
             self.conn.commit()
             
     def get_item_by_good_id_and_user_id(self, user_id, goods_id):
@@ -969,7 +982,10 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (user_id, goods_id))
         result = cur.fetchone()
-        return back(*result)
+        if not result:
+            return None
+        else:
+            return back(*result)
 
     # def update_back(self, user_id, goods_id, msg):
     #     """使用物品"""
@@ -985,21 +1001,24 @@ class XiuxianDateManage:
         cur.execute(sql_str)
         self.conn.commit()
         
-    def update_back_j(self, user_id, goods_id, num=1):
+    def update_back_j(self, user_id, goods_id, num=1, use_key=0):
         """
         使用物品
-        :减少数量 num 默认1
+        :num 减少数量  默认1
+        :use_key 是否使用，丹药使用才传 默认0
         """
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
-        if back.goods_type == "丹药":#丹药要判断耐药性、日使用上限
+        if back.goods_type == "丹药" and use_key == 1:#丹药要判断耐药性、日使用上限
+            bind_num = back.bind_num - num#优先使用绑定物品
             day_num = back.day_num + num
             all_num = back.all_num + num
         else:
+            bind_num = back.bind_num
             day_num = back.day_num
             all_num = back.all_num
         goods_num = back.goods_num - num
         now_time = datetime.datetime.now()
-        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},day_num={day_num},all_num={all_num} WHERE user_id={user_id} and goods_id={goods_id}"
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num={goods_num},day_num={day_num},all_num={all_num},bind_num={bind_num} WHERE user_id={user_id} and goods_id={goods_id}"
         cur = self.conn.cursor()
         cur.execute(sql_str)
         self.conn.commit()
