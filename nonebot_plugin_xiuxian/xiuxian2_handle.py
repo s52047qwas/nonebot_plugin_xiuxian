@@ -182,7 +182,7 @@ class XiuxianDateManage:
                 
         for b in XiuConfig().sql_back:
             try:
-                c.execute(f"select {b} from BuffInfo")
+                c.execute(f"select {b} from back")
             except sqlite3.OperationalError:
                 sql = f"ALTER TABLE back ADD COLUMN {b} INTEGER DEFAULT 0;"
                 print(sql)
