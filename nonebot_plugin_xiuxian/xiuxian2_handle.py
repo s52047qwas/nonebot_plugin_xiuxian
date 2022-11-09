@@ -16,12 +16,14 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
-                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task", "sect_contribution"])
+                       "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
+                       "sect_task", "sect_contribution", "sect_elixir_get"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
 SectInfo = namedtuple("SectInfo",
-                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland", "sect_materials", "mainbuff", "secbuff"])
+                      ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland",
+                       "sect_materials", "mainbuff", "secbuff", "elixir_room_level"])
 BuffInfo = namedtuple("BuffInfo",
                       ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff"])
 
@@ -827,6 +829,29 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (sect_used_stone, sect_scale, sect_id))
         self.conn.commit()
+    
+    def update_sect_elixir_room_level(self, sect_id, level):
+        """更新宗门丹房等级"""
+        sql = f"UPDATE sects SET elixir_room_level=? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (level, sect_id))
+        self.conn.commit()
+    
+    def update_user_sect_elixir_get_num(self, user_id):
+        """更新用户每日领取丹药领取次数"""
+        sql = f"UPDATE user_xiuxian SET sect_elixir_get=1 where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+    
+    def sect_elixir_get_num_reset(self):
+        """重置宗门丹药领取次数"""
+        sql = f"UPDATE user_xiuxian SET sect_elixir_get=0"
+        cur = self.conn.cursor()
+        cur.execute(sql, )
+        self.conn.commit()
+    
+    
 
     def update_sect_mainbuff(self, sect_id, mainbuffid):
         """更新宗门当前的主修功法"""

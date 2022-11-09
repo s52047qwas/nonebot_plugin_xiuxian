@@ -70,21 +70,21 @@ class Items:
                 temp_dict[k] = v
         return temp_dict
         
-    def get_random_id_by_rank_and_item_type(
+    def get_random_id_list_by_rank_and_item_type(
         self, 
         fanil_rank : int, 
         item_type : List = None
         ):
         """
-        获取随机一个物品ID，可以指定物品类型，物品等级和用户等级相差9级以上会被抛弃
+        获取随机一个物品ID，可以指定物品类型，物品等级和用户等级相差6级以上会被抛弃
         :param fanil_rank：用户的最终rank，最终rank由用户rank和rank增幅事件构成
-        :param item_type：type：list，物品类型，可以为空，枚举值：法器、防具、神通、功法
-        :return 随机获得的ID，type：str
+        :param item_type：type：list，物品类型，可以为空，枚举值：法器、防具、神通、功法、丹药
+        :return 获得的ID列表，type：list
         """
         l_id = []
         for k, v in self.items.items():
             if item_type != None:
-                if v['item_type'] in item_type  and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
+                if v['item_type'] in item_type  and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 6:
                     l_id.append(k)
                 else:
                     continue
@@ -93,4 +93,4 @@ class Items:
                     l_id.append(k)
                 else:
                     continue
-        return random.choice(l_id)
+        return l_id
