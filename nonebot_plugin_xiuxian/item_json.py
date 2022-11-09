@@ -16,12 +16,14 @@ class Items:
         self.weapon_jsonpath = WEAPONPATH / "法器.json"
         self.armor_jsonpath = WEAPONPATH / "防具.json"
         self.elixir_jsonpath = ELIXIRPATH / "丹药.json"
+        self.level_check_elixir_jsonpath = ELIXIRPATH / "境界突破丹药.json"
         self.items = {}
         self.set_item_data(self.get_armor_data(), "防具")
         self.set_item_data(self.get_weapon_data(), "法器")
         self.set_item_data(self.get_main_buff_data(), "功法")
         self.set_item_data(self.get_sec_buff_data(), "神通")
         self.set_item_data(self.get_elixir_data(), "丹药")
+        self.set_item_data(self.level_check_elixir_data(), "境界突破丹药")
         self.savef(self.items)
     
     def readf(self, FILEPATH):
@@ -51,6 +53,9 @@ class Items:
     
     def get_elixir_data(self):
         return self.readf(self.elixir_jsonpath)
+    
+    def level_check_elixir_data(self):
+        return self.readf(self.level_check_elixir_jsonpath)
     
     def get_data_by_item_id(self, item_id):
         return self.items[str(item_id)]
