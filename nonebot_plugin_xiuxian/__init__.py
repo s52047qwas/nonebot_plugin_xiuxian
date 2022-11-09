@@ -22,7 +22,7 @@ from .command import *
 from .cd_manager import add_cd, check_cd, cd_msg
 from .data_source import jsondata
 from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
-from .xiuxian_config import XiuConfig, JsonConfig
+from .xiuxian_config import XiuConfig, JsonConfig, USERRANK
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
 from .utils import Txt2Img, data_check_conf, check_user_type
@@ -52,7 +52,6 @@ load_all_plugins(
         ],
         [],
     )
-
 
 
 @command.run_xiuxian.handle()
@@ -337,7 +336,11 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     level_name = user_msg.level  # 用户境界
     exp = user_msg.exp  # 用户修为
     level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
-
+    
+    user_can_level_up = await check_user_level_up(user_id)
+    if not user_can_level_up[0]:
+        await level_up.finish(user_can_level_up[1], at_sender=True)
+    
     user_backs = sql_message.get_back_msg(user_id) #list(back)
     items = Items()
     pause_flag = False
@@ -357,6 +360,8 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     if le == "失败":
         # 突破失败
         sql_message.updata_level_cd(user_id)  # 更新突破CD
+        # for k, v in user_can_level_up[2].items():
+        #     sql_message.update_back_j(user_id, k, v, key=1)#失败扣不扣境界突破需要的丹药待定
 
         # 失败惩罚，随机扣减修为
         percentage = random.randint(
@@ -385,6 +390,8 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         # sql_message.update_user_attribute(user_id, )
         sql_message.update_levelrate(user_id, 0)
         sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
+        for k, v in user_can_level_up[2].items():
+            sql_message.update_back_j(user_id, k, v, key=1)
         await level_up.finish("恭喜道友突破{}成功".format(le[0]))
     else:
         # 最高境界
@@ -403,7 +410,8 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
     user_leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
     
     le = OtherSet().get_type(exp, level_rate + user_leveluprate, level_name)
-    user_backs = sql_message.get_back_msg(user_id) #list(back)
+    
+    user_can_level_up = await check_user_level_up(user_id)
     
     items = Items()
     elixir_name = items.get_data_by_item_id(1999)['name']
@@ -422,6 +430,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
 
         elif type(le) == list:
             # 突破成功
+            
             sql_message.updata_level(user_id, le[0])  # 更新境界
             sql_message.update_power2(user_id)  # 更新战力
             sql_message.updata_level_cd(user_id)  # 更新CD
@@ -430,6 +439,8 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
             # 丹药减少的sql
             sql_message.update_back_j(user_id, 1999)
+            for k, v in user_can_level_up[2].items():
+                sql_message.update_back_j(user_id, k, v, key=1)
             await level_up.finish("恭喜道友突破{}成功".format(le[0]))
         else:
             # 最高境界
@@ -439,6 +450,7 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
         if le == "失败":
             # 突破失败
             sql_message.updata_level_cd(user_id)  # 更新突破CD
+            
 
             # 失败惩罚，随机扣减修为
             percentage = random.randint(
@@ -467,6 +479,8 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             # sql_message.update_user_attribute(user_id, )
             sql_message.update_levelrate(user_id, 0)
             sql_message.update_user_hp(user_id)  #重置用户HP，mp，atk状态
+            for k, v in user_can_level_up[2].items():
+                sql_message.update_back_j(user_id, k, v, key=1)
             await level_up.finish("恭喜道友突破{}成功".format(le[0]))
         else:
             # 最高境界
@@ -1089,3 +1103,140 @@ class ConfError(ValueError):
 @driver.on_shutdown
 async def close_db():
     sql_message.close_dbs()
+
+
+async def check_user_level_up(user_id):
+    """
+    检测用户突破信息，提升大境界需要对应的丹药
+    :return True, False
+    :return msg
+    """
+    user_info = sql_message.get_user_message(user_id)
+    user_rank = USERRANK[user_info.level]
+    flag = False
+    msg = ''
+    goods_dict = {}
+    if user_rank == 47:#练气→筑基
+        user_back = sql_message.get_item_by_good_id_and_user_id(user_id, 1400)
+        goods_info = Items().get_data_by_item_id(1400)
+        if user_back != None and int(user_back.goods_num) >= goods_info['need_num']:
+            flag = True
+            goods_dict[1400] = goods_info['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info['need_num']} 枚 {goods_info['name']} 再来尝试吧！"
+            
+    elif user_rank == 44:#筑基→结丹
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1401)#聚顶丹
+        goods_info1 = Items().get_data_by_item_id(1401)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1402)#朝元丹
+        goods_info2 = Items().get_data_by_item_id(1402)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and int(user_back2.goods_num) >= goods_info2['need_num']:
+            flag = True
+            goods_dict[1401] = goods_info1['need_num']
+            goods_dict[1402] = goods_info2['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}再来尝试吧！"
+    
+    elif user_rank == 41:#结丹→元婴
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1403)#锻脉丹
+        goods_info1 = Items().get_data_by_item_id(1403)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1404)#护脉丹
+        goods_info2 = Items().get_data_by_item_id(1404)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and int(user_back2.goods_num) >= goods_info2['need_num']:
+            flag = True
+            goods_dict[1403] = goods_info1['need_num']
+            goods_dict[1404] = goods_info2['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}再来尝试吧！"
+    
+    elif user_rank == 38:#元婴→化神
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1405)#天命淬体丹
+        goods_info1 = Items().get_data_by_item_id(1405)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1406)#澄心塑魂丹
+        goods_info2 = Items().get_data_by_item_id(1406)
+        user_back3 = sql_message.get_item_by_good_id_and_user_id(user_id, 1407)#混元仙体丹
+        goods_info3 = Items().get_data_by_item_id(1407)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and \
+            int(user_back2.goods_num) >= goods_info2['need_num'] and user_back3 != None and int(user_back3.goods_num) >= goods_info3['need_num']:
+            flag = True
+            goods_dict[1405] = goods_info1['need_num']
+            goods_dict[1406] = goods_info2['need_num']
+            goods_dict[1407] = goods_info3['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}，"\
+                f"{goods_info3['need_num']} 枚 {goods_info3['name']}再来尝试吧！"
+    
+    elif user_rank == 35:#化神→炼虚
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1408)#黑炎丹
+        goods_info1 = Items().get_data_by_item_id(1408)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1409)#金血丸
+        goods_info2 = Items().get_data_by_item_id(1409)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and int(user_back2.goods_num) >= goods_info2['need_num']:
+            flag = True
+            goods_dict[1408] = goods_info1['need_num']
+            goods_dict[1409] = goods_info2['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}再来尝试吧！"
+    
+    elif user_rank == 32:#炼虚→合体境
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1410)#虚灵丹
+        goods_info1 = Items().get_data_by_item_id(1410)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1411)#净明丹
+        goods_info2 = Items().get_data_by_item_id(1411)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and int(user_back2.goods_num) >= goods_info2['need_num']:
+            flag = True
+            goods_dict[1410] = goods_info1['need_num']
+            goods_dict[1411] = goods_info2['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}再来尝试吧！"
+    
+    elif user_rank == 29:#合体境→大乘境
+        user_back1 = sql_message.get_item_by_good_id_and_user_id(user_id, 1412)#安神灵液
+        goods_info1 = Items().get_data_by_item_id(1412)
+        user_back2 = sql_message.get_item_by_good_id_and_user_id(user_id, 1413)#魇龙之血
+        goods_info2 = Items().get_data_by_item_id(1413)
+        if user_back1 != None and user_back2 != None and int(user_back1.goods_num) >= goods_info1['need_num'] and int(user_back2.goods_num) >= goods_info2['need_num']:
+            flag = True
+            goods_dict[1412] = goods_info1['need_num']
+            goods_dict[1413] = goods_info2['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info1['need_num']} 枚 {goods_info1['name']} ,{goods_info2['need_num']} 枚 {goods_info2['name']}再来尝试吧！"
+    
+    elif user_rank == 26:#大乘境→渡劫境
+        user_back = sql_message.get_item_by_good_id_and_user_id(user_id, 1414)#化劫丹
+        goods_info = Items().get_data_by_item_id(1414)
+        if user_back != None and int(user_back.goods_num) >= goods_info['need_num']:
+            flag = True
+            goods_dict[1414] = goods_info['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info['need_num']} 枚 {goods_info['name']} 再来尝试吧！"
+            
+    elif user_rank == 22:#半步真仙→真仙境
+        user_back = sql_message.get_item_by_good_id_and_user_id(user_id, 1415)#太上玄门丹
+        goods_info = Items().get_data_by_item_id(1415)
+        if user_back != None and int(user_back.goods_num) >= goods_info['need_num']:
+            flag = True
+            goods_dict[1415] = goods_info['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info['need_num']} 枚 {goods_info['name']} 再来尝试吧！"
+    
+    elif user_rank == 19:#真仙境→金仙境
+        user_back = sql_message.get_item_by_good_id_and_user_id(user_id, 1416)#天命血凝丹
+        goods_info = Items().get_data_by_item_id(1416)
+        if user_back != None and int(user_back.goods_num) >= goods_info['need_num']:
+            flag = True
+            goods_dict[1416] = goods_info['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info['need_num']} 枚 {goods_info['name']} 再来尝试吧！"
+    
+    elif user_rank == 16:#金仙境→太乙境
+        user_back = sql_message.get_item_by_good_id_and_user_id(user_id, 1417)#太乙炼髓丹
+        goods_info = Items().get_data_by_item_id(1417)
+        if user_back != None and int(user_back.goods_num) >= goods_info['need_num']:
+            flag = True
+            goods_dict[1417] = goods_info['need_num']
+        else:
+            msg = f"修炼本是逆天行事，道友去寻 {goods_info['need_num']} 枚 {goods_info['name']} 再来尝试吧！"
+    else:#不是大境界突破
+        flag = True
+    return flag, msg, goods_dict

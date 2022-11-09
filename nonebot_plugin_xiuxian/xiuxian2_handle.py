@@ -969,7 +969,10 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (user_id, goods_id))
         result = cur.fetchone()
-        return back(*result)
+        if not result:
+            return None
+        else:
+            return back(*result)
 
     # def update_back(self, user_id, goods_id, msg):
     #     """使用物品"""
@@ -985,13 +988,14 @@ class XiuxianDateManage:
         cur.execute(sql_str)
         self.conn.commit()
         
-    def update_back_j(self, user_id, goods_id, num=1):
+    def update_back_j(self, user_id, goods_id, num=1, key=0):
         """
         使用物品
         :减少数量 num 默认1
+        :key 区分丹药是上架还是使用,key=1使用丹药，key=0默认
         """
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
-        if back.goods_type == "丹药":#丹药要判断耐药性、日使用上限
+        if back.goods_type == "丹药" and key == 1:#丹药要判断耐药性、日使用上限
             day_num = back.day_num + num
             all_num = back.all_num + num
         else:
