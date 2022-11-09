@@ -200,7 +200,7 @@ def check_use_elixir(user_id, goods_id):
         elif goods_all_num > goods_info['all_num']:
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:#检查完毕
-            sql_message.update_back_j(user_id, goods_id, day_num=1)
+            sql_message.update_back_j(user_id, goods_id)
             sql_message.update_levelrate(user_id, user_info.level_up_rate + goods_info['buff'])
             msg = f"道友成功使用丹药：{goods_name}，下一次突破的成功概率提高{goods_info['buff']}%！"
     else:

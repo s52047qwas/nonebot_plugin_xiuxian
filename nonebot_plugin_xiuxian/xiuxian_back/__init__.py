@@ -314,7 +314,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     shop_data[group_id][id]['desc'] = get_item_msg(goods_id)
     shop_data[group_id][id]['price'] = price
     shop_data[group_id][id]['user_name'] = user_info.user_name
-    sql_message.update_back_j(user_id, goods_id, all_num = 1)
+    sql_message.update_back_j(user_id, goods_id)
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
     await shop_added.finish(msg)
@@ -650,7 +650,7 @@ def get_auction_msg(auction_id):
             msg += get_main_info_msg(auction_id)[1]
     
     if _type == "丹药":
-        msg = f"名字：{item_info['name']}"
+        msg = f"名字：{item_info['name']}\n"
         msg += f"效果:{item_info['desc']}"
     
     return msg

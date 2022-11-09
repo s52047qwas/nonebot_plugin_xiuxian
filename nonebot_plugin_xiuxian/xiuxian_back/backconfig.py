@@ -10,10 +10,6 @@ CONFIG = {
             "id":1999,
             "start_price":100000,
         },
-        "吐纳功法":{
-            "id":9001,
-            "start_price":5000,
-        },
         "冰心丹":{
             "id":1500,
             "start_price":50000,
