@@ -204,6 +204,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 if give_elixir_id_list == []:#没有合适的ID，全部给渡厄丹
                     msg = f"道友成功领取到丹药：渡厄丹 {give_num + 1} 枚！"
                     sql_message.send_back(user_info.user_id, 11001, "渡厄丹", "丹药", give_num + 1)#送1个渡厄丹
+                    sql_message.update_user_sect_elixir_get_num(user_info.user_id)
                     await sect_elixir_get.finish(msg, at_sender=True)
                 i = 1
                 while i <= give_num:
