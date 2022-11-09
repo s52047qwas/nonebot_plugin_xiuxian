@@ -207,7 +207,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 i = 1
                 while i <= give_num:
                     id = random.choice(give_elixir_id_list)
-                    if int(id) == 1999:#不给渡厄丹了
+                    if int(id) == 1999 or int(id) == 11001:#不给渡厄丹了
                         continue
                     else:
                         try:
