@@ -184,7 +184,7 @@ class XiuxianDateManage:
             try:
                 c.execute(f"select {b} from BuffInfo")
             except sqlite3.OperationalError:
-                sql = f"ALTER TABLE BuffInfo ADD COLUMN {b} INTEGER DEFAULT 0;"
+                sql = f"ALTER TABLE back ADD COLUMN {b} INTEGER DEFAULT 0;"
                 print(sql)
                 c.execute(sql)
 
