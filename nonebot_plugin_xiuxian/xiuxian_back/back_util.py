@@ -186,8 +186,11 @@ def get_shop_data(group_id):
         data = read_shop()
     except:
         data = {}
+    try:
+        data[group_id]
+    except:
         data[group_id] = {}
-        save_shop(data)
+    save_shop(data)
     return data
 
 PATH = Path(__file__).parent
