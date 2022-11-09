@@ -62,7 +62,7 @@ __sect_help__ = f"""
 5、宗门捐献：建设宗门，提高宗门建设度，每{config["等级建设度"]}建设度会提高1级攻击修炼等级上限
 6、退出宗门：退出当前宗门
 7、踢出宗门：踢出对应宗门成员
-8、宗门传位：宗主可以传位宗门成员
+8、宗主传位：宗主可以传位宗门成员
 9、升级攻击修炼：升级道友的攻击修炼等级，每级修炼等级提升10%攻击力
 10、宗门列表：查看所有宗门列表
 11、宗门任务接取、我的宗门任务：接取宗门任务，可以增加宗门建设度和资材，每日上限：{config["每日宗门任务次上限"]}次
@@ -521,10 +521,12 @@ async def _(bot: Bot, event: GroupMessageEvent):
     """查看所在宗门成员信息"""
     await data_check_conf(bot, event)
     
+    msg = ''
+    msg_list = []
     isUser, user_info, msg = check_user(event)
     if not isUser:
         await sect_users.finish(msg)
-        
+
     if user_info:
         sect_id = user_info.sect_id
         if sect_id:
@@ -534,12 +536,14 @@ async def _(bot: Bot, event: GroupMessageEvent):
             i = 1
             for user in userlist:
                 msg += f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}\n"
+                msg_list.append(
+                    f"编号{i}：{user.user_name}，{user.level}，宗门职位：{jsondata.sect_config_data()[f'{user.sect_position}']['title']}，宗门贡献度：{user.sect_contribution}")
                 i += 1
         else:
-            msg = "一介散修，莫要再问。"              
+            msg_list.append("一介散修，莫要再问。")
     else:
-        msg = "未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!"
-    await sect_users.finish(msg)
+        msg_list.append("未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!")
+    await send_forward_msg(bot, event, '宗门成员', bot.self_id, msg_list)
 
 
 @sect_task.handle()
