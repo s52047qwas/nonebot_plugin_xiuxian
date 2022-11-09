@@ -9,7 +9,8 @@ from nonebot.adapters.onebot.v11 import (
     Message,
     GroupMessageEvent,
     GROUP_ADMIN,
-    GROUP_OWNER
+    GROUP_OWNER,
+    ActionFailed
 
 )
 from nonebot.permission import SUPERUSER
@@ -179,7 +180,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     battle_flag[group_id] = True
     result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
     # await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
-    await send_forward_msg_list(bot, event, result)
+    try:
+        await send_forward_msg_list(bot, event, result)
+    except ActionFailed:
+        battle_flag[group_id] = False
+        msg = "Boss战消息发送错误，请检查日志！"
+        await battle.finish(msg)
+        
     if victor == bossinfo['name']:
         group_boss[group_id][boss_num - 1] = bossinfo_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
