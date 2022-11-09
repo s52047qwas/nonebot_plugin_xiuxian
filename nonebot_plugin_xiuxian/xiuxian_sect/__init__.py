@@ -110,7 +110,17 @@ async def _():
 async def _():
     sql_message.sect_task_reset()
     sql_message.sect_elixir_get_num_reset()
-    logger.info('已重置用户宗门任务次数、宗门丹药领取次数')
+    all_sects = sql_message.get_all_sects_id_scale()
+    for s in all_sects:
+        sect_info = sql_message.get_sect_info(s[0])
+        if int(sect_info.elixir_room_level) != 0:
+            elixir_room_cost = config['宗门丹房参数']['elixir_room_level'][str(sect_info.elixir_room_level)]['level_up_cost']['建设度']
+            if sect_info.sect_materials < elixir_room_cost:
+                logger.info("该宗门的资材无法维持丹房")
+                continue
+            else:
+                sql_message.update_sect_materials(sect_id=sect_info.sect_id, sect_materials=elixir_room_cost, key=2)
+    logger.info('已重置用户宗门任务次数、宗门丹药领取次数，已扣除丹房维护费')
 
 @sect_elixir_room_make.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -172,6 +182,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(user_info.sect_contribution) < elixir_room_config['领取贡献度要求']:
                 msg = f"道友的宗门贡献度不满足领取条件，当前宗门贡献度要求：{elixir_room_config['领取贡献度要求']}点！"
                 await sect_elixir_get.finish(msg, at_sender=True)
+            elixir_room_level_up_config = elixir_room_config['elixir_room_level']
+            elixir_room_cost = elixir_room_level_up_config[str(sect_info.elixir_room_level)]['level_up_cost']['建设度']
+            if sect_info.sect_materials < elixir_room_cost:
+                msg = f"当前宗门资材无法维护丹房，请等待{config['发放宗门资材']['时间']}点发放宗门资材后尝试领取！"
+                await sect_elixir_get.finish(msg, at_sender=True)
             if int(user_info.sect_elixir_get) == 1:
                 msg = f"道友已经领取过了，不要贪心哦~"
                 await sect_elixir_get.finish(msg, at_sender=True)
@@ -180,7 +195,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 1)#1级丹房送1个渡厄丹
                 await sect_elixir_get.finish(msg, at_sender=True)
             else:
-                elixir_room_level_up_config = elixir_room_config['elixir_room_level']
                 sect_now_room_config = elixir_room_level_up_config[str(sect_info.elixir_room_level)]
                 give_num = sect_now_room_config['give_level']['give_num'] - 1
                 rank_up = sect_now_room_config['give_level']['rank_up']
