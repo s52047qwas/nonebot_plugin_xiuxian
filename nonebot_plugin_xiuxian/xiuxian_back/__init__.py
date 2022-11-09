@@ -18,7 +18,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -28,7 +28,7 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群拍卖行使用
 auction = {}
-AUCTIONSLEEPTIME = 60#拍卖初始等待时间（秒）
+AUCTIONSLEEPTIME = 120#拍卖初始等待时间（秒）
 
 auction_offer_flag = False #出价标志
 AUCTIONOFFERSLEEPTIME = 10#每次出价增加拍卖剩余的时间（秒）
@@ -38,6 +38,7 @@ auction_offer_all_count = 0 #控制线程等待时间
 
 # 定时任务
 set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
+reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 shop = on_command("坊市查看", aliases={'查看坊市'}, priority=5)
 shop_added = on_command("坊市上架", priority=5)
@@ -69,6 +70,17 @@ __back_help__ = f"""
 非指令：
 1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
 """.strip()
+
+# 重置丹药每日使用次数
+@reset_day_num_scheduler.scheduled_job(
+    "cron",
+    hour=0,
+    minute=0,
+)
+async def _():
+    sql_message.day_num_reset()
+    logger.info("每日丹药使用次数重置成功！")
+    
 
 # 定时任务生成拍卖会
 @set_auction_by_scheduler.scheduled_job("cron", 
@@ -439,6 +451,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             msg = "发生未知错误！"
         
+        await use.finish(msg)
+    elif goods_type == "丹药":
+        msg = check_use_elixir(user_id, goods_id)
         await use.finish(msg)
     else:
         await use.finish('该类型物品调试中，未开启！')

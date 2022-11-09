@@ -6,50 +6,11 @@ from ..read_buff import UserBuffDate, get_main_info_msg, get_sec_msg
 from ..xiuxian2_handle import XiuxianDateManage
 from ..player_fight import Boss_fight
 from ..item_json import Items
+from ..xiuxian_config import USERRANK
 
 sql_message = XiuxianDateManage()
 items = Items()
 skill_data = read_f()
-USERRANK = {
-    '江湖好手':50,
-    '练气境初期':49,
-    '练气境中期':48,
-    '练气境圆满':47,
-    '筑基境初期':46,
-    '筑基境中期':45,
-    '筑基境圆满':44,
-    '结丹境初期':43,
-    '结丹境中期':42,
-    '结丹境圆满':41,
-    '元婴境初期':40,
-    '元婴境中期':39,
-    '元婴境圆满':38,
-    '化神境初期':37,
-    '化神境中期':36,
-    '化神境圆满':35,
-    '炼虚境初期':34,
-    '炼虚境中期':33,
-    '炼虚境圆满':32,
-    '合体境初期':31,
-    '合体境中期':30,
-    '合体境圆满':29,
-    '大乘境初期':28,
-    '大乘境中期':27,
-    '大乘境圆满':26,
-    '渡劫境初期':25,
-    '渡劫境中期':24,
-    '渡劫境圆满':23,
-    '半步真仙':22,
-    '真仙境初期':21,
-    '真仙境中期':20,
-    '真仙境圆满':19,
-    '金仙境初期':18,
-    '金仙境中期':17,
-    '金仙境圆满':16,
-    '太乙境初期':15,
-    '太乙境中期':14,
-    '太乙境圆满':13,
-}
 
 NONEMSG = [
     "道友在秘境中晕头转向，等到清醒时竟然发现已被秘境踢出，毫无所获！",
