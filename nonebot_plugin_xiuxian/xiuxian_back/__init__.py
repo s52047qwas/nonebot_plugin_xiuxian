@@ -298,7 +298,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
         await shop_added.finish(msg, at_sender=True)
-    
+
+    if goods_id > 11000 and goods_id <12000:
+        msg = f"该物品为绑定物品，无法上架！"
+        await shop_added.finish(msg, at_sender=True)
+
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
     if shop_data == {}:

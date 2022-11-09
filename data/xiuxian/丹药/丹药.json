@@ -1,19 +1,19 @@
 {
-    "1001":{
-        "name": "小气血丹",
-        "type": "丹药",
-        "buff_type": "hp",
-        "buff": 0.5,
-        "price": 1000,
-        "selling": 100,
-        "desc": "回复气血50%",
-        "境界": "筑基期",
-        "status": 1,
-        "quantity": 1,
-        "rank":50
+  "1001": {
+    "name": "小气血丹",
+    "type": "丹药",
+    "buff_type": "hp",
+    "buff": 0.5,
+    "price": 1000,
+    "selling": 100,
+    "desc": "回复气血50%",
+    "境界": "筑基期",
+    "status": 1,
+    "quantity": 1,
+    "rank": 50
 
   },
-  "1500":{
+  "1500": {
     "name": "冰心丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -24,11 +24,11 @@
     "境界": "炼虚境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":34
-},
-"1501":{
+    "day_num": 2,
+    "all_num": 30,
+    "rank": 34
+  },
+  "1501": {
     "name": "明心丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -39,11 +39,11 @@
     "境界": "合体境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":31
-},
-"1502":{
+    "day_num": 2,
+    "all_num": 30,
+    "rank": 31
+  },
+  "1502": {
     "name": "幻心玄丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -54,11 +54,11 @@
     "境界": "大乘境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":28
-},
-"1503":{
+    "day_num": 2,
+    "all_num": 50,
+    "rank": 28
+  },
+  "1503": {
     "name": "鬼面炼心丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -69,11 +69,11 @@
     "境界": "渡劫境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":25
-},
-"1504":{
+    "day_num": 2,
+    "all_num": 50,
+    "rank": 25
+  },
+  "1504": {
     "name": "少阴清灵丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -84,11 +84,11 @@
     "境界": "真仙境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":21
-},
-"1505":{
+    "day_num": 2,
+    "all_num": 50,
+    "rank": 21
+  },
+  "1505": {
     "name": "天命炼心丹",
     "type": "丹药",
     "buff_type": "level_up_rate",
@@ -99,11 +99,11 @@
     "境界": "金仙境",
     "status": 1,
     "quantity": 1,
-    "day_num":10,
-    "all_num":100,
-    "rank":18
-},
-  "1999":{
+    "day_num": 2,
+    "all_num": 50,
+    "rank": 18
+  },
+  "1999": {
     "name": "渡厄丹",
     "type": "丹药",
     "buff_type": "level_up",
@@ -114,6 +114,19 @@
     "境界": "渡劫境",
     "status": 1,
     "quantity": 1,
-    "rank":24
-}
+    "rank": 24
+  },
+  "11001": {
+    "name": "渡厄丹(绑定)",
+    "type": "丹药",
+    "buff_type": "level_up",
+    "buff": 0,
+    "price": 100000,
+    "selling": 100,
+    "desc": "使下一次突破丢失的修为减少为0！",
+    "境界": "渡劫境",
+    "status": 1,
+    "quantity": 1,
+    "rank": 24
+  }
 }
