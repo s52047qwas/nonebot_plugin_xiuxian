@@ -584,7 +584,7 @@
   "8903": {
     "name": "凤灵妖火",
     "skill_type": 2,
-    "atkvalue": 2.0,
+    "atkvalue": 2.2,
     "hpcost": 0,
     "mpcost": 0.5,
     "turncost": 3,
@@ -646,7 +646,7 @@
   "8908": {
     "name": "天地同寿",
     "skill_type": 1,
-    "atkvalue": [ 20.5 ],
+    "atkvalue": [ 40.0 ],
     "hpcost": 0.9,
     "mpcost": 0.9,
     "turncost": 9,
@@ -664,7 +664,7 @@
     "turncost": 0,
     "desc": "吔屎啦！",
     "rate": 70,
-    "rank": "仙阶上品",
+    "rank": "仙阶下品",
     "level": "18"
   }
 }
