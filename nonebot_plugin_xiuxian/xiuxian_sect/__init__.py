@@ -193,6 +193,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if int(sect_info.elixir_room_level)  == 1:
                 msg = f"\n道友成功领取到丹药：渡厄丹！"
                 sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 1)#1级丹房送1个渡厄丹
+                sql_message.update_user_sect_elixir_get_num(user_info.user_id)
                 await sect_elixir_get.finish(msg, at_sender=True)
             else:
                 sect_now_room_config = elixir_room_level_up_config[str(sect_info.elixir_room_level)]
