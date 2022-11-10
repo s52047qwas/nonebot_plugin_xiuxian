@@ -179,24 +179,28 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     bossinfo = group_boss[group_id][boss_num - 1]
     battle_flag[group_id] = True
     result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
-    # await send_forward_msg(bot, event, 'Boss战', bot.self_id, result)
-    try:
-        await send_forward_msg_list(bot, event, result)
-    except ActionFailed:
-        battle_flag[group_id] = False
-        msg = "Boss战消息发送错误，请检查日志！"
-        await battle.finish(msg)
-        
+    battle_flag[group_id] = False
     if victor == bossinfo['name']:
         group_boss[group_id][boss_num - 1] = bossinfo_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
-        battle_flag[group_id] = False
-        await battle.finish(f"道友不敌{bossinfo['name']}，重伤逃遁，临逃前收获灵石{get_stone}枚")
+        msg = f"道友不敌{bossinfo['name']}，重伤逃遁，临逃前收获灵石{get_stone}枚"
+        try:
+            await send_forward_msg_list(bot, event, result)
+        except ActionFailed:
+            msg += "Boss战消息发送错误，可能被风控！"
+        
+        await battle.finish(msg, at_sender=True)
+        
     elif victor == player['道号']:
         group_boss[group_id].remove(group_boss[group_id][boss_num - 1])
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
-        battle_flag[group_id] = False
-        await battle.finish(f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚")
+        msg = f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚"
+        try:
+            await send_forward_msg_list(bot, event, result)
+        except ActionFailed:
+            msg += "Boss战消息发送错误，可能被风控！"
+
+        await battle.finish(msg, at_sender=True)
 
 @boss_info.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

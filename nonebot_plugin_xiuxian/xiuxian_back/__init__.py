@@ -9,7 +9,8 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment,
     GROUP_ADMIN,
-    GROUP_OWNER
+    GROUP_OWNER,
+    ActionFailed
 )
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
@@ -577,10 +578,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     dif_time = OtherSet().date_diff(now_time, auction['start_time'])
     msg = f"来自群{group_id}的{user_info.user_name}道友出价：{price}枚灵石！" \
         f"竞拍时间增加：{AUCTIONOFFERSLEEPTIME}秒，竞拍剩余时间：{int(AUCTIONSLEEPTIME - dif_time + AUCTIONOFFERSLEEPTIME * auction_offer_time_count)}秒"
+    error_msg = ''
     for group_id in groups:
-        await bot.send_group_msg(group_id=int(group_id), message=msg)
-        
-    await offer_auction.finish()
+        try:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        except ActionFailed:
+            error_msg = f"消息发送失败，可能被风控，当前拍卖物品金额为：{auction['now_price']}！"
+            continue
+    if error_msg == '':
+        await offer_auction.finish()
+    else:
+        await offer_auction.finish(error_msg)
 
 @set_auction.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
