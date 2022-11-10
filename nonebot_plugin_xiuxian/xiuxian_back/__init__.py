@@ -384,7 +384,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     #  "remake", "day_num", "all_num", "action_time", "state"]
     msg = get_user_back_msg(user_id)
     if msg != []:
-        await send_forward_msg(bot, event, '背包', bot.self_id, msg)
+        await send_forward_msg(bot, event, f'{user_info.user_name}的背包', bot.self_id, msg)
         await mind_back.finish()
     else:
         msg = '道友的背包空空如也！'
