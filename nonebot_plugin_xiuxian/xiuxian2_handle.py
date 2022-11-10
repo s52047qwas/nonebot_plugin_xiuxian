@@ -1009,7 +1009,10 @@ class XiuxianDateManage:
         """
         back = self.get_item_by_good_id_and_user_id(user_id, goods_id)
         if back.goods_type == "丹药" and use_key == 1:#丹药要判断耐药性、日使用上限
-            bind_num = back.bind_num - num#优先使用绑定物品
+            if back.bind_num >= 1:
+                bind_num = back.bind_num - num#优先使用绑定物品
+            else:
+                bind_num = back.bind_num
             day_num = back.day_num + num
             all_num = back.all_num + num
         else:
