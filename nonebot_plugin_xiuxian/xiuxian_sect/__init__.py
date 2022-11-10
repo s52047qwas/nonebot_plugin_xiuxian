@@ -202,8 +202,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 give_dict = {}
                 give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(fanil_rank=USERRANK[user_info.level] - rank_up, item_type = ['丹药'])
                 if give_elixir_id_list == []:#没有合适的ID，全部给渡厄丹
-                    msg = f"道友成功领取到丹药：渡厄丹 {give_num + 1} 枚！"
-                    sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", give_num + 1, bind_flag=1)#送1个渡厄丹
+                    msg = f"道友成功领取到丹药：渡厄丹 2 枚！"
+                    sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 2, bind_flag=1)#送1个渡厄丹
                     sql_message.update_user_sect_elixir_get_num(user_info.user_id)
                     await sect_elixir_get.finish(msg, at_sender=True)
                 i = 1

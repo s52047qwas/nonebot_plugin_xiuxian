@@ -87,8 +87,8 @@ CONFIG = {
                     "stone":400000
                 },
                 "give_level":{
-                    "give_num":2,
-                    "rank_up":2
+                    "give_num":1,
+                    "rank_up":1
                 }
             },
             "3":{
@@ -98,8 +98,8 @@ CONFIG = {
                     "stone":800000
                 },
                 "give_level":{
-                    "give_num":3,
-                    "rank_up":3
+                    "give_num":2,
+                    "rank_up":1
                 }
             },
             "4":{
@@ -109,8 +109,8 @@ CONFIG = {
                     "stone":1600000
                 },
                 "give_level":{
-                    "give_num":4,
-                    "rank_up":4
+                    "give_num":3,
+                    "rank_up":1
                 }
             },
             "5":{
@@ -120,8 +120,8 @@ CONFIG = {
                     "stone":3200000
                 },
                 "give_level":{
-                    "give_num":5,
-                    "rank_up":5
+                    "give_num":4,
+                    "rank_up":1
                 }
             }
         }
