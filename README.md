@@ -75,12 +75,7 @@ nonebot.load_plugin('nonebot_plugin_xiuxian')
 
 - 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录nonebot_plugin_xiuxian ——>xiuxian
 处下载文件，放置于bot目录，data -> xiuxian文件夹处
-- 当为放置为plugins目录使用时，请修改init处，load_all_plugins(
-        [
-            'nonebot_plugin_xiuxian.xiuxian_boss',
-        ],
-  其中“nonebot_plugin_xiuxian.xiuxian_boss”修为为bot路径：例如：
-  'yuzi_bot.plugins.nonebot_plugin_xiuxian.xiuxian_boss'
+- 当为放置为plugins目录使用时，请修改__init__.py 文件的42行：src=''的内容，一般情况下是 src='src.plugins.'
   
 
 
