@@ -185,10 +185,10 @@ def check_use_elixir(user_id, goods_id):
     user_info = sql_message.get_user_message(user_id)
     user_rank = USERRANK[user_info.level]
     goods_info = items.get_data_by_item_id(goods_id)
+    goods_rank = goods_info['rank']
+    goods_name = goods_info['name']
+    back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
     if goods_info['buff_type'] == "level_up_rate":#增加突破概率的丹药
-        goods_rank = goods_info['rank']
-        goods_name = goods_info['name']
-        back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
         goods_day_num = back.day_num
         goods_all_num = back.all_num
         if goods_rank < user_rank:#最低使用限制
@@ -205,9 +205,6 @@ def check_use_elixir(user_id, goods_id):
             msg = f"道友成功使用丹药：{goods_name}，下一次突破的成功概率提高{goods_info['buff']}%！"
             
     elif goods_info['buff_type'] == "level_up_big":#增加大境界突破概率的丹药
-        goods_rank = goods_info['rank']
-        goods_name = goods_info['name']
-        back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
         goods_day_num = back.day_num
         goods_all_num = back.all_num
         if goods_rank != user_rank:#使用限制
@@ -219,6 +216,42 @@ def check_use_elixir(user_id, goods_id):
                 sql_message.update_back_j(user_id, goods_id, use_key=1)
                 sql_message.update_levelrate(user_id, user_info.level_up_rate + goods_info['buff'])
                 msg = f"道友成功使用丹药：{goods_name}，下一次突破的成功概率提高{goods_info['buff']}%！"
+    
+    elif goods_info['buff_type'] == "hp":#回复状态的丹药
+        if goods_rank > user_rank:#使用限制
+            msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        else:
+            user_max_hp = int(user_info.exp / 2)
+            user_max_mp = int(user_info.exp)
+            if user_info.hp == user_max_hp and user_info.mp == user_max_mp:
+                msg = f"道友的状态是满的，用不了哦！"
+            else:
+                recover_hp = int(goods_info['buff'] * user_max_hp)
+                recover_mp = int(goods_info['buff'] * user_max_mp)
+                if user_info.hp + recover_hp > user_max_hp:
+                    new_hp = user_max_hp #超过最大
+                else:
+                    new_hp = user_info.hp + recover_hp
+                if user_info.mp + recover_mp > user_max_mp:
+                    new_mp = user_max_mp
+                else:
+                    new_mp = user_info.mp + recover_mp
+                msg = f"道友成功使用丹药：{goods_name}，状态恢复了{int(goods_info['buff'] * 100)}%！"
+                sql_message.update_back_j(user_id, goods_id, use_key=1)
+                sql_message.update_user_hp_mp(user_id, new_hp, new_mp)
+                
+    elif goods_info['buff_type'] == "all":#回满状态的丹药
+        if goods_rank > user_rank:#使用限制
+            msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        else:
+            user_max_hp = int(user_info.exp / 2)
+            user_max_mp = int(user_info.exp)
+            if user_info.hp == user_max_hp and user_info.mp == user_max_mp:
+                msg = f"道友的状态是满的，用不了哦！"
+            else:
+                sql_message.update_back_j(user_id, goods_id, use_key=1)
+                sql_message.update_user_hp(user_id)
+                msg = f"道友成功使用丹药：{goods_name}，状态已全部恢复！"
     else:
         msg = f"该类型的丹药目前暂时不支持使用！"
     return msg
