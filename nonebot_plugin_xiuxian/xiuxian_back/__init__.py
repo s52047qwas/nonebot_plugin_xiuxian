@@ -136,7 +136,13 @@ async def _():
                 for group_id in groups:
                     await bot.send_group_msg(group_id=int(group_id), message=msg)
                 return
-            
+            now_price = int(auction['now_price'])
+            user_stone = user_info.stone
+            if user_stone < now_price:
+                msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
+                for group_id in groups:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                return
             user_info = sql_message.get_user_message(auction['user_id'])
             msg = "本次拍卖会结束！"
             msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
@@ -580,6 +586,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await creat_auction.finish()
     
     user_info = sql_message.get_user_message(auction['user_id'])
+    now_price = int(auction['now_price'])
+    user_stone = user_info.stone
+    if user_stone < now_price:
+        msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
+        await creat_auction.finish(msg)
+
     msg = "本次拍卖会结束！"
     msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
     for group_id in groups:
