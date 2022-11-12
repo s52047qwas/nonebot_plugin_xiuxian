@@ -43,6 +43,7 @@ reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 shop = on_command("坊市查看", aliases={'查看坊市'}, priority=5)
 shop_added = on_command("坊市上架", priority=5)
+shop_added_by_admin = on_command("系统坊市上架", priority=5, permission = SUPERUSER)
 shop_off = on_command("坊市下架", priority=5)
 mind_back = on_command('我的背包', aliases={'我的物品'}, priority=5 , permission= GROUP)
 use = on_command("使用", priority=5)
@@ -63,10 +64,11 @@ __back_help__ = f"""
 3、坊市购买+物品编号：购买坊市内的物品
 4、坊市查看、查看坊市：查询坊市在售物品
 5、坊市上架：坊市上架 物品 金额，上架背包内的物品
-6、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
-7、群拍卖行开启、关闭：开启拍卖行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报拍卖行消息
-8、出价+金额：对本次排行会的物品进行出价
-9、背包帮助：获取背包帮助指令
+6、系统坊市上架：坊市上架 物品 金额，上架任意存在的物品，超管权限
+7、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
+8、群拍卖行开启、关闭：开启拍卖行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报拍卖行消息
+9、出价+金额：对本次排行会的物品进行出价
+10、背包帮助：获取背包帮助指令
 非指令：
 1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
 """.strip()
@@ -186,40 +188,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             msg = "道友自己的东西就不要自己购买啦！"
             await buy.finish(msg, at_sender=True)
     else:
-        
-        msg = f"道友成功购买{shop_data[group_id][str(arg)]['user_name']}道友寄售的物品{shop_data[group_id][str(arg)]['goods_name']}，消耗灵石{goods_price}枚！"
         sql_message.update_ls(user_id, goods_price, 2)
         sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
-        service_charge = int(goods_price * 0.05)#手续费5%
-        give_stone = goods_price - service_charge
-        shop_msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！")
-        shop_msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
-        shop_msg = shop_msg1 + shop_msg2
-        sql_message.update_ls(shop_data[group_id][str(arg)]['user_id'], give_stone, 1)
-        await bot.send(event=event, message=shop_msg)
-        del shop_data[group_id][str(arg)]
+        if shop_data[group_id][str(arg)]['user_id'] == 0:#0为系统
+            msg = f"道友成功购买物品{shop_data[group_id][str(arg)]['goods_name']}，消耗灵石{goods_price}枚！"
+        else:
+            msg = f"道友成功购买{shop_data[group_id][str(arg)]['user_name']}道友寄售的物品{shop_data[group_id][str(arg)]['goods_name']}，消耗灵石{goods_price}枚！"
+            # sql_message.update_ls(user_id, goods_price, 2)
+            # sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
+            service_charge = int(goods_price * 0.05)#手续费5%
+            give_stone = goods_price - service_charge
+            shop_msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！")
+            shop_msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
+            shop_msg = shop_msg1 + shop_msg2
+            sql_message.update_ls(shop_data[group_id][str(arg)]['user_id'], give_stone, 1)
+            await bot.send(event=event, message=shop_msg)
+            del shop_data[group_id][str(arg)]
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
         await buy.finish(msg, at_sender=True)
-    # goods_data = jsondata.shop_data()
-    # get_goods = str(args)
-    # logger.info(f'商品名称：{get_goods}')
-
-    # for i, v in goods_data.items():
-    #     logger.info(f'商品列表：{v}')
-    #     if v['name'] == get_goods:
-    #         logger.info(f"sql字段：{user_id}, {i, get_goods}, {v['type']}, {1}, {v['desc']}")
-    #         price = v['price']
-    #         if user_info.stone >= price:
-    #             sql_message.update_ls(user_id, price, 2)
-    #             sql_message.send_back(user_id, i, v['name'], v['type'], 1)
-    #             await buy.finish('购买成功！', at_sender=True)
-    #         else:
-    #             await buy.finish('没钱还敢来买东西！！', at_sender=True)
-    #     else:
-    #         continue
-    #         # await buy.finish('没有获取道商品信息！')
-    await buy.finish('购物功能未实现', at_sender=True)
     
 @shop.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -240,11 +227,75 @@ async def _(bot: Bot, event: GroupMessageEvent):
         msg = f"编号：{k}\n"
         msg += f"{v['desc']}"
         msg += f"\n价格：{v['price']}枚灵石\n"
-        msg += f"拥有人：{v['user_name']} 道友\n"
+        if v['user_id'] != 0:
+            msg += f"拥有人：{v['user_name']} 道友\n"
+        else:
+            msg += f"系统出售\n"
+            msg += f"数量：无限\n"
         data_list.append(msg)
     await send_forward_msg(bot, event, '坊市', bot.self_id, data_list)
     await shop.finish()
+
+@shop_added_by_admin.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """上架坊市"""
+    await data_check_conf(bot, event)
+    args = args.extract_plain_text().split()
+    if args == []:
+        msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        await shop_added_by_admin.finish(msg, at_sender=True)
+    goods_name = args[0]
+    goods_id = -1
+    for k, v in items.items.items():
+        if goods_name == v['name']:
+            goods_id = k
+            break
+        else:
+            continue
+    if goods_id == -1:
+        msg = f"不存在物品：{goods_name}的信息，请检查名字是否输入正确！"
+        await shop_added_by_admin.finish(msg, at_sender=True)
+
+    try:
+        price = args[1]
+    except IndexError:
+        msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        await shop_added_by_admin.finish(msg, at_sender=True)
+    try:
+        price = int(price)
+        if price < 0:
+            msg = "请不要设置负数！"
+            await shop_added_by_admin.finish(msg, at_sender=True)
+    except ValueError:
+        msg = "请输入正确的金额！"
+        await shop_added_by_admin.finish(msg, at_sender=True)
     
+    try:
+        args[2]
+        msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        await shop_added_by_admin.finish(msg, at_sender=True)
+    except IndexError:
+        pass
+    
+    group_id = str(event.group_id)
+    shop_data = get_shop_data(group_id)
+    if shop_data == {}:
+        shop_data[group_id] = {}
+    goods_info = items.get_data_by_item_id(goods_id)
+    
+    id = len(shop_data[group_id]) + 1
+    shop_data[group_id][id] = {}
+    shop_data[group_id][id]['user_id'] = 0
+    shop_data[group_id][id]['goods_name'] = goods_name
+    shop_data[group_id][id]['goods_id'] = goods_id
+    shop_data[group_id][id]['goods_type'] = goods_info['type']
+    shop_data[group_id][id]['desc'] = get_item_msg(goods_id)
+    shop_data[group_id][id]['price'] = price
+    shop_data[group_id][id]['user_name'] = '系统'
+    save_shop(shop_data)
+    msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
+    await shop_added_by_admin.finish(msg)
+
 @shop_added.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     """上架坊市"""
@@ -357,16 +408,23 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await shop_off.finish(msg, at_sender=True)
         
     elif event.sender.role == "admin" or event.sender.role == "owner":
-        sql_message.send_back(shop_data[group_id][str(arg)]['user_id'], shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
-        msg = f"成功下架{shop_data[group_id][str(arg)]['user_id']}的物品：{shop_data[group_id][str(arg)]['goods_name']}！"
-        msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被管理员{user_id}下架！")
-        msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
-        msg3 = msg1 + msg2
-        del shop_data[group_id][str(arg)]
-        shop_data[group_id] = reset_dict_num(shop_data[group_id])
-        save_shop(shop_data)
-        await bot.send(event=event, message=msg3)
-        await shop_off.finish(msg, at_sender=True)
+        if shop_data[group_id][str(arg)]['user_id'] == 0:#这么写为了防止bot.send发送失败，不结算
+            msg = f"成功下架物品：{shop_data[group_id][str(arg)]['goods_name']}！"
+            del shop_data[group_id][str(arg)]
+            shop_data[group_id] = reset_dict_num(shop_data[group_id])
+            save_shop(shop_data)
+            await shop_off.finish(msg, at_sender=True)
+        else:
+            sql_message.send_back(shop_data[group_id][str(arg)]['user_id'], shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
+            msg = f"成功下架{shop_data[group_id][str(arg)]['user_id']}的物品：{shop_data[group_id][str(arg)]['goods_name']}！"
+            msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被管理员{user_id}下架！")
+            msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
+            msg3 = msg1 + msg2
+            del shop_data[group_id][str(arg)]
+            shop_data[group_id] = reset_dict_num(shop_data[group_id])
+            save_shop(shop_data)
+            await bot.send(event=event, message=msg3)
+            await shop_off.finish(msg, at_sender=True)
     else:
         msg = "这东西不是你的！"
         await shop_off.finish(msg, at_sender=True)
