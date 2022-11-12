@@ -1,5 +1,4 @@
 from typing import Any, Tuple, Dict
-from types import NoneType
 from nonebot import on_regex, get_bot, on_command, require
 from nonebot.params import RegexGroup, EventPlainText
 from nonebot.adapters.onebot.v11 import (
@@ -75,7 +74,7 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
     user_id = event.user_id
     pattern = r"^主药([\u4e00-\u9fa5]+)?(\d+)?药引([\u4e00-\u9fa5]+)?(\d)?(辅药)?([\u4e00-\u9fa5]+)?(\d+)?丹炉([\u4e00-\u9fa5]+)?"
     matched = re.search(pattern, mode)
-    if type(matched) == NoneType:
+    if matched == None:
         msg = f"请参考转发内容里的配方输入正确的配方！"
         await mix_elixir.finish(msg)
     else:
