@@ -49,7 +49,6 @@ load_all_plugins(
             f'{src}nonebot_plugin_xiuxian.xiuxian_buff',
             f'{src}nonebot_plugin_xiuxian.xiuxian_back',
             f'{src}nonebot_plugin_xiuxian.xiuxian_rift',
-            f'{src}nonebot_plugin_xiuxian.xiuxian_mixelixir',
         ],
         [],
     )
