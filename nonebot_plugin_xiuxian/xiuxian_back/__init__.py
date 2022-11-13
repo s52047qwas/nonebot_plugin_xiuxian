@@ -85,8 +85,7 @@ async def _():
     
 
 # 定时任务生成拍卖会
-@set_auction_by_scheduler.scheduled_job("cron", 
-                       hour=auction_time_config['hours'])
+@set_auction_by_scheduler.scheduled_job("cron", hour=auction_time_config['hours'])
 async def _():
     bot = get_bot()
     if groups != []:
@@ -117,43 +116,55 @@ async def _():
             auction['start_time'] = datetime.now()
             auction['group_id'] = 0
             for group_id in groups:
-                await bot.send_group_msg(group_id=int(group_id), message=msg)
+                try:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                except ActionFailed:#发送群消息失败
+                    continue
             await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
             
-            global auction_offer_flag
+            global auction_offer_flag, auction_offer_all_count, auction_offer_time_count
             while auction_offer_flag:#有人出价
-                global auction_offer_all_count
                 if auction_offer_all_count == 0:
                     auction_offer_flag = False
                     break
+                logger.info(f"有人出价，本次等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}秒")
                 first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
                 auction_offer_all_count = 0
                 auction_offer_flag = False
                 await asyncio.sleep(first_time)
             
+            logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
             if auction['user_id'] == 0:
                 msg = "很可惜，本次拍卖会流拍了！"
                 auction = {}
                 for group_id in groups:
-                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    try:
+                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    except ActionFailed:#发送群消息失败
+                        continue
                 return
             now_price = int(auction['now_price'])
             user_stone = user_info.stone
             if user_stone < now_price:
                 msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
                 for group_id in groups:
-                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    try:
+                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    except ActionFailed:#发送群消息失败
+                        continue
                 return
             user_info = sql_message.get_user_message(auction['user_id'])
             msg = "本次拍卖会结束！"
             msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
             for group_id in groups:
-                await bot.send_group_msg(group_id=int(group_id), message=msg)
+                try:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                except ActionFailed:#发送群消息失败
+                    continue
                 
             sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
             sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
             auction = {}
-            global auction_offer_time_count
             auction_offer_time_count = 0
             return
 
@@ -566,25 +577,32 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     auction['group_id'] = group_id
     
     for group_id in groups:
-        await bot.send_group_msg(group_id=int(group_id), message=msg)
+        try:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        except ActionFailed:#发送群消息失败
+            continue
     await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
     
-    global auction_offer_flag
+    global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
     while auction_offer_flag:#有人出价
-        global auction_offer_all_count
         if auction_offer_all_count == 0:
             auction_offer_flag = False
             break
+        logger.info(f"有人出价，本次等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}秒")
         first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
         auction_offer_all_count = 0
         auction_offer_flag = False
         await asyncio.sleep(first_time)
     
+    logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
     if auction['user_id'] == 0:
         msg = "很可惜，本次拍卖会流拍了！"
         auction = {}
         for group_id in groups:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
+            try:
+                await bot.send_group_msg(group_id=int(group_id), message=msg)
+            except ActionFailed:#发送群消息失败
+                continue
         await creat_auction.finish()
     
     user_info = sql_message.get_user_message(auction['user_id'])
@@ -597,12 +615,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     msg = "本次拍卖会结束！"
     msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
     for group_id in groups:
-        await bot.send_group_msg(group_id=int(group_id), message=msg)
+        try:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        except ActionFailed:#发送群消息失败
+            continue
         
     sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
     sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
     auction = {}
-    global auction_offer_time_count
     auction_offer_time_count = 0
     await creat_auction.finish()
 
@@ -658,6 +678,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         except ActionFailed:
             error_msg = f"消息发送失败，可能被风控，当前拍卖物品金额为：{auction['now_price']}！"
             continue
+    logger.info(f"有人出价，出价标志：{auction_offer_flag}，当前等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}，总计出价次数：{auction_offer_time_count}")
     if error_msg == '':
         await offer_auction.finish()
     else:
