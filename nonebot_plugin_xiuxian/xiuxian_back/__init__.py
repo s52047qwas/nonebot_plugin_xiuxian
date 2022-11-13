@@ -128,6 +128,7 @@ async def _():
                     break
                 first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
                 auction_offer_all_count = 0
+                auction_offer_flag = False
                 await asyncio.sleep(first_time)
             
             if auction['user_id'] == 0:
@@ -576,6 +577,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             break
         first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
         auction_offer_all_count = 0
+        auction_offer_flag = False
         await asyncio.sleep(first_time)
     
     if auction['user_id'] == 0:
