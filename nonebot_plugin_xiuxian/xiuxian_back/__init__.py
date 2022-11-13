@@ -144,6 +144,7 @@ async def _():
                         continue
                 return
             now_price = int(auction['now_price'])
+            user_info = sql_message.get_user_message(auction['user_id'])
             user_stone = user_info.stone
             if user_stone < now_price:
                 msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
@@ -153,7 +154,6 @@ async def _():
                     except ActionFailed:#发送群消息失败
                         continue
                 return
-            user_info = sql_message.get_user_message(auction['user_id'])
             msg = "本次拍卖会结束！"
             msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
             for group_id in groups:
