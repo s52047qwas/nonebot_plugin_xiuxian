@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-configkey = ["open", "拍卖会定时参数", "auctions"]
+configkey = ["open", "auctions"]
 CONFIG = {
     "open":[],
     "auctions":{
@@ -15,9 +15,9 @@ CONFIG = {
             "start_price":150000,
         },
     },
-    "拍卖会定时参数":{#拍卖会生成的时间，每天的10-15点
-        "hours":"18-23"
-    }
+    # "拍卖会定时参数":{#拍卖会生成的时间，每天的10-15点
+    #     "hours":"18-23"
+    # }
 }
 
 def get_config():
