@@ -188,9 +188,9 @@ def check_use_elixir(user_id, goods_id):
     goods_rank = goods_info['rank']
     goods_name = goods_info['name']
     back = sql_message.get_item_by_good_id_and_user_id(user_id, goods_id)
+    goods_day_num = back.day_num
+    goods_all_num = back.all_num
     if goods_info['buff_type'] == "level_up_rate":#增加突破概率的丹药
-        goods_day_num = back.day_num
-        goods_all_num = back.all_num
         if goods_rank < user_rank:#最低使用限制
             msg = f"丹药：{goods_name}的最低使用境界为{goods_info['境界']}，道友不满足使用条件"
         elif goods_rank - user_rank > 6:#最高使用限制
@@ -220,6 +220,10 @@ def check_use_elixir(user_id, goods_id):
     elif goods_info['buff_type'] == "hp":#回复状态的丹药
         if goods_rank < user_rank:#使用限制
             msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        elif goods_day_num > goods_info['day_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到每日上限，今日使用已经没效果了哦~"
+        elif goods_all_num > goods_info['all_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
             user_max_hp = int(user_info.exp / 2)
             user_max_mp = int(user_info.exp)
@@ -243,6 +247,10 @@ def check_use_elixir(user_id, goods_id):
     elif goods_info['buff_type'] == "all":#回满状态的丹药
         if goods_rank < user_rank:#使用限制
             msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        elif goods_day_num > goods_info['day_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到每日上限，今日使用已经没效果了哦~"
+        elif goods_all_num > goods_info['all_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
             user_max_hp = int(user_info.exp / 2)
             user_max_mp = int(user_info.exp)
