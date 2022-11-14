@@ -22,7 +22,7 @@ Llandudno_info = {
 
 async def check_mix(elixir_config):
     is_mix = False
-    id = 0
+    l_id = []
     # mix_configs = await get_mix_config()
     for k, v in mix_configs.items():#这里是丹药配方
         type_list = []
@@ -42,14 +42,20 @@ async def check_mix(elixir_config):
                     flag = False
                     break
             if flag:
-                id = k
+                l_id.append(k)
 
             continue
         else:
             continue
                         
-    if id != 0:
+    if l_id != 0:
         is_mix = True
+        id_config = {}
+        for id in l_id:
+            for k, v in mix_configs[id].items():
+                id_config[id] = v
+                continue
+        id = sorted(id_config.items(), key= lambda x: x[1], reverse=True)[0][0]#选出最优解
                 
     return is_mix, id
 

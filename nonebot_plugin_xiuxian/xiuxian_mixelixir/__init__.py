@@ -79,17 +79,17 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
         await mix_elixir.finish(msg)
     else:
         zhuyao_name = matched.groups()[0]
-        check, zhuyao_goods_id = await check_yaocai_name_in_back(user_id, zhuyao_name)
-        if not check:
-            msg = f"请检查药材：{zhuyao_name} 是否在背包中！"
-            await mix_elixir.finish(msg)
         zhuyao_num = int(matched.groups()[1])#数量一定会有
-        yaoyin_name = matched.groups()[2]
-        check, yaoyin_goods_id = await check_yaocai_name_in_back(user_id, yaoyin_name)
+        check, zhuyao_goods_id = await check_yaocai_name_in_back(user_id, zhuyao_name, zhuyao_num)
         if not check:
-            msg = f"请检查药材：{yaoyin_name} 是否在背包中！"
+            msg = f"请检查药材：{zhuyao_name} 是否在背包中，或者数量是否足够！"
             await mix_elixir.finish(msg)
+        yaoyin_name = matched.groups()[2]
         yaoyin_num = int(matched.groups()[3])#数量一定会有
+        check, yaoyin_goods_id = await check_yaocai_name_in_back(user_id, yaoyin_name, yaoyin_num)
+        if not check:
+            msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
+            await mix_elixir.finish(msg)
         fuyao_flag = False
         if matched.groups()[4] != None:#匹配到辅药
             fuyao_name = matched.groups()[5]
@@ -97,18 +97,18 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
                 msg = f"请检查辅药是否输入！"
                 await mix_elixir.finish(msg)
             else:
-                check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name)
-                if not check:
-                    msg = f"请检查药材：{fuyao_name} 是否在背包中！"
+                fuyao_num = matched.groups()[6]
+                if fuyao_num == None:
+                    msg = f"请输入辅药的数量！"
                     await mix_elixir.finish(msg)
-            fuyao_num = matched.groups()[6]
-            if fuyao_num == None:
-                msg = f"请输入辅药的数量！"
-                await mix_elixir.finish(msg)
-            else:
-                #辅药的数量
-                fuyao_num = int(fuyao_num)
-                fuyao_flag = True
+                else:
+                    #辅药的数量
+                    fuyao_num = int(fuyao_num)
+                    check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num)
+                    if not check:
+                        msg = f"请检查药材：{fuyao_name} 是否在背包中，或者数量是否足够！"
+                        await mix_elixir.finish(msg)
+                    fuyao_flag = True
         #检测通过
         zhuyao_info = Items().get_data_by_item_id(zhuyao_goods_id)
         yaoyin_info = Items().get_data_by_item_id(yaoyin_goods_id)
@@ -139,16 +139,17 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
                     msg = f"没有炼成丹药哦~就不扣你药材啦"
                     await mix_elixir.finish(msg)
     
-async def check_yaocai_name_in_back(user_id, yaocai_name):
+async def check_yaocai_name_in_back(user_id, yaocai_name, yaocai_num):
     flag = False
     goods_id = 0
     user_back = sql_message.get_back_msg(user_id)
     for back in user_back:
         if back.goods_type == '药材':
             if Items().get_data_by_item_id(back.goods_id)['name'] == yaocai_name:
-                flag = True
-                goods_id = back.goods_id
-                break
+                if int(back.goods_num) >= int(yaocai_num):
+                    flag = True
+                    goods_id = back.goods_id
+                    break
             else:
                 continue
         else:
