@@ -55,7 +55,7 @@ back_help = on_command("背包帮助", priority=5, permission= GROUP)
 
 sql_message = XiuxianDateManage()  # sql类
 
-auction_time_config = config['拍卖会定时参数']
+# auction_time_config = config['拍卖会定时参数']# 1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
 __back_help__ = f"""
 背包帮助信息:
 指令：
@@ -70,7 +70,7 @@ __back_help__ = f"""
 9、出价+金额：对本次排行会的物品进行出价
 10、背包帮助：获取背包帮助指令
 非指令：
-1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
+
 """.strip()
 
 # 重置丹药每日使用次数
