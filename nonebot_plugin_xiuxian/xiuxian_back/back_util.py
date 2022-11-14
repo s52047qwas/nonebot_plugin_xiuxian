@@ -80,6 +80,7 @@ def get_user_back_msg(user_id):
     l_equipment_msg = []
     l_skill_msg = []
     l_elixir_msg = []
+    l_yaocai_msg = []
     l_msg = []
     user_backs = sql_message.get_back_msg(user_id) #list(back)
     if user_backs == None:
@@ -91,22 +92,62 @@ def get_user_back_msg(user_id):
             l_skill_msg = get_skill_msg(l_skill_msg, user_id, user_back.goods_id, user_back.goods_num)
         elif user_back.goods_type == "丹药":
             l_elixir_msg = get_elixir_msg(l_elixir_msg, user_back.goods_id, user_back.goods_num)
+        elif user_back.goods_type == "药材":
+            l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_id, user_back.goods_id, user_back.goods_num)
     if l_equipment_msg != []:
-        l_msg.append("☆------装备------☆")
+        l_msg.append("☆------我的装备------☆")
         for msg in l_equipment_msg:
             l_msg.append(msg)
     
     if l_skill_msg != []:
-        l_msg.append("☆------技能------☆")
+        l_msg.append("☆------拥有技能书------☆")
         for msg in l_skill_msg:
             l_msg.append(msg)
     
     if l_elixir_msg != []:
-        l_msg.append("☆------丹药------☆")
+        l_msg.append("☆------我的丹药------☆")
         for msg in l_elixir_msg:
             l_msg.append(msg)
     
+    if l_yaocai_msg != []:
+        l_msg.append("☆------我的药材------☆")
+        for msg in l_yaocai_msg:
+            l_msg.append(msg)
     return l_msg
+
+def get_yaocai_msg(l_msg, user_id, goods_id, goods_num):
+    """
+    获取背包内的药材信息
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    msg = f"名字：{item_info['name']}\n"
+    msg += f"品级：{item_info['level']}\n"
+    msg += get_yaocai_info(item_info)
+    msg += f"\n拥有数量：{goods_num}"
+    l_msg.append(msg)
+    return l_msg
+
+YAOCAIINFOMSG = {
+    "-1":"性寒",
+    "0":"性平",
+    "1":"性热",
+    "2":"生息",
+    "3":"养气",
+    "4":"炼气"
+}
+def get_yaocai_info(yaocai_info):
+    msg = f"主药 {YAOCAIINFOMSG[str(yaocai_info['主药']['h_a_c']['type'])]}"
+    msg += f"{yaocai_info['主药']['h_a_c']['power']}"
+    msg += f" {YAOCAIINFOMSG[str(yaocai_info['主药']['type'])]}"
+    msg += f"{yaocai_info['主药']['power']}\n"
+    msg += f"药引 {YAOCAIINFOMSG[str(yaocai_info['药引']['h_a_c']['type'])]}"
+    msg += f"{yaocai_info['主药']['h_a_c']['power']}"
+    msg += f" {YAOCAIINFOMSG[str(yaocai_info['药引']['type'])]}"
+    msg += f"{yaocai_info['药引']['power']}\n"
+    msg += f"辅药 {YAOCAIINFOMSG[str(yaocai_info['辅药']['type'])]}"
+    msg += f"{yaocai_info['辅药']['power']}"
+    
+    return msg
 
 def get_equipment_msg(l_msg, user_id, goods_id, goods_num):
     """

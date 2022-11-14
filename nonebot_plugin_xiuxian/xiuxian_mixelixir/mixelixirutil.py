@@ -47,14 +47,14 @@ async def check_mix(elixir_config):
             continue
         else:
             continue
-                        
-    if l_id != 0:
+    id = 0 
+    if l_id != []:
         is_mix = True
         id_config = {}
         for id in l_id:
             for k, v in mix_configs[id].items():
                 id_config[id] = v
-                continue
+                break
         id = sorted(id_config.items(), key= lambda x: x[1], reverse=True)[0][0]#选出最优解
                 
     return is_mix, id
@@ -81,20 +81,6 @@ async def get_mix_elixir_msg(yaocai):
                         zhuyao_type = str(v['主药']['type'])
                         zhuyao_power = v['主药']['power'] * i
                         elixir_config[zhuyao_type] = zhuyao_power
-                        is_mix, id = await check_mix(elixir_config)#先判断只有主药、药引的是否能合成丹药
-                        if is_mix:#有可以合成的
-                            if i + o <= Llandudno_info["max_num"]:
-                                mix_elixir_msg[num] = {}
-                                mix_elixir_msg[num]['id'] = id
-                                mix_elixir_msg[num]['配方简写'] = f"主药{v['name']}{i}药引{vv['name']}{o}"
-                                mix_elixir_msg[num]['主药'] = v['name']
-                                mix_elixir_msg[num]['主药_num'] = i
-                                mix_elixir_msg[num]['药引'] = vv['name']
-                                mix_elixir_msg[num]['药引_num'] = o
-                                mix_elixir_msg[num]['辅药'] = ''
-                                mix_elixir_msg[num]['辅药_num'] = 0
-                                num += 1
-
                         for kkk, vvv in yaocai.items():
                             p = 1
                             #尝试加入辅药
@@ -117,10 +103,13 @@ async def get_mix_elixir_msg(yaocai):
                                         mix_elixir_msg[num]['配方简写'] = f"主药{v['name']}{i}药引{vv['name']}{o}辅药{vvv['name']}{p}"
                                         mix_elixir_msg[num]['主药'] = v['name']
                                         mix_elixir_msg[num]['主药_num'] = i
+                                        mix_elixir_msg[num]['主药_level'] = v['level']
                                         mix_elixir_msg[num]['药引'] = vv['name']
                                         mix_elixir_msg[num]['药引_num'] = o
+                                        mix_elixir_msg[num]['药引_level'] = vv['level']
                                         mix_elixir_msg[num]['辅药'] = vvv['name']
                                         mix_elixir_msg[num]['辅药_num'] = p
+                                        mix_elixir_msg[num]['辅药_level'] = vvv['level']
                                         num += 1
                                         p += 1
                                         continue

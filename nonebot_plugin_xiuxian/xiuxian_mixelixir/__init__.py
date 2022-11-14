@@ -24,6 +24,32 @@ sql_message = XiuxianDateManage()  # sql类
 items = Items()
 
 mix_elixir = on_command("炼丹", priority=5, permission=GROUP)
+elixir_help = on_command("炼丹帮助", priority=5, permission=GROUP)
+mix_elixir_help = on_command("炼丹配方帮助", priority=5, permission=GROUP)
+
+__elixir_help__ = f"""
+炼丹帮助信息:
+指令：
+1、炼丹：会检测背包内的药材，自动生成配方
+2、炼丹帮助：获取本帮助信息
+"""
+
+__mix_elixir_help__ = f"""
+炼丹配方信息
+1、炼丹需要主药、药引、辅药
+2、主药和药引控制炼丹时的冷热调和，冷热失和则炼不出丹药
+3、草药的类型控制产出丹药的类型
+"""
+
+@elixir_help.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    await elixir_help.finish(__elixir_help__)
+
+@mix_elixir_help.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    await mix_elixir_help.finish(__mix_elixir_help__)
 
 @mix_elixir.handle()
 async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
@@ -59,10 +85,15 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
             goods_info = items.get_data_by_item_id(v['id'])
             msg = f"名字：{goods_info['name']}\n"
             msg += f"效果：{goods_info['desc']}\n"
-            msg += f"配方：{v['配方']['配方简写']}"
+            msg += f"配方：{v['配方']['配方简写']}\n"
+            msg += f"☆------药材清单------☆\n"
+            msg += f"主药：{v['配方']['主药']}，{v['配方']['主药_level']}，数量：{v['配方']['主药_num']}\n"
+            msg += f"药引：{v['配方']['药引']}，{v['配方']['药引_level']}，数量：{v['配方']['药引_num']}\n"
+            if v['配方']['辅药_num'] != 0:
+                msg += f"辅药：{v['配方']['辅药']}，{v['配方']['辅药_level']}，数量：{v['配方']['辅药_num']}\n"
             l_msg.append(msg)
-        await send_forward_msg(bot, event, '炼丹', bot.self_id, l_msg)
-        msg = f"请道友输入配方公式 或者 取消，若想自己合成，请参考炼丹帮助"
+        await send_forward_msg(bot, event, '配方', bot.self_id, l_msg)
+        msg = f"请道友输入配方公式 或者 取消，若想自己合成，请参考炼丹配方帮助"
         await mix_elixir.pause(prompt=msg)
 
 @mix_elixir.handle()
@@ -72,43 +103,30 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
         msg = "本次炼丹已取消！"
         await mix_elixir.finish(msg)
     user_id = event.user_id
-    pattern = r"^主药([\u4e00-\u9fa5]+)?(\d+)?药引([\u4e00-\u9fa5]+)?(\d)?(辅药)?([\u4e00-\u9fa5]+)?(\d+)?丹炉([\u4e00-\u9fa5]+)?"
+    pattern = r"主药([\u4e00-\u9fa5]+)(\d+)药引([\u4e00-\u9fa5]+)(\d+)辅药([\u4e00-\u9fa5]+)(\d+)丹炉([\u4e00-\u9fa5]+)+"
     matched = re.search(pattern, mode)
     if matched == None:
         msg = f"请参考转发内容里的配方输入正确的配方！"
-        await mix_elixir.finish(msg)
+        await mix_elixir.reject(prompt=msg)
     else:
         zhuyao_name = matched.groups()[0]
         zhuyao_num = int(matched.groups()[1])#数量一定会有
         check, zhuyao_goods_id = await check_yaocai_name_in_back(user_id, zhuyao_name, zhuyao_num)
         if not check:
             msg = f"请检查药材：{zhuyao_name} 是否在背包中，或者数量是否足够！"
-            await mix_elixir.finish(msg)
+            await mix_elixir.reject(prompt=msg)
         yaoyin_name = matched.groups()[2]
         yaoyin_num = int(matched.groups()[3])#数量一定会有
         check, yaoyin_goods_id = await check_yaocai_name_in_back(user_id, yaoyin_name, yaoyin_num)
         if not check:
             msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
-            await mix_elixir.finish(msg)
-        fuyao_flag = False
-        if matched.groups()[4] != None:#匹配到辅药
-            fuyao_name = matched.groups()[5]
-            if fuyao_name == None:
-                msg = f"请检查辅药是否输入！"
-                await mix_elixir.finish(msg)
-            else:
-                fuyao_num = matched.groups()[6]
-                if fuyao_num == None:
-                    msg = f"请输入辅药的数量！"
-                    await mix_elixir.finish(msg)
-                else:
-                    #辅药的数量
-                    fuyao_num = int(fuyao_num)
-                    check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num)
-                    if not check:
-                        msg = f"请检查药材：{fuyao_name} 是否在背包中，或者数量是否足够！"
-                        await mix_elixir.finish(msg)
-                    fuyao_flag = True
+            await mix_elixir.reject(prompt=msg)
+        fuyao_name = matched.groups()[4]
+        fuyao_num = int(matched.groups()[5])
+        check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num)
+        if not check:
+            msg = f"请检查药材：{fuyao_name} 是否在背包中，或者数量是否足够！"
+            await mix_elixir.reject(prompt=msg)
         #检测通过
         zhuyao_info = Items().get_data_by_item_id(zhuyao_goods_id)
         yaoyin_info = Items().get_data_by_item_id(yaoyin_goods_id)
@@ -118,26 +136,16 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
         else:
             elixir_config = {}
             elixir_config[str(zhuyao_info['主药']['type'])] = zhuyao_info['主药']['power'] * zhuyao_num
-            if fuyao_flag:#有辅药
-                fuyao_info = Items().get_data_by_item_id(fuyao_goods_id)
-                elixir_config[str(fuyao_info['辅药']['type'])] = zhuyao_info['辅药']['power'] * fuyao_num
-                is_mix, id = await check_mix(elixir_config)
-                if is_mix:
-                    goods_info = Items().get_data_by_item_id(id)
-                    msg = f"恭喜道友成功炼成丹药：{goods_info['name']}"
-                    await mix_elixir.finish(msg)
-                else:
-                    msg = f"没有炼成丹药哦~就不扣你药材啦"
-                    await mix_elixir.finish(msg)
-            else:#没辅药
-                is_mix, id = await check_mix(elixir_config)
-                if is_mix:
-                    goods_info = Items().get_data_by_item_id(id)
-                    msg = f"恭喜道友成功炼成丹药：{goods_info['name']}"
-                    await mix_elixir.finish(msg)
-                else:
-                    msg = f"没有炼成丹药哦~就不扣你药材啦"
-                    await mix_elixir.finish(msg)
+            fuyao_info = Items().get_data_by_item_id(fuyao_goods_id)
+            elixir_config[str(fuyao_info['辅药']['type'])] = fuyao_info['辅药']['power'] * fuyao_num
+            is_mix, id = await check_mix(elixir_config)
+            if is_mix:
+                goods_info = Items().get_data_by_item_id(id)
+                msg = f"恭喜道友成功炼成丹药：{goods_info['name']}"
+                await mix_elixir.finish(msg)
+            else:
+                msg = f"没有炼成丹药哦~就不扣你药材啦"
+                await mix_elixir.finish(msg)
     
 async def check_yaocai_name_in_back(user_id, yaocai_name, yaocai_num):
     flag = False
