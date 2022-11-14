@@ -38,7 +38,7 @@ auction_offer_all_count = 0 #控制线程等待时间
 
 
 # 定时任务
-# set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
+set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
 reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 shop = on_command("坊市查看", aliases={'查看坊市'}, priority=5)
@@ -55,7 +55,7 @@ back_help = on_command("背包帮助", priority=5, permission= GROUP)
 
 sql_message = XiuxianDateManage()  # sql类
 
-# auction_time_config = config['拍卖会定时参数']# 1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
+auction_time_config = config['拍卖会定时参数']# 
 __back_help__ = f"""
 背包帮助信息:
 指令：
@@ -70,7 +70,7 @@ __back_help__ = f"""
 9、出价+金额：对本次排行会的物品进行出价
 10、背包帮助：获取背包帮助指令
 非指令：
-
+1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
 """.strip()
 
 # 重置丹药每日使用次数
@@ -84,89 +84,90 @@ async def _():
     logger.info("每日丹药使用次数重置成功！")
     
 
-# # 定时任务生成拍卖会
-# @set_auction_by_scheduler.scheduled_job("cron", hour=auction_time_config['hours'])
-# async def _():
-#     bot = get_bot()
-#     if groups != []:
-#         global auction
-#         if auction != {}:#存在拍卖会
-#             logger.info("本群已存在一场拍卖会")
-#             return
-#         else:
-#             try:
-#                 auction_id_list = get_auction_id_list()
-#                 auction_id = random.choice(auction_id_list)
-#             except IndexError:
-#                 msg = "获取不到拍卖物品的信息，请检查配置文件！"
-#                 logger.info(msg)
-#                 return
-#             auction_info = items.get_data_by_item_id(auction_id)
-#             start_price = get_auction_price_by_id(auction_id)['start_price']
-#             msg = '本次拍卖的物品为：\n'   
-#             msg += get_auction_msg(auction_id)
-#             msg += f"\n底价为{start_price}灵石"
-#             msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
-#             msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
-#             auction['id'] = auction_id
-#             auction['user_id'] = 0
-#             auction['now_price'] = start_price
-#             auction['name'] = auction_info['name']
-#             auction['type'] = auction_info['type']
-#             auction['start_time'] = datetime.now()
-#             auction['group_id'] = 0
-#             for group_id in groups:
-#                 try:
-#                     await bot.send_group_msg(group_id=int(group_id), message=msg)
-#                 except ActionFailed:#发送群消息失败
-#                     continue
-#             await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
+# 定时任务生成拍卖会
+@set_auction_by_scheduler.scheduled_job("cron", hour=auction_time_config['hours'])
+async def _():
+    bot = get_bot()
+    if groups != []:
+        global auction
+        if auction != {}:#存在拍卖会
+            logger.info("本群已存在一场拍卖会")
+            return
+        else:
+            try:
+                auction_id_list = get_auction_id_list()
+                auction_id = random.choice(auction_id_list)
+            except IndexError:
+                msg = "获取不到拍卖物品的信息，请检查配置文件！"
+                logger.info(msg)
+                return
+            auction_info = items.get_data_by_item_id(auction_id)
+            start_price = get_auction_price_by_id(auction_id)['start_price']
+            msg = '本次拍卖的物品为：\n'   
+            msg += get_auction_msg(auction_id)
+            msg += f"\n底价为{start_price}灵石"
+            msg += "\n请诸位道友发送 出价+金额 来进行拍卖吧！"
+            msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
+            auction['id'] = auction_id
+            auction['user_id'] = 0
+            auction['now_price'] = start_price
+            auction['name'] = auction_info['name']
+            auction['type'] = auction_info['type']
+            auction['start_time'] = datetime.now()
+            auction['group_id'] = 0
+            for group_id in groups:
+                try:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                except ActionFailed:#发送群消息失败
+                    continue
+            await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
             
-#             global auction_offer_flag, auction_offer_all_count, auction_offer_time_count
-#             while auction_offer_flag:#有人出价
-#                 if auction_offer_all_count == 0:
-#                     auction_offer_flag = False
-#                     break
-#                 logger.info(f"有人出价，本次等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}秒")
-#                 first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
-#                 auction_offer_all_count = 0
-#                 auction_offer_flag = False
-#                 await asyncio.sleep(first_time)
+            global auction_offer_flag, auction_offer_all_count, auction_offer_time_count
+            while auction_offer_flag:#有人出价
+                if auction_offer_all_count == 0:
+                    auction_offer_flag = False
+                    break
+                logger.info(f"有人出价，本次等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}秒")
+                first_time = auction_offer_all_count * AUCTIONOFFERSLEEPTIME
+                auction_offer_all_count = 0
+                auction_offer_flag = False
+                await asyncio.sleep(first_time)
+                logger.info(f"总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒，当前出价标志：{auction_offer_flag}，本轮等待时间：{first_time}")
             
-#             logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
-#             if auction['user_id'] == 0:
-#                 msg = "很可惜，本次拍卖会流拍了！"
-#                 auction = {}
-#                 for group_id in groups:
-#                     try:
-#                         await bot.send_group_msg(group_id=int(group_id), message=msg)
-#                     except ActionFailed:#发送群消息失败
-#                         continue
-#                 return
-#             now_price = int(auction['now_price'])
-#             user_info = sql_message.get_user_message(auction['user_id'])
-#             user_stone = user_info.stone
-#             if user_stone < now_price:
-#                 msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
-#                 for group_id in groups:
-#                     try:
-#                         await bot.send_group_msg(group_id=int(group_id), message=msg)
-#                     except ActionFailed:#发送群消息失败
-#                         continue
-#                 return
-#             msg = "本次拍卖会结束！"
-#             msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
-#             for group_id in groups:
-#                 try:
-#                     await bot.send_group_msg(group_id=int(group_id), message=msg)
-#                 except ActionFailed:#发送群消息失败
-#                     continue
+            logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
+            if auction['user_id'] == 0:
+                msg = "很可惜，本次拍卖会流拍了！"
+                auction = {}
+                for group_id in groups:
+                    try:
+                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    except ActionFailed:#发送群消息失败
+                        continue
+                return
+            now_price = int(auction['now_price'])
+            user_info = sql_message.get_user_message(auction['user_id'])
+            user_stone = user_info.stone
+            if user_stone < now_price:
+                msg = f"拍卖会结算！竞拍者灵石小于出价，判定为捣乱，捣乱次数+1！"
+                for group_id in groups:
+                    try:
+                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    except ActionFailed:#发送群消息失败
+                        continue
+                return
+            msg = "本次拍卖会结束！"
+            msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+            for group_id in groups:
+                try:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                except ActionFailed:#发送群消息失败
+                    continue
                 
-#             sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
-#             sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
-#             auction = {}
-#             auction_offer_time_count = 0
-#             return
+            sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
+            sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
+            auction = {}
+            auction_offer_time_count = 0
+            return
 
 
 @back_help.handle()
