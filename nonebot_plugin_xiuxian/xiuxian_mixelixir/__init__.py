@@ -58,13 +58,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await yaocai_get.finish(msg, at_sender=True)
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     GETCONFIG = {
-        "time_cost":48#单位小时
+        "time_cost":48,#单位小时
+        "加速基数":0.05
     }
     last_time = mix_elixir_info['收取时间']
     if last_time != 0:
         nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
         timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
-        if timedeff >= GETCONFIG['time_cost']:
+        if timedeff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) :
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
             num = mix_elixir_info['灵田数量']
             i = 1
@@ -85,7 +86,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
             await yaocai_get.finish(msg, at_sender=True)
         else:
-            msg = f"道友的灵田还不能收取，下次收取时间为：{GETCONFIG['time_cost'] - timedeff}小时之后"
+            msg = f"道友的灵田还不能收取，下次收取时间为：{round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) - timedeff}小时之后"
             await yaocai_get.finish(msg, at_sender=True)
     else:#第一次创建
         mix_elixir_info['收取时间'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

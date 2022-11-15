@@ -171,13 +171,21 @@ def get_sec_msg(secbuffdata):
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 def get_player_info(user_id, info_name):
     if info_name == "mix_elixir_info":#灵田信息
+        mix_elixir_infoconfigkey = ["收取时间", "收取等级", "灵田数量", '药材速度']
+        MIXELIXIRINFOCONFIG = {
+            "收取时间":0,
+            "收取等级":0,
+            "灵田数量":1,
+            '药材速度':0
+        }
         try:
             player_info = read_player_info(user_id, info_name)
+            for key in mix_elixir_infoconfigkey:
+                if key not in list(player_info.keys()):
+                    player_info[key] = MIXELIXIRINFOCONFIG[key]
+            save_player_info(user_id, player_info, info_name)
         except:
-            player_info = {}
-            player_info['收取时间'] = 0
-            player_info['收取等级'] = 0
-            player_info['灵田数量'] = 1
+            player_info = MIXELIXIRINFOCONFIG
             save_player_info(user_id, player_info, info_name)
     return player_info
 
