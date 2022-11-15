@@ -19,6 +19,7 @@ class Items:
         self.level_up_big_elixir_jsonpath = ELIXIRPATH / "境界突破丹药.json"
         self.yaocai_jsonpath = ELIXIRPATH / "药材.json"
         self.mix_elixir_type_jsonpath = ELIXIRPATH / "炼丹丹药.json"
+        self.ldl_jsonpath = ELIXIRPATH / "炼丹炉.json"
         self.items = {}
         self.set_item_data(self.get_armor_data(), "防具")
         self.set_item_data(self.get_weapon_data(), "法器")
@@ -28,6 +29,7 @@ class Items:
         self.set_item_data(self.get_level_up_big_elixir_data(), "大境界突破丹药")
         self.set_item_data(self.get_yaocai_data(), "药材")
         self.set_item_data(self.get_mix_elixir_type_data(), "合成丹药")
+        self.set_item_data(self.get_ldl_data(), "炼丹炉")
         self.savef(self.items)
     
     def readf(self, FILEPATH):
@@ -66,6 +68,9 @@ class Items:
 
     def get_mix_elixir_type_data(self):
         return self.readf(self.mix_elixir_type_jsonpath)
+    
+    def get_ldl_data(self):
+        return self.readf(self.ldl_jsonpath)
     
     def get_data_by_item_id(self, item_id):
         return self.items[str(item_id)]

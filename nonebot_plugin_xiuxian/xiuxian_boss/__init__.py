@@ -20,7 +20,8 @@ from ..xiuxian_config import USERRANK
 from .makeboss import createboss
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
-from ..utils import data_check_conf, send_forward_msg_list
+from ..item_json import Items
+from ..utils import data_check_conf, send_forward_msg_list, check_user, send_forward_msg
 from ..read_buff import UserBuffDate
 from pathlib import Path
 import json
@@ -36,6 +37,9 @@ set_group_boss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, 
 battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
 boss_help = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
 boss_delete = on_command("天罚boss", aliases={"天罚世界boss", "天罚Boss", "天罚BOSS", "天罚世界Boss","天罚世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
+boss_integral_info = on_command("世界积分查看", priority=5, permission= GROUP)
+boss_integral_use = on_command("世界积分兑换", priority=5, permission= GROUP)
+
 
 boss_time = config["Boss生成时间参数"]
 __boss_help__ = f"""
@@ -47,6 +51,8 @@ __boss_help__ = f"""
 4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
 5、世界boss帮助、世界boss：获取世界Boss帮助信息
 6、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
+7、世界积分查看：查看自己的世界积分，和世界积分兑换商品
+8、世界积分兑换+编号：兑换对应的商品
 非指令：
 1、拥有定时任务：每{str(boss_time['hours']) + '小时' if boss_time['hours'] != 0 else ''}{str(boss_time['minutes']) + '分钟' if boss_time['minutes'] != 0 else ''}生成一只随机大境界的世界Boss
 """.strip()
@@ -54,7 +60,7 @@ __boss_help__ = f"""
 group_boss = {}
 groups = config['open']
 battle_flag = {}
-
+sql_message = XiuxianDateManage()  # sql类
 
 # 定时任务生成世界boss
 @set_boss.scheduled_job("interval", 
@@ -330,6 +336,86 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await set_group_boss.finish(f'请输入正确的指令：世界boss开启或关闭!')
 
 
+@boss_integral_info.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await boss_integral_info.finish(msg, at_sender=True)
+
+    user_id = user_info.user_id
+    isInGroup = isInGroups(event)
+    if not isInGroup:#不在配置表内
+        await boss_integral_info.finish(f'本群尚未开启世界Boss，请联系管理员开启!')
+    
+    user_boss_fight_info = get_user_boss_fight_info(user_id)
+    boss_integral_shop = config['世界积分商品']
+    l_msg = []
+    l_msg.append(f"道友目前拥有的世界积分：{user_boss_fight_info['boss_integral']}点")
+    if boss_integral_shop != {}:
+        for k, v in boss_integral_shop.items():
+            msg = f"编号:{k}\n"
+            msg += f"描述：{v['desc']}\n"
+            msg += f"所需世界积分：{v['cost']}点"
+            l_msg.append(msg)
+    else:
+        l_msg.append(f"世界积分商店内空空如也！")
+    await send_forward_msg(bot, event, '世界积分商店', bot.self_id, l_msg)
+        
+@boss_integral_use.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await boss_integral_use.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    msg = args.extract_plain_text().strip()
+    shop_num = re.findall("\d+", msg)  # boss编号
+    
+    isInGroup = isInGroups(event)
+    if not isInGroup:#不在配置表内
+        await boss_integral_use.finish(f'本群尚未开启世界Boss，请联系管理员开启!')
+    
+    if shop_num:
+        shop_num = int(shop_num[0])
+    else:
+        await boss_integral_use.finish(f'请输入正确的商品编号！')
+    
+    boss_integral_shop = config['世界积分商品']
+    is_in = False
+    if boss_integral_shop != {}:
+        for k, v in boss_integral_shop.items():
+            if shop_num == int(k):
+                is_in = True
+                cost = v['cost']
+                shop_id = v['id']
+                break
+            else:
+                continue
+    else:
+        msg = f"世界积分商店内空空如也！"
+        await boss_integral_use.finish(msg, at_sender=True)
+    if is_in:
+        user_boss_fight_info = get_user_boss_fight_info(user_id)
+        if user_boss_fight_info['boss_integral'] < cost:
+            msg = f"道友的世界积分不满足兑换条件呢"
+            await boss_integral_use.finish(msg, at_sender=True)
+        else:
+            user_boss_fight_info['boss_integral'] -= cost
+            save_user_boss_fight_info(user_id, user_boss_fight_info)
+            item_info = Items().get_data_by_item_id(shop_id)
+            sql_message.send_back(user_id, shop_id, item_info['name'], item_info['type'], 1)
+            msg = f"道友成功兑换获得：{item_info['name']}"
+            await boss_integral_use.finish(msg, at_sender=True)
+    else:
+        msg = f"该编号不在商品列表内哦，请检查后再兑换"
+        await boss_integral_use.finish(msg, at_sender=True)
+
+
+
+
+
+
 async def data_check(bot, event):
     """
     判断用户信息是否存在
@@ -382,7 +468,7 @@ def get_user_boss_fight_info(user_id):
     except:
         user_boss_fight_info = {}
         user_boss_fight_info['boss_integral'] = 0
-        savef(user_id, user_boss_fight_info)
+        save_user_boss_fight_info(user_id, user_boss_fight_info)
     return user_boss_fight_info
 
 def read_user_boss_fight_info(user_id):
