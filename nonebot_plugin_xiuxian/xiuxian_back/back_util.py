@@ -133,7 +133,9 @@ YAOCAIINFOMSG = {
     "1":"性热",
     "2":"生息",
     "3":"养气",
-    "4":"炼气"
+    "4":"炼气",
+    "5":"聚元",
+    "6":"凝神",
 }
 def get_yaocai_info(yaocai_info):
     msg = f"主药 {YAOCAIINFOMSG[str(yaocai_info['主药']['h_a_c']['type'])]}"
@@ -141,9 +143,7 @@ def get_yaocai_info(yaocai_info):
     msg += f" {YAOCAIINFOMSG[str(yaocai_info['主药']['type'])]}"
     msg += f"{yaocai_info['主药']['power']}\n"
     msg += f"药引 {YAOCAIINFOMSG[str(yaocai_info['药引']['h_a_c']['type'])]}"
-    msg += f"{yaocai_info['主药']['h_a_c']['power']}"
-    msg += f" {YAOCAIINFOMSG[str(yaocai_info['药引']['type'])]}"
-    msg += f"{yaocai_info['药引']['power']}\n"
+    msg += f"{yaocai_info['药引']['h_a_c']['power']}"
     msg += f"辅药 {YAOCAIINFOMSG[str(yaocai_info['辅药']['type'])]}"
     msg += f"{yaocai_info['辅药']['power']}"
     
