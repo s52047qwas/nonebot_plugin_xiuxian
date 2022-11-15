@@ -168,7 +168,35 @@ def get_sec_msg(secbuffdata):
     return msg
 
 
+PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
+def get_player_info(user_id, info_name):
+    if info_name == "mix_elixir_info":#灵田信息
+        try:
+            player_info = read_player_info(user_id, info_name)
+        except:
+            player_info = {}
+            player_info['收取时间'] = 0
+            player_info['收取等级'] = 0
+            player_info['灵田数量'] = 1
+            save_player_info(user_id, player_info, info_name)
+    return player_info
+
+def read_player_info(user_id, info_name):
+    user_id = str(user_id)
+    FILEPATH = PLAYERSDATA / user_id / f"{info_name}.json"
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
+
+def save_player_info(user_id, data, info_name):
+    user_id = str(user_id)
     
-
-
-
+    if not os.path.exists(PLAYERSDATA / user_id):
+        print("目录不存在，创建目录")
+        os.makedirs(PLAYERSDATA / user_id)
+    
+    FILEPATH = PLAYERSDATA / user_id / f"{info_name}.json"
+    data = json.dumps(data, ensure_ascii=False, indent=4)
+    save_mode = "w" if os.path.exists(FILEPATH) else "x"
+    with open(FILEPATH, mode=save_mode, encoding="UTF-8") as f:
+        f.write(data)

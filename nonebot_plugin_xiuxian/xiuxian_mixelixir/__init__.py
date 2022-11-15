@@ -1,11 +1,12 @@
 from typing import Any, Tuple, Dict
 from nonebot import on_regex, get_bot, on_command, require
-from nonebot.params import RegexGroup, EventPlainText
+from nonebot.params import RegexGroup, EventPlainText, CommandArg
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
     PRIVATE_FRIEND,
     GROUP,
+    Message,
     GroupMessageEvent,
 )
 from nonebot.permission import SUPERUSER
@@ -17,7 +18,10 @@ from nonebot.log import logger
 from ..utils import data_check_conf, check_user, send_forward_msg
 from ..item_json import Items
 from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix
-import os
+from ..read_buff import get_player_info, save_player_info
+from ..xiuxian_config import USERRANK
+from datetime import datetime
+import random
 import re
 
 sql_message = XiuxianDateManage()  # sql类
@@ -26,7 +30,7 @@ items = Items()
 mix_elixir = on_command("炼丹", priority=5, permission=GROUP)
 elixir_help = on_command("炼丹帮助", priority=5, permission=GROUP)
 mix_elixir_help = on_command("炼丹配方帮助", priority=5, permission=GROUP)
-
+yaocai_get = on_command("灵田收取", aliases={"灵田结算"}, priority=5, permission=GROUP)
 __elixir_help__ = f"""
 炼丹帮助信息:
 指令：
@@ -40,6 +44,55 @@ __mix_elixir_help__ = f"""
 2、主药和药引控制炼丹时的冷热调和，冷热失和则炼不出丹药
 3、草药的类型控制产出丹药的类型
 """
+
+@yaocai_get.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """灵田收取"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await yaocai_get.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) == 0:
+        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
+        await yaocai_get.finish(msg, at_sender=True)
+    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+    GETCONFIG = {
+        "time_cost":48#单位小时
+    }
+    last_time = mix_elixir_info['收取时间']
+    if last_time != 0:
+        nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
+        timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
+        if timedeff >= GETCONFIG['time_cost']:
+            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
+            num = mix_elixir_info['灵田数量']
+            i = 1
+            give_dict = {}
+            while i <= num:
+                id = random.choice(yaocai_id_list)
+                try:
+                    give_dict[id] += 1
+                    i += 1
+                except:
+                    give_dict[id] = 1
+                    i += 1
+            for k, v in give_dict.items():
+                goods_info = items.get_data_by_item_id(k)
+                msg += f"道友成功收获药材：{goods_info['name']} {v} 个！\n"
+                sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
+            mix_elixir_info['收取时间'] = nowtime
+            save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
+            await yaocai_get.finish(msg, at_sender=True)
+        else:
+            msg = f"道友的灵田还不能收取，下次收取时间为：{GETCONFIG['time_cost'] - timedeff}小时之后"
+            await yaocai_get.finish(msg, at_sender=True)
+    else:#第一次创建
+        mix_elixir_info['收取时间'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+        msg = f"道友的灵田还不能收取，下次收取时间为：{GETCONFIG['time_cost']}小时之后"
+        await yaocai_get.finish(msg, at_sender=True)
+
 
 @elixir_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
