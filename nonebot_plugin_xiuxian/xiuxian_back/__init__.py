@@ -19,7 +19,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir, get_use_jlq_msg
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -537,6 +537,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await use.finish(msg)
     elif goods_type == "丹药":
         msg = check_use_elixir(user_id, goods_id)
+        await use.finish(msg)
+        
+    elif goods_type == "聚灵旗":
+        msg = get_use_jlq_msg(user_id, goods_id)
         await use.finish(msg)
     else:
         await use.finish('该类型物品调试中，未开启！')

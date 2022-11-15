@@ -81,6 +81,8 @@ def get_user_back_msg(user_id):
     l_skill_msg = []
     l_elixir_msg = []
     l_yaocai_msg = []
+    l_xiulianitem_msg = []
+    l_ldl_msg = []
     l_msg = []
     user_backs = sql_message.get_back_msg(user_id) #list(back)
     if user_backs == None:
@@ -88,10 +90,19 @@ def get_user_back_msg(user_id):
     for user_back in user_backs:
         if user_back.goods_type == "装备":
             l_equipment_msg = get_equipment_msg(l_equipment_msg, user_id, user_back.goods_id, user_back.goods_num)
+            
         elif user_back.goods_type == "技能":
             l_skill_msg = get_skill_msg(l_skill_msg, user_id, user_back.goods_id, user_back.goods_num)
+            
         elif user_back.goods_type == "丹药":
             l_elixir_msg = get_elixir_msg(l_elixir_msg, user_back.goods_id, user_back.goods_num)
+            
+        elif user_back.goods_type == "聚灵旗":
+            l_yaocai_msg = get_jlq_msg(l_xiulianitem_msg, user_id, user_back.goods_id, user_back.goods_num)
+        
+        elif user_back.goods_type == "炼丹炉":
+            l_yaocai_msg = get_ldl_msg(l_ldl_msg, user_id, user_back.goods_id, user_back.goods_num)
+            
         elif user_back.goods_type == "药材":
             l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_id, user_back.goods_id, user_back.goods_num)
     if l_equipment_msg != []:
@@ -104,6 +115,16 @@ def get_user_back_msg(user_id):
         for msg in l_skill_msg:
             l_msg.append(msg)
     
+    if l_xiulianitem_msg != []:
+        l_msg.append("☆------修炼物品------☆")
+        for msg in l_xiulianitem_msg:
+            l_msg.append(msg)
+            
+    if l_ldl_msg != []:
+        l_msg.append("☆------炼丹炉------☆")
+        for msg in l_ldl_msg:
+            l_msg.append(msg)
+            
     if l_elixir_msg != []:
         l_msg.append("☆------我的丹药------☆")
         for msg in l_elixir_msg:
@@ -123,6 +144,28 @@ def get_yaocai_msg(l_msg, user_id, goods_id, goods_num):
     msg = f"名字：{item_info['name']}\n"
     msg += f"品级：{item_info['level']}\n"
     msg += get_yaocai_info(item_info)
+    msg += f"\n拥有数量：{goods_num}"
+    l_msg.append(msg)
+    return l_msg
+
+def get_jlq_msg(l_msg, user_id, goods_id, goods_num):
+    """
+    获取背包内的修炼物品信息，聚灵旗
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    msg = f"名字：{item_info['name']}\n"
+    msg += f"效果：{item_info['desc']}"
+    msg += f"\n拥有数量：{goods_num}"
+    l_msg.append(msg)
+    return l_msg
+
+def get_ldl_msg(l_msg, user_id, goods_id, goods_num):
+    """
+    获取背包内的炼丹炉信息
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    msg = f"名字：{item_info['name']}\n"
+    msg += f"效果：{item_info['desc']}"
     msg += f"\n拥有数量：{goods_num}"
     l_msg.append(msg)
     return l_msg
@@ -301,11 +344,52 @@ def check_use_elixir(user_id, goods_id):
                 sql_message.update_back_j(user_id, goods_id, use_key=1)
                 sql_message.update_user_hp(user_id)
                 msg = f"道友成功使用丹药：{goods_name}，状态已全部恢复！"
+     
+    elif goods_info['buff_type'] == "atk_buff":#永久加攻击buff的丹药
+        if goods_rank < user_rank:#使用限制
+            msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        elif goods_all_num > goods_info['all_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
+        else:
+            buff = goods_info['buff']
+            sql_message.updata_user_atk_buff(user_id, buff)
+            sql_message.update_back_j(user_id, goods_id, use_key=1)
+            msg = f"道友成功使用丹药：{goods_name}，攻击力永久增加{buff}点！"
+    
+    elif goods_info['buff_type'] == "exp_up":#加固定经验值的丹药
+        if goods_rank < user_rank:#使用限制
+            msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}以上，道友不满足使用条件！"
+        elif goods_all_num > goods_info['all_num']:
+            msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
+        else:
+            exp = goods_info['buff']
+            user_hp = int(user_info.hp + (exp / 2))
+            user_mp = int(user_info.mp + exp)
+            user_atk = int(user_info.atk + (exp / 10))
+            sql_message.update_exp(user_id, exp)
+            sql_message.update_power2(user_id)  # 更新战力
+            sql_message.update_user_attribute(user_id, user_hp, user_mp, user_atk)#这种事情要放在update_exp方法里
+            sql_message.update_back_j(user_id, goods_id, use_key=1)
+            msg = f"道友成功使用丹药：{goods_name}，修为增加{exp}点！"
+            
     else:
         msg = f"该类型的丹药目前暂时不支持使用！"
     return msg
 
-
+def get_use_jlq_msg(user_id, goods_id):
+    user_info = sql_message.get_user_message(user_id)
+    if user_info.blessed_spot_flag == 0:
+        msg = f"道友还未拥有洞天福地，无法使用该物品"
+    else:
+        item_info = items.get_data_by_item_id(goods_id)
+        user_buff_data = UserBuffDate(user_id).BuffInfo
+        if int(user_buff_data.blessed_spot) >= item_info['修炼速度']:
+            msg = f"该聚灵旗的等级不能满足道友的福地了，使用了也没效果"
+        else:
+            sql_message.update_back_j(user_id, goods_id)
+            sql_message.updata_user_blessed_spot(user_id, item_info['修炼速度'])
+            msg = f"道友洞天福地的聚灵旗已经替换为：{item_info['name']}"
+    return msg
 
 def get_shop_data(group_id):
     try:

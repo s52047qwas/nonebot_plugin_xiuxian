@@ -24,13 +24,21 @@ out_closing = on_command("出关", aliases={"灵石出关"}, priority=5)
 mind_state = on_command("我的状态", priority=5)
 qc = on_command("切磋", priority=5)
 buff_help = on_command("功法帮助", priority=5)
+blessed_spot_creat = on_command("洞天福地购买", priority=5)
+blessed_spot_info = on_command("洞天福地查看", priority=5)
+blessed_spot_rename = on_command("洞天福地改名", priority=5)
 sql_message = XiuxianDateManage()  # sql类
+
+BLESSEDSPOTCOST = 500000
 
 __buff_help__ = f"""
 功法帮助信息:
 指令：
 1、我的功法：查看自身功法信息
 2、切磋，at对应人员，不会消耗气血
+3、洞天福地购买：购买洞天福地
+4、洞天福地查看：查看自己的洞天福地
+5、洞天福地改名+名字：修改自己洞天福地的名字
 """.strip()
 
 @buff_help.handle()
@@ -39,6 +47,72 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
     msg = __buff_help__
     await buff_help.finish(msg)
+
+@blessed_spot_creat.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """洞天福地开启"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await blessed_spot_creat.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) != 0:
+        msg = f"道友已经拥有洞天福地了，请发送洞天福地查看吧~"
+        await blessed_spot_creat.finish(msg, at_sender=True)
+    if user_info.stone < BLESSEDSPOTCOST:
+        msg = f"道友的灵石不足{BLESSEDSPOTCOST}枚，无法购买洞天福地"
+        await blessed_spot_creat.finish(msg, at_sender=True)
+    else:
+        sql_message.update_ls(user_id, BLESSEDSPOTCOST, 2)
+        sql_message.update_user_blessed_spot_flag(user_id)
+        msg = f"恭喜道友拥有了自己的洞天福地，请收集聚灵旗来提升洞天福地的等级吧~"
+        await blessed_spot_creat.finish(msg, at_sender=True)
+
+@blessed_spot_info.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """洞天福地信息"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await blessed_spot_info.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) == 0:
+        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
+        await blessed_spot_info.finish(msg, at_sender=True)
+    msg = f'\n道友的洞天福地：\n'
+    user_buff_data = UserBuffDate(user_id).BuffInfo
+    if user_info.blessed_spot_name == 0:
+        blessed_spot_name = "尚未命名"
+    else:
+        blessed_spot_name = user_info.blessed_spot_name
+    msg += f"名字：{blessed_spot_name}\n"
+    msg += f"修炼速度：增加{int(user_buff_data.blessed_spot) * 100}%\n"
+    msg += f"灵田等级：未开启"
+    await blessed_spot_info.finish(msg, at_sender=True)
+
+@blessed_spot_rename.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """洞天福地改名"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await blessed_spot_rename.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) == 0:
+        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
+        await blessed_spot_rename.finish(msg, at_sender=True)
+    arg = args.extract_plain_text().strip()
+    arg = str(arg)
+    if arg == "":
+        msg = "请输入洞天福地的名字！"
+        await blessed_spot_rename.finish(msg, at_sender=True)
+    if len(arg) > 9:
+        msg = f"洞天福地的名字不可大于9位，请重新命名"
+    else:
+        msg = f"道友的洞天福地成功改名为：{arg}"
+        sql_message.update_user_blessed_spot_name(user_id, arg)
+    await blessed_spot_rename.finish(msg, at_sender=True)
+    
 
 @qc.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -138,10 +212,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
         )  # 闭关时长计算(分钟) = second // 60
         level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
         realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
-        mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+        user_buff_data = UserBuffDate(user_id)
+        mainbuffdata = user_buff_data.get_user_main_buff_data()
         mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0#功法修炼倍率
         exp = int(
-            exp_time * XiuConfig().closing_exp * level_rate * realm_rate * (1 + mainbuffratebuff)
+            (exp_time * XiuConfig().closing_exp) * ((level_rate * realm_rate * (1 + mainbuffratebuff)) + int(user_buff_data.BuffInfo.blessed_spot))#洞天福地为加法
         )  # 本次闭关获取的修为
 
         if exp >= user_get_exp_max:
@@ -214,14 +289,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
     
     level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
     realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
-    main_buff_data = UserBuffDate(user_id).get_user_main_buff_data()
-    user_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
+    user_buff_data = UserBuffDate(user_id)
+    main_buff_data = user_buff_data.get_user_main_buff_data()
+    user_weapon_data = user_buff_data.get_user_weapon_data()
     if user_weapon_data != None:
         crit_buff = int(user_weapon_data['crit_buff'] * 100)
     else:
         crit_buff = 1
     
-    user_armor_data = UserBuffDate(user_id).get_user_armor_buff_data()
+    user_armor_data = user_buff_data.get_user_armor_buff_data()
     if user_armor_data != None:
         def_buff = int(user_armor_data['def_buff'] * 100)
     else:
@@ -235,7 +311,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 真元：{user_msg.mp}/{int((user_msg.exp) * (1 + main_mp_buff))}
 攻击：{user_msg.atk}
 攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
-修炼效率：{int((level_rate * realm_rate) * (1 + main_buff_rate_buff)  * 100)}%
+修炼效率：{int(((level_rate * realm_rate) * (1 + main_buff_rate_buff) + int(user_buff_data.BuffInfo.blessed_spot))  * 100)}%
 会心：{crit_buff}%
 减伤率：{def_buff}%
 """
