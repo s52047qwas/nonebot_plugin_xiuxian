@@ -16,11 +16,15 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian_config import USERRANK
 from .makeboss import createboss
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
 from ..utils import data_check_conf, send_forward_msg_list
 from ..read_buff import UserBuffDate
+from pathlib import Path
+import json
+import os
 
 config = get_config()
 # 定时任务
@@ -177,13 +181,29 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['exp'] = userinfo.exp
     
     bossinfo = group_boss[group_id][boss_num - 1]
+    boss_rank = USERRANK[(bossinfo['jj'] + '中期')]
+    user_rank = USERRANK[userinfo.level]
+    boss_old_hp = bossinfo['气血']#打之前的血量
+    more_msg = ''
     battle_flag[group_id] = True
     result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
-    battle_flag[group_id] = False
     if victor == bossinfo['name']:
         group_boss[group_id][boss_num - 1] = bossinfo_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
-        msg = f"道友不敌{bossinfo['name']}，重伤逃遁，临逃前收获灵石{get_stone}枚"
+        #新增boss战斗积分点数
+        boss_now_hp = bossinfo_new['气血']#打之后的血量
+        boss_all_hp = bossinfo['总血量']#总血量
+        boss_integral = int(((boss_old_hp - boss_now_hp) / boss_all_hp) * 100)
+        if boss_integral < 10:#摸一下不给
+            boss_integral = 0
+        if boss_rank - user_rank >= 9:#超过太多不给
+            boss_integral = 0
+            more_msg = "道友的境界超过boss太多了！"
+        user_boss_fight_info = get_user_boss_fight_info(user_id)
+        user_boss_fight_info['boss_integral'] += boss_integral
+        save_user_boss_fight_info(user_id, user_boss_fight_info)
+        msg = f"道友不敌{bossinfo['name']}，重伤逃遁，临逃前收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
+        battle_flag[group_id] = False
         try:
             await send_forward_msg_list(bot, event, result)
         except ActionFailed:
@@ -192,9 +212,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await battle.finish(msg, at_sender=True)
         
     elif victor == player['道号']:
+        #新增boss战斗积分点数
+        boss_all_hp = bossinfo['总血量']#总血量
+        boss_integral = int((boss_old_hp / boss_all_hp) * 100)
+        if boss_integral < 10:#摸一下不给
+            boss_integral = 0
+        if boss_rank - user_rank >= 9:#超过太多不给
+            boss_integral = 0
+            more_msg = "道友的境界超过boss太多了！"
         group_boss[group_id].remove(group_boss[group_id][boss_num - 1])
+        battle_flag[group_id] = False
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
-        msg = f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚"
+        user_boss_fight_info = get_user_boss_fight_info(user_id)
+        user_boss_fight_info['boss_integral'] += boss_integral
+        save_user_boss_fight_info(user_id, user_boss_fight_info)
+        msg = f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
         try:
             await send_forward_msg_list(bot, event, result)
         except ActionFailed:
@@ -341,3 +373,35 @@ async def send_forward_msg(
 
 def isInGroups(event: GroupMessageEvent):
     return event.group_id in groups
+
+PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
+
+def get_user_boss_fight_info(user_id):
+    try:
+        user_boss_fight_info = read_user_boss_fight_info(user_id)
+    except:
+        user_boss_fight_info = {}
+        user_boss_fight_info['boss_integral'] = 0
+        savef(user_id, user_boss_fight_info)
+    return user_boss_fight_info
+
+def read_user_boss_fight_info(user_id):
+    user_id = str(user_id)
+    
+    FILEPATH = PLAYERSDATA / user_id / "boss_fight_info.json"
+    with open(FILEPATH, "r", encoding="UTF-8") as f:
+        data = f.read()
+    return json.loads(data)
+
+def save_user_boss_fight_info(user_id, data):
+    user_id = str(user_id)
+    
+    if not os.path.exists(PLAYERSDATA / user_id):
+        print("目录不存在，创建目录")
+        os.makedirs(PLAYERSDATA / user_id)
+    
+    FILEPATH = PLAYERSDATA / user_id / "boss_fight_info.json"
+    data = json.dumps(data, ensure_ascii=False, indent=4)
+    save_mode = "w" if os.path.exists(FILEPATH) else "x"
+    with open(FILEPATH, mode=save_mode, encoding="UTF-8") as f:
+        f.write(data)

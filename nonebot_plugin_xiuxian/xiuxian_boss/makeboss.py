@@ -35,6 +35,7 @@ def get_boss_exp(alluserexp):
     
     bossexp = int(bossexp / len(alluserexp))
     bossinfo['气血'] = bossexp * config["Boss倍率"]["气血"]
+    bossinfo['总血量'] = bossexp * config["Boss倍率"]["气血"]
     bossinfo['真元'] = bossexp * config["Boss倍率"]["真元"]
     bossinfo['攻击'] = int(bossexp * config["Boss倍率"]["攻击"])
     return bossinfo
