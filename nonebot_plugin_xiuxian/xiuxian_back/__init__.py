@@ -29,10 +29,10 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群交流会使用
 auction = {}
-AUCTIONSLEEPTIME = 120#拍卖初始等待时间（秒）
+AUCTIONSLEEPTIME = 120#交友初始等待时间（秒）
 
 auction_offer_flag = False #交友标志
-AUCTIONOFFERSLEEPTIME = 10#每次交友增加拍卖剩余的时间（秒）
+AUCTIONOFFERSLEEPTIME = 10#每次交友增加交友剩余的时间（秒）
 auction_offer_time_count = 0 #计算剩余时间
 auction_offer_all_count = 0 #控制线程等待时间
 
@@ -55,7 +55,7 @@ back_help = on_command("背包帮助", priority=5, permission= GROUP)
 
 sql_message = XiuxianDateManage()  # sql类
 
-auction_time_config = config['拍卖会定时参数']# 
+auction_time_config = config['交友会定时参数']# 
 __back_help__ = f"""
 背包帮助信息:
 指令：
@@ -66,11 +66,11 @@ __back_help__ = f"""
 5、坊市上架：坊市上架 物品 金额，上架背包内的物品
 6、系统坊市上架：系统坊市上架 物品 金额，上架任意存在的物品，超管权限
 7、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
-8、群交流会开启、关闭：开启拍卖行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报拍卖行消息
-9、交友+金额：对本次排行会的物品进行交友
+8、群交流会开启、关闭：开启交友行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报交友消息
+9、交友+金额：对本次交友会的物品进行交友
 10、背包帮助：获取背包帮助指令
 非指令：
-1、定时生成拍卖会，每天{auction_time_config['hours']}点每整点生成一场拍卖会
+1、定时生成交友会，每天{auction_time_config['hours']}点每整点生成一场交友会
 """.strip()
 
 # 重置丹药每日使用次数
@@ -84,29 +84,29 @@ async def _():
     logger.info("每日丹药使用次数重置成功！")
     
 
-# 定时任务生成拍卖会
+# 定时任务生成交友会
 @set_auction_by_scheduler.scheduled_job("cron", hour=auction_time_config['hours'])
 async def _():
     bot = get_bot()
     if groups != []:
         global auction
-        if auction != {}:#存在拍卖会
-            logger.info("本群已存在一场拍卖会")
+        if auction != {}:#存在交友会
+            logger.info("本群已存在一场交友会")
             return
         else:
             try:
                 auction_id_list = get_auction_id_list()
                 auction_id = random.choice(auction_id_list)
             except IndexError:
-                msg = "获取不到拍卖物品的信息，请检查配置文件！"
+                msg = "获取不到交友物品的信息，请检查配置文件！"
                 logger.info(msg)
                 return
             auction_info = items.get_data_by_item_id(auction_id)
             start_price = get_auction_price_by_id(auction_id)['start_price']
-            msg = '本次拍卖的物品为：\n'   
+            msg = '本次交友的物品为：\n'   
             msg += get_auction_msg(auction_id)
             msg += f"\n底价为{start_price}灵石"
-            msg += "\n请诸位道友发送 交友+金额 来进行拍卖吧！"
+            msg += "\n请诸位道友发送 交友+金额 来进行交友吧！"
             msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
             auction['id'] = auction_id
             auction['user_id'] = 0
@@ -136,7 +136,7 @@ async def _():
             
             logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
             if auction['user_id'] == 0:
-                msg = "很可惜，本次拍卖会流拍了！"
+                msg = "很可惜，本次交友会流拍了！"
                 auction = {}
                 for group_id in groups:
                     try:
@@ -148,15 +148,15 @@ async def _():
             user_info = sql_message.get_user_message(auction['user_id'])
             user_stone = user_info.stone
             if user_stone < now_price:
-                msg = f"拍卖会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
+                msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
                 for group_id in groups:
                     try:
                         await bot.send_group_msg(group_id=int(group_id), message=msg)
                     except ActionFailed:#发送群消息失败
                         continue
                 return
-            msg = "本次拍卖会结束！"
-            msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+            msg = "本次交友会结束！"
+            msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}！"
             for group_id in groups:
                 try:
                     await bot.send_group_msg(group_id=int(group_id), message=msg)
@@ -551,26 +551,26 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = event.group_id
     
     if group_id not in groups:
-        msg = '本群尚未开启拍卖会功能，请联系管理员开启！'
+        msg = '本群尚未开启交友会功能，请联系管理员开启！'
         await creat_auction.finish(msg, at_sender=True)
     
     global auction
     if auction != {}:
-        await creat_auction.finish(f'本群已存在一场拍卖会，请等待拍卖会结束！')
+        await creat_auction.finish(f'本群已存在一场交友会，请等待交友会结束！')
     
     try:
         auction_id_list = get_auction_id_list()
         auction_id = random.choice(auction_id_list)
     except IndexError:
-        msg = "获取不到拍卖物品的信息，请检查配置文件！"
+        msg = "获取不到交友物品的信息，请检查配置文件！"
         await creat_auction.finish(msg, at_sender=True)
     
     auction_info = items.get_data_by_item_id(auction_id)
     start_price = get_auction_price_by_id(auction_id)['start_price']
-    msg = '本次拍卖的物品为：\n'   
+    msg = '本次交友的物品为：\n'   
     msg += get_auction_msg(auction_id)
     msg += f"\n底价为{start_price}灵石"
-    msg += "\n请诸位道友发送 交友+金额 来进行拍卖吧！"
+    msg += "\n请诸位道友发送 交友+金额 来进行交友吧！"
     msg += f"\n本次竞拍时间为：{AUCTIONSLEEPTIME}秒！"
     
     auction['id'] = auction_id
@@ -601,7 +601,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     logger.info(f"等待时间结束，总计等待时间{auction_offer_time_count * AUCTIONOFFERSLEEPTIME}秒")
     if auction['user_id'] == 0:
-        msg = "很可惜，本次拍卖会流拍了！"
+        msg = "很可惜，本次交友会流拍了！"
         auction = {}
         for group_id in groups:
             try:
@@ -614,11 +614,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     now_price = int(auction['now_price'])
     user_stone = user_info.stone
     if user_stone < now_price:
-        msg = f"拍卖会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
+        msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
         await creat_auction.finish(msg)
 
-    msg = "本次拍卖会结束！"
-    msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功拍卖获得：{auction['type']}-{auction['name']}！"
+    msg = "本次交友会结束！"
+    msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}！"
     for group_id in groups:
         try:
             await bot.send_group_msg(group_id=int(group_id), message=msg)
@@ -637,7 +637,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     group_id = event.group_id
     if group_id not in groups:
-        msg = '本群尚未开启拍卖会功能，请联系管理员开启！'
+        msg = '本群尚未开启交友会功能，请联系管理员开启！'
         await offer_auction.finish(msg, at_sender=True)
         
     isUser, user_info, msg = check_user(event)
@@ -646,7 +646,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     global auction
     if auction == {}:
-        msg = f'本群不存在拍卖会，请等待拍卖会开启！'
+        msg = f'本群不存在交友会，请等待交友会开启！'
         await offer_auction.finish(msg, at_sender=True)
     
     price = args.extract_plain_text().strip()
@@ -681,7 +681,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         try:
             await bot.send_group_msg(group_id=int(group_id), message=msg)
         except ActionFailed:
-            error_msg = f"消息发送失败，可能被风控，当前拍卖物品金额为：{auction['now_price']}！"
+            error_msg = f"消息发送失败，可能被风控，当前交友物品金额为：{auction['now_price']}！"
             continue
     logger.info(f"有人交友，交友标志：{auction_offer_flag}，当前等待时间：{auction_offer_all_count * AUCTIONOFFERSLEEPTIME}，总计交友次数：{auction_offer_time_count}")
     if error_msg == '':
