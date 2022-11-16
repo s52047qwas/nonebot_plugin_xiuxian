@@ -17,7 +17,7 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
                        "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
-                       "sect_task", "sect_contribution", "sect_elixir_get"])
+                       "sect_task", "sect_contribution", "sect_elixir_get", "blessed_spot_flag", "blessed_spot_name"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
@@ -25,7 +25,7 @@ SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland",
                        "sect_materials", "mainbuff", "secbuff", "elixir_room_level"])
 BuffInfo = namedtuple("BuffInfo",
-                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff"])
+                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff", "atk_buff", "blessed_spot"])
 
 back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
                            "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
@@ -931,6 +931,34 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (id, user_id,))
         self.conn.commit()
+        
+    def updata_user_atk_buff(self, user_id, buff):
+        """更新用户永久攻击buff信息"""
+        sql = f"UPDATE BuffInfo SET atk_buff=atk_buff+? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (buff, user_id,))
+        self.conn.commit()
+    
+    def updata_user_blessed_spot(self, user_id, blessed_spot):
+        """更新用户洞天福地等级"""
+        sql = f"UPDATE BuffInfo SET blessed_spot=? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (blessed_spot, user_id,))
+        self.conn.commit()
+    
+    def update_user_blessed_spot_flag(self, user_id):
+        """更新用户洞天福地是否开启"""
+        sql = f"UPDATE user_xiuxian SET blessed_spot_flag=1 where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+        
+    def update_user_blessed_spot_name(self, user_id, blessed_spot_name):
+        """更新用户洞天福地的名字"""
+        sql = f"UPDATE user_xiuxian SET blessed_spot_name=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (blessed_spot_name, user_id,))
+        self.conn.commit()
     
     def day_num_reset(self):
         """重置丹药每日使用次数"""
@@ -1346,7 +1374,7 @@ def final_user_data(user_data):
     main_atk_buff = main_buff_data['atkbuff'] if main_buff_data != None else 0
     user_data[15] = int(user_data[15] * (1 + main_hp_buff))#hp 
     user_data[16] = int(user_data[16] * (1 + main_mp_buff))#mp
-    user_data[17] = int(user_data[17] * (user_data[18] * 0.1 + 1) * (1 + main_atk_buff) * (1 + weapon_atk_buff))#每级+10%攻击
+    user_data[17] = int(user_data[17] * (user_data[18] * 0.1 + 1) * (1 + main_atk_buff) * (1 + weapon_atk_buff)) + user_buff_data.atk_buff#每级+10%攻击
     user_data = tuple(user_data)
     return user_data
     

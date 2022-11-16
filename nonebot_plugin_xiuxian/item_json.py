@@ -8,6 +8,7 @@ READPATH = Path() / "data" / "xiuxian"
 SKILLPATHH = READPATH / "功法"
 WEAPONPATH = READPATH / "装备"
 ELIXIRPATH = READPATH / "丹药"
+XIULIANITEMPATH = READPATH / "修炼物品"
 
 class Items:
     def __init__(self) -> None:
@@ -16,20 +17,20 @@ class Items:
         self.weapon_jsonpath = WEAPONPATH / "法器.json"
         self.armor_jsonpath = WEAPONPATH / "防具.json"
         self.elixir_jsonpath = ELIXIRPATH / "丹药.json"
-        self.level_up_big_elixir_jsonpath = ELIXIRPATH / "境界突破丹药.json"
         self.yaocai_jsonpath = ELIXIRPATH / "药材.json"
         self.mix_elixir_type_jsonpath = ELIXIRPATH / "炼丹丹药.json"
         self.ldl_jsonpath = ELIXIRPATH / "炼丹炉.json"
+        self.jlq_jsonpath = XIULIANITEMPATH / "聚灵旗.json"
         self.items = {}
         self.set_item_data(self.get_armor_data(), "防具")
         self.set_item_data(self.get_weapon_data(), "法器")
         self.set_item_data(self.get_main_buff_data(), "功法")
         self.set_item_data(self.get_sec_buff_data(), "神通")
         self.set_item_data(self.get_elixir_data(), "丹药")
-        self.set_item_data(self.get_level_up_big_elixir_data(), "大境界突破丹药")
         self.set_item_data(self.get_yaocai_data(), "药材")
         self.set_item_data(self.get_mix_elixir_type_data(), "合成丹药")
         self.set_item_data(self.get_ldl_data(), "炼丹炉")
+        self.set_item_data(self.get_jlq_data(), "聚灵旗")
         self.savef(self.items)
     
     def readf(self, FILEPATH):
@@ -43,7 +44,6 @@ class Items:
         save_mode = "w" if os.path.exists(FILEPATH) else "x"
         with open(FILEPATH, mode=save_mode, encoding="UTF-8") as f:
             f.write(data)
-            f.close
 
     def get_armor_data(self):
         return self.readf(self.armor_jsonpath)
@@ -59,9 +59,6 @@ class Items:
     
     def get_elixir_data(self):
         return self.readf(self.elixir_jsonpath)
-    
-    def get_level_up_big_elixir_data(self):
-        return self.readf(self.level_up_big_elixir_jsonpath)
 
     def get_yaocai_data(self):
         return self.readf(self.yaocai_jsonpath)
@@ -71,6 +68,9 @@ class Items:
     
     def get_ldl_data(self):
         return self.readf(self.ldl_jsonpath)
+    
+    def get_jlq_data(self):
+        return self.readf(self.jlq_jsonpath)
     
     def get_data_by_item_id(self, item_id):
         return self.items[str(item_id)]
