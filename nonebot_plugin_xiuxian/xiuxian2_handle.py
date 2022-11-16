@@ -1374,7 +1374,7 @@ def final_user_data(user_data):
     main_atk_buff = main_buff_data['atkbuff'] if main_buff_data != None else 0
     user_data[15] = int(user_data[15] * (1 + main_hp_buff))#hp 
     user_data[16] = int(user_data[16] * (1 + main_mp_buff))#mp
-    user_data[17] = int(user_data[17] * (user_data[18] * 0.1 + 1) * (1 + main_atk_buff) * (1 + weapon_atk_buff)) + user_buff_data.atk_buff#每级+10%攻击
+    user_data[17] = int(user_data[17] * (user_data[18] * 0.04 + 1) * (1 + main_atk_buff) * (1 + weapon_atk_buff)) + user_buff_data.atk_buff#每级+10%攻击
     user_data = tuple(user_data)
     return user_data
     

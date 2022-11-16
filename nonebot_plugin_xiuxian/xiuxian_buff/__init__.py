@@ -357,7 +357,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + main_hp_buff))}
 真元：{user_msg.mp}/{int((user_msg.exp) * (1 + main_mp_buff))}
 攻击：{user_msg.atk}
-攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 10}%)
+攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 4}%)
 修炼效率：{int(((level_rate * realm_rate) * (1 + main_buff_rate_buff) + int(user_buff_data.BuffInfo.blessed_spot))  * 100)}%
 会心：{crit_buff}%
 减伤率：{def_buff}%
