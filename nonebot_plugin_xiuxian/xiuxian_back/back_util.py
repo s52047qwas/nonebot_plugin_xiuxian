@@ -99,10 +99,10 @@ def get_user_back_msg(user_id):
             l_elixir_msg = get_elixir_msg(l_elixir_msg, user_back.goods_id, user_back.goods_num)
             
         elif user_back.goods_type == "聚灵旗":
-            l_yaocai_msg = get_jlq_msg(l_xiulianitem_msg, user_id, user_back.goods_id, user_back.goods_num)
+            l_xiulianitem_msg = get_jlq_msg(l_xiulianitem_msg, user_id, user_back.goods_id, user_back.goods_num)
         
         elif user_back.goods_type == "炼丹炉":
-            l_yaocai_msg = get_ldl_msg(l_ldl_msg, user_id, user_back.goods_id, user_back.goods_num)
+            l_ldl_msg = get_ldl_msg(l_ldl_msg, user_id, user_back.goods_id, user_back.goods_num)
             
         elif user_back.goods_type == "药材":
             l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_id, user_back.goods_id, user_back.goods_num)

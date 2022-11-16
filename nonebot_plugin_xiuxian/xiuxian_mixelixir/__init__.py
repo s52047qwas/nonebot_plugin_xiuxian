@@ -26,11 +26,17 @@ import re
 
 sql_message = XiuxianDateManage()  # sql类
 items = Items()
+from .mix_elixir_config import MIXELIXIRCONFIG
 
 mix_elixir = on_command("炼丹", priority=5, permission=GROUP)
 elixir_help = on_command("炼丹帮助", priority=5, permission=GROUP)
 mix_elixir_help = on_command("炼丹配方帮助", priority=5, permission=GROUP)
 yaocai_get = on_command("灵田收取", aliases={"灵田结算"}, priority=5, permission=GROUP)
+my_mix_elixir_info = on_command("我的炼丹信息", priority=5, permission=GROUP)
+mix_elixir_sqdj_up = on_command("升级收取等级", priority=5, permission=GROUP)
+mix_elixir_dykh_up = on_command("升级丹药控火", priority=5, permission=GROUP)
+mix_elixir_nyx_up = on_command("升级丹药耐药性", priority=5, permission=GROUP)
+
 __elixir_help__ = f"""
 炼丹帮助信息:
 指令：
@@ -38,6 +44,9 @@ __elixir_help__ = f"""
 2、炼丹帮助：获取本帮助信息
 3、炼丹配方帮助：获取炼丹配方帮助
 4、灵田收取、灵田结算：收取洞天福地里灵田的药材
+5、我的炼丹信息：查询自己的炼丹信息
+6、升级收取等级：每一个等级会增加灵田收取的数量
+7、升级丹药控火：每一个等级会增加炼丹的产出数量
 """
 
 __mix_elixir_help__ = f"""
@@ -46,6 +55,66 @@ __mix_elixir_help__ = f"""
 2、主药和药引控制炼丹时的冷热调和，冷热失和则炼不出丹药
 3、草药的类型控制产出丹药的类型
 """
+@mix_elixir_sqdj_up.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """收取等级升级"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) == 0:
+        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
+        await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    SQDJCONFIG = MIXELIXIRCONFIG['收取等级']
+    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+    now_level = mix_elixir_info['收取等级']
+    if now_level >= len(SQDJCONFIG):
+        msg = f"道友的收取等级已达到最高等级，无法升级了"
+        await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    next_level_cost = SQDJCONFIG[str(now_level + 1)]['level_up_cost']
+    if mix_elixir_info['炼丹经验'] < next_level_cost:
+        msg = f"下一个收取等级所需要的炼丹经验为{next_level_cost}点，道友请炼制更多的丹药再来升级吧~"
+        await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    mix_elixir_info['炼丹经验'] = mix_elixir_info['炼丹经验'] - next_level_cost
+    mix_elixir_info['收取等级'] = now_level + 1
+    save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+    msg = f"道友的收取等级目前为：{mix_elixir_info['收取等级']}级，可以使灵田收获的药材增加{mix_elixir_info['收取等级']}个！"
+    await mix_elixir_sqdj_up.finish(msg, at_sender=True)
+    
+@mix_elixir_dykh_up.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """丹药控火升级"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await mix_elixir_dykh_up.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    DYKHCONFIG = MIXELIXIRCONFIG['丹药控火']
+    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+    now_level = mix_elixir_info['丹药控火']
+    if now_level >= len(DYKHCONFIG):
+        msg = f"道友的丹药控火等级已达到最高等级，无法升级了"
+        await mix_elixir_dykh_up.finish(msg, at_sender=True)
+    next_level_cost = DYKHCONFIG[str(now_level + 1)]['level_up_cost']
+    if mix_elixir_info['炼丹经验'] < next_level_cost:
+        msg = f"下一个丹药控火等级所需要的炼丹经验为{next_level_cost}点，道友请炼制更多的丹药再来升级吧~"
+        await mix_elixir_dykh_up.finish(msg, at_sender=True)
+    mix_elixir_info['炼丹经验'] = mix_elixir_info['炼丹经验'] - next_level_cost
+    mix_elixir_info['丹药控火'] = now_level + 1
+    save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+    msg = f"道友的丹药控火等级目前为：{mix_elixir_info['丹药控火']}级，可以使炼丹收获的丹药增加{mix_elixir_info['丹药控火']}个！"
+    await mix_elixir_dykh_up.finish(msg, at_sender=True)
+
+@mix_elixir_nyx_up.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """丹药耐药性升级"""
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await mix_elixir_nyx_up.finish(msg, at_sender=True)
+    msg = f"丹药耐药性的升级目前未开放！"
+    await mix_elixir_nyx_up.finish(msg, at_sender=True)
 
 @yaocai_get.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
@@ -69,7 +138,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
         if timedeff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) :
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
-            num = mix_elixir_info['灵田数量']
+            num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级']
             i = 1
             give_dict = {}
             while i <= num:
@@ -96,6 +165,30 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         msg = f"道友的灵田还不能收取，下次收取时间为：{GETCONFIG['time_cost']}小时之后"
         await yaocai_get.finish(msg, at_sender=True)
 
+@my_mix_elixir_info.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await my_mix_elixir_info.finish(msg, at_sender=True)
+    user_id = user_info.user_id
+    mix_elixir_info = get_player_info(user_id, 'mix_elixir_info')
+    l_msg = []
+    l_msg.append(f"☆------道友的炼丹信息------☆")
+    msg = f"药材收取等级：{mix_elixir_info['收取等级']}\n"
+    msg += f"丹药控火等级：{mix_elixir_info['丹药控火']}\n"
+    msg += f"丹药耐药性等级：{mix_elixir_info['丹药耐药性']}\n"
+    msg += f"炼丹经验：{mix_elixir_info['炼丹经验']}\n"
+    l_msg.append(msg)
+    if mix_elixir_info['炼丹记录'] != {}:
+        l_msg.append(f"☆------道友的炼丹记录------☆")
+        i = 1
+        for k, v in mix_elixir_info['炼丹记录'].items():
+            msg = f"编号：{i}，{v['name']}，炼成次数：{v['num']}次"
+            l_msg.append(msg)
+            i += 1
+    await send_forward_msg(bot, event, '炼丹信息', bot.self_id, l_msg)
+    await my_mix_elixir_info.finish()
 
 @elixir_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -107,6 +200,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
     await mix_elixir_help.finish(__mix_elixir_help__)
 
+user_ldl_dict = {}
+user_ldl_flag = {}
 @mix_elixir.handle()
 async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
@@ -124,10 +219,22 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
             yaocai_dict[back.goods_id] = items.get_data_by_item_id(back.goods_id)
             yaocai_dict[back.goods_id]['num'] = back.goods_num
             continue
+        if back.goods_type == "炼丹炉":
+            global user_ldl_dict, user_ldl_flag
+            user_ldl_dict[user_id] = {}
+            user_ldl_dict[user_id][back.goods_id] = back.goods_id
+            user_ldl_dict[user_id][back.goods_id] = back.goods_name
+            user_ldl_flag[user_id] = True
+            continue
         else:
             continue
     if yaocai_dict == {}:
         msg = f"道友的背包内没有药材，无法炼丹！"
+        await mix_elixir.finish(msg, at_sender=True)
+    try:
+        user_ldl_flag[user_id]
+    except KeyError:
+        msg = f"道友背包内没有炼丹炉，无法炼丹！"
         await mix_elixir.finish(msg, at_sender=True)
     msg = "正在匹配背包中的丹方，请等待"
     await mix_elixir.send(msg, at_sender=True)
@@ -136,12 +243,13 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
         msg = "系统未检测到丹方，道友背包内的药材不满足！"
         await mix_elixir.finish(msg, at_sender=True)
     else:
+        ldl_name = sorted(user_ldl_dict[user_id].items(), key= lambda x:x[0], reverse=False)[0][1]
         l_msg = []
         for k, v in finall_mix_elixir_msg.items():
             goods_info = items.get_data_by_item_id(v['id'])
             msg = f"名字：{goods_info['name']}\n"
             msg += f"效果：{goods_info['desc']}\n"
-            msg += f"配方：{v['配方']['配方简写']}\n"
+            msg += f"配方：{v['配方']['配方简写']}丹炉{ldl_name}\n"
             msg += f"☆------药材清单------☆\n"
             msg += f"主药：{v['配方']['主药']}，{v['配方']['主药_level']}，数量：{v['配方']['主药_num']}\n"
             msg += f"药引：{v['配方']['药引']}，{v['配方']['药引_level']}，数量：{v['配方']['药引_num']}\n"
@@ -183,6 +291,21 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
         if not check:
             msg = f"请检查药材：{fuyao_name} 是否在背包中，或者数量是否足够！"
             await mix_elixir.reject(prompt=msg)
+        if zhuyao_name == fuyao_name:
+            check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + zhuyao_num)
+            if not check:
+                msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
+                await mix_elixir.reject(prompt=msg)
+        if yaoyin_name == fuyao_name:
+            check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + yaoyin_num)
+            if not check:
+                msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
+                
+        ldl_name = matched.groups()[6]
+        check, ldl_info = await check_ldl_name_in_back(user_id, ldl_name)
+        if not check:
+            msg = f"请检查炼丹炉：{ldl_name} 是否在背包中！"
+            await mix_elixir.reject(prompt=msg)
         #检测通过
         zhuyao_info = Items().get_data_by_item_id(zhuyao_goods_id)
         yaoyin_info = Items().get_data_by_item_id(yaoyin_goods_id)
@@ -196,8 +319,35 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
             elixir_config[str(fuyao_info['辅药']['type'])] = fuyao_info['辅药']['power'] * fuyao_num
             is_mix, id = await check_mix(elixir_config)
             if is_mix:
+                mix_elixir_info = get_player_info(user_id, 'mix_elixir_info')
                 goods_info = Items().get_data_by_item_id(id)
-                msg = f"恭喜道友成功炼成丹药：{goods_info['name']}"
+                num = 1 + ldl_info['buff'] + mix_elixir_info['丹药控火']
+                msg = f"恭喜道友成功炼成丹药：{goods_info['name']}{num}枚"
+                #背包sql
+                sql_message.send_back(user_id, id, goods_info['name'], "丹药", num)
+                sql_message.update_back_j(user_id, zhuyao_goods_id, zhuyao_num)
+                sql_message.update_back_j(user_id, fuyao_goods_id, fuyao_num)
+                sql_message.update_back_j(user_id, yaoyin_goods_id, yaoyin_num)
+                try:
+                    mix_elixir_info['炼丹记录'][id]
+                    now_num = mix_elixir_info['炼丹记录'][id]['num']
+                    if now_num >= goods_info['mix_all']:
+                        msg += f"该丹药道友已炼制{now_num}次，无法获得炼丹经验了~"
+                    elif now_num + num >= goods_info['mix_all']:
+                        exp_num = goods_info['mix_all'] - now_num
+                        mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * exp_num
+                        msg += f"获得炼丹经验{goods_info['mix_exp'] * exp_num}点"
+                    else:
+                        mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * num
+                        msg += f"获得炼丹经验{goods_info['mix_exp'] * num}点"
+                    mix_elixir_info['炼丹记录'][id]['num'] += num
+                except:
+                    mix_elixir_info['炼丹记录'][id] = {}
+                    mix_elixir_info['炼丹记录'][id]['name'] = goods_info['name']
+                    mix_elixir_info['炼丹记录'][id]['num'] = num
+                    mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * num
+                    save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+                
                 await mix_elixir.finish(msg)
             else:
                 msg = f"没有炼成丹药哦~就不扣你药材啦"
@@ -219,3 +369,19 @@ async def check_yaocai_name_in_back(user_id, yaocai_name, yaocai_num):
         else:
             continue
     return flag, goods_id
+
+async def check_ldl_name_in_back(user_id, ldl_name):
+    flag = False
+    goods_info = {}
+    user_back = sql_message.get_back_msg(user_id)
+    for back in user_back:
+        if back.goods_type == '炼丹炉':
+            if back.goods_name == ldl_name:
+                flag = True
+                goods_info = Items().get_data_by_item_id(back.goods_id)
+                break
+            else:
+                continue
+        else:
+            continue
+    return flag, goods_info
