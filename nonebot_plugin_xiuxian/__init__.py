@@ -125,10 +125,10 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     add_cd(event, XiuConfig().dufang_cd, '金银阁')
 
     if args[2] is None:
-        await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")
+        await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10奇、金银阁10猜3")
 
     price = args[1]  # 300
-    mode = args[2]  # 大、小、猜
+    mode = args[2]  # 大、小、奇、偶、猜
     mode_num = 0
     if mode == '猜':
         mode_num = args[3]  # 猜的数值
@@ -151,6 +151,18 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
         )
     elif value <= 3 and str(mode) == "小":
+        sql_message.update_ls(user_id, price_num, 1)
+        await dufang.send(msg)
+        await dufang.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif value %2==1 and str(mode) == "奇":
+        sql_message.update_ls(user_id, price_num, 1)
+        await dufang.send(msg)
+        await dufang.finish(
+            "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num), at_sender=True
+        )
+    elif value %2==0 and str(mode) == "偶":
         sql_message.update_ls(user_id, price_num, 1)
         await dufang.send(msg)
         await dufang.finish(
