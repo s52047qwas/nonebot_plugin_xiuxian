@@ -15,7 +15,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from nonebot.params import CommandArg, RegexGroup
-from ..utils import data_check_conf, check_user, send_forward_msg
+from ..utils import data_check_conf, check_user, send_forward_msg, get_msg_pic
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
@@ -117,7 +117,8 @@ async def _():
             auction['group_id'] = 0
             for group_id in groups:
                 try:
-                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    pic = await get_msg_pic(msg)#
+                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
                 except ActionFailed:#发送群消息失败
                     continue
             await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
@@ -140,7 +141,8 @@ async def _():
                 auction = {}
                 for group_id in groups:
                     try:
-                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                        pic = await get_msg_pic(msg)#
+                        await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
                     except ActionFailed:#发送群消息失败
                         continue
                 return
@@ -151,7 +153,8 @@ async def _():
                 msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
                 for group_id in groups:
                     try:
-                        await bot.send_group_msg(group_id=int(group_id), message=msg)
+                        pic = await get_msg_pic(msg)#
+                        await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
                     except ActionFailed:#发送群消息失败
                         continue
                 return
@@ -159,7 +162,8 @@ async def _():
             msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}！"
             for group_id in groups:
                 try:
-                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+                    pic = await get_msg_pic(msg)#
+                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
                 except ActionFailed:#发送群消息失败
                     continue
                 
@@ -173,6 +177,9 @@ async def _():
 @back_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
+    msg = __back_help__
+    pic = await get_msg_pic(msg)#
+    await back_help.finish(MessageSegment.image(pic), at_sender=True)
     await back_help.finish(__back_help__)
 
 @buy.handle()
@@ -181,12 +188,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
+        pic = await get_msg_pic(msg)#
+        await buy.finish(MessageSegment.image(pic), at_sender=True)
         await buy.finish(msg, at_sender=True)
     user_id = user_info.user_id
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
     if shop_data[group_id] == {}:
         msg = "坊市目前空空如也！"
+        pic = await get_msg_pic(msg)#
+        await buy.finish(MessageSegment.image(pic), at_sender=True)
         await buy.finish(msg, at_sender=True)
         
     arg = args.extract_plain_text().strip()
@@ -194,17 +205,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         arg = int(arg)
         if arg <= 0 or arg > len(shop_data[group_id]):
             msg = "请输入正确的编号！"
+            pic = await get_msg_pic(msg)#
+            await buy.finish(MessageSegment.image(pic), at_sender=True)
             await buy.finish(msg, at_sender=True)
     except  ValueError:
         msg = "请输入正确的编号！"
+        pic = await get_msg_pic(msg)#
+        await buy.finish(MessageSegment.image(pic), at_sender=True)
         await buy.finish(msg, at_sender=True)
         
     goods_price = shop_data[group_id][str(arg)]['price']
     if user_info.stone <= goods_price:
         msg = '没钱还敢来买东西！！'
+        pic = await get_msg_pic(msg)#
+        await buy.finish(MessageSegment.image(pic), at_sender=True)
         await buy.finish(msg, at_sender=True)
     elif int(user_id) == int(shop_data[group_id][str(arg)]['user_id']):
             msg = "道友自己的东西就不要自己购买啦！"
+            pic = await get_msg_pic(msg)#
+            await buy.finish(MessageSegment.image(pic), at_sender=True)
             await buy.finish(msg, at_sender=True)
     else:
         sql_message.update_ls(user_id, goods_price, 2)
@@ -225,6 +244,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             del shop_data[group_id][str(arg)]
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
+        pic = await get_msg_pic(msg)#
+        await buy.finish(MessageSegment.image(pic), at_sender=True)
         await buy.finish(msg, at_sender=True)
     
 @shop.handle()
@@ -234,6 +255,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     print(event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
+        pic = await get_msg_pic(msg)#
+        await shop.finish(MessageSegment.image(pic), at_sender=True)
         await shop.finish(msg, at_sender=True)
 
     group_id = str(event.group_id)
@@ -241,6 +264,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     data_list = []
     if shop_data[group_id] == {}:
         msg = "坊市目前空空如也！"
+        pic = await get_msg_pic(msg)#
+        await shop.finish(MessageSegment.image(pic), at_sender=True)
         await shop.finish(msg, at_sender=True)
     for k, v in shop_data[group_id].items():
         msg = f"编号：{k}\n"
@@ -253,6 +278,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg += f"数量：无限\n"
         data_list.append(msg)
     await send_forward_msg(bot, event, '坊市', bot.self_id, data_list)
+    pic = await get_msg_pic(msg)#
+    await shop.finish(MessageSegment.image(pic), at_sender=True)
     await shop.finish()
 
 @shop_added_by_admin.handle()
@@ -262,6 +289,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     args = args.extract_plain_text().split()
     if args == []:
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added_by_admin.finish(msg, at_sender=True)
     goods_name = args[0]
     goods_id = -1
@@ -273,25 +302,35 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             continue
     if goods_id == -1:
         msg = f"不存在物品：{goods_name}的信息，请检查名字是否输入正确！"
+        pic = await get_msg_pic(msg)#
+        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added_by_admin.finish(msg, at_sender=True)
 
     try:
         price = args[1]
     except IndexError:
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added_by_admin.finish(msg, at_sender=True)
     try:
         price = int(price)
         if price < 0:
             msg = "请不要设置负数！"
+            pic = await get_msg_pic(msg)#
+            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
             await shop_added_by_admin.finish(msg, at_sender=True)
     except ValueError:
         msg = "请输入正确的金额！"
+        pic = await get_msg_pic(msg)#
+        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added_by_admin.finish(msg, at_sender=True)
     
     try:
         args[2]
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added_by_admin.finish(msg, at_sender=True)
     except IndexError:
         pass
@@ -313,6 +352,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     shop_data[group_id][id]['user_name'] = '系统'
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
+    pic = await get_msg_pic(msg)#
+    await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
     await shop_added_by_admin.finish(msg)
 
 @shop_added.handle()
@@ -326,12 +367,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     args = args.extract_plain_text().split()
     if args == []:
         msg = "请输入正确指令！例如：坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     goods_name = args[0]
     
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg == None:
         msg = "道友的背包空空如也！"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     in_flag = False #判断指令是否正确，道具是否在背包内
     for back in back_msg:
@@ -350,29 +395,41 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         price = args[1]
     except IndexError:
         msg = "请输入正确的指令！例如：坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     try:
         price = int(price)
         if price < 0:
             msg = "请不要设置负数！"
+            pic = await get_msg_pic(msg)#
+            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
             await shop_added.finish(msg, at_sender=True)
     except ValueError:
         msg = "请输入正确的金额！"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     
     try:
         args[2]
         msg = "请输入正确的指令！例如：坊市上架 物品 金额"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     except IndexError:
         pass
     
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     
     if goods_type == "丹药" and int(goods_num) <= int(goods_bind_num):
         msg = f"该物品是绑定物品，无法上架！"
+        pic = await get_msg_pic(msg)#
+        await shop_added.finish(MessageSegment.image(pic), at_sender=True)
         await shop_added.finish(msg, at_sender=True)
     
     group_id = str(event.group_id)
@@ -392,6 +449,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     sql_message.update_back_j(user_id, goods_id)
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市，金额：{price}枚灵石！"
+    pic = await get_msg_pic(msg)#
+    await shop_added.finish(MessageSegment.image(pic), at_sender=True)
     await shop_added.finish(msg)
     
 @shop_off.handle()
@@ -400,12 +459,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
+        pic = await get_msg_pic(msg)#
+        await shop_off.finish(MessageSegment.image(pic), at_sender=True)
         await shop_off.finish(msg, at_sender=True)
     user_id = user_info.user_id
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
     if shop_data[group_id] == {}:
         msg = "坊市目前空空如也！"
+        pic = await get_msg_pic(msg)#
+        await shop_off.finish(MessageSegment.image(pic), at_sender=True)
         await shop_off.finish(msg, at_sender=True)
         
     arg = args.extract_plain_text().strip()
@@ -413,6 +476,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         arg = int(arg)
         if arg <= 0 or arg > len(shop_data[group_id]):
             msg = "请输入正确的编号！"
+            pic = await get_msg_pic(msg)#
+            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
             await shop_off.finish(msg, at_sender=True)
     except  ValueError:
         msg = "请输入正确的编号！"
@@ -424,6 +489,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         del shop_data[group_id][str(arg)]
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
+        pic = await get_msg_pic(msg)#
+        await shop_off.finish(MessageSegment.image(pic), at_sender=True)
         await shop_off.finish(msg, at_sender=True)
         
     elif event.sender.role == "admin" or event.sender.role == "owner":
@@ -432,6 +499,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             del shop_data[group_id][str(arg)]
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
+            pic = await get_msg_pic(msg)#
+            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
             await shop_off.finish(msg, at_sender=True)
         else:
             sql_message.send_back(shop_data[group_id][str(arg)]['user_id'], shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
@@ -440,9 +509,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
             msg3 = msg1 + msg2
             del shop_data[group_id][str(arg)]
+            pic = await get_msg_pic(msg3)#
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
-            await bot.send(event=event, message=msg3)
+            await bot.send(event=event, message=MessageSegment.image(pic))
+            pic = await get_msg_pic(msg)#
+            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
             await shop_off.finish(msg, at_sender=True)
     else:
         msg = "这东西不是你的！"
@@ -467,6 +539,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await mind_back.finish()
     else:
         msg = '道友的背包空空如也！'
+        pic = await get_msg_pic(msg)#
+        await mind_back.finish(MessageSegment.image(pic), at_sender=True)
         await mind_back.finish(msg, at_sender=True)
     
 @use.handle()
@@ -478,6 +552,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg, at_sender=True)
     user_id = user_info.user_id
     # await use.finish('调试中，未开启！')
@@ -486,6 +562,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg == None:
         msg = "道友的背包空空如也！"
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg, at_sender=True)
     in_flag = False #判断指令是否正确，道具是否在背包内
     for back in back_msg:
@@ -496,12 +574,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             break
     if not in_flag:
         msg = f"请检查该道具 {arg} 是否在背包内！"
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg, at_sender=True)
     
     
     if goods_type == "装备":
         if not check_equipment_can_use(user_id, goods_id):
             msg = f"该装备已被装备，请勿重复装备！"
+            pic = await get_msg_pic(msg)#
+            await use.finish(MessageSegment.image(pic), at_sender=True)
             await use.finish(msg, at_sender=True)
         else:#可以装备
             sql_str, item_type = get_use_equipment_sql(user_id, goods_id)
@@ -512,6 +594,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             if item_type == "防具":
                 sql_message.updata_user_armor_buff(user_id, goods_id)
             msg = f"成功装备{arg}！"
+            pic = await get_msg_pic(msg)#
+            await use.finish(MessageSegment.image(pic), at_sender=True)
             await use.finish(msg, at_sender=True)
     elif goods_type == "技能":
         user_buff_info = UserBuffDate(user_id).BuffInfo
@@ -533,16 +617,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 msg = f"恭喜道友学会功法：{skill_info['name']}！"
         else:
             msg = "发生未知错误！"
-        
+            
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg)
     elif goods_type == "丹药":
         msg = check_use_elixir(user_id, goods_id)
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg)
         
     elif goods_type == "聚灵旗":
         msg = get_use_jlq_msg(user_id, goods_id)
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish(msg)
     else:
+        msg = '该类型物品调试中，未开启！'
+        pic = await get_msg_pic(msg)#
+        await use.finish(MessageSegment.image(pic), at_sender=True)
         await use.finish('该类型物品调试中，未开启！')
         
 @creat_auction.handle()
@@ -552,10 +645,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
+        pic = await get_msg_pic(msg)#
+        await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
         await creat_auction.finish(msg, at_sender=True)
     
     global auction
     if auction != {}:
+        msg = f'本群已存在一场交友会，请等待交友会结束！'
+        pic = await get_msg_pic(msg)#
+        await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
         await creat_auction.finish(f'本群已存在一场交友会，请等待交友会结束！')
     
     try:
@@ -563,6 +661,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         auction_id = random.choice(auction_id_list)
     except IndexError:
         msg = "获取不到交友物品的信息，请检查配置文件！"
+        pic = await get_msg_pic(msg)#
+        await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
         await creat_auction.finish(msg, at_sender=True)
     
     auction_info = items.get_data_by_item_id(auction_id)
@@ -583,7 +683,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     for group_id in groups:
         try:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
+            pic = await get_msg_pic(msg)#
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
         except ActionFailed:#发送群消息失败
             continue
     await asyncio.sleep(AUCTIONSLEEPTIME)#先睡60秒
@@ -605,7 +706,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         auction = {}
         for group_id in groups:
             try:
-                await bot.send_group_msg(group_id=int(group_id), message=msg)
+                pic = await get_msg_pic(msg)#
+                await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
             except ActionFailed:#发送群消息失败
                 continue
         await creat_auction.finish()
@@ -615,13 +717,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     user_stone = user_info.stone
     if user_stone < now_price:
         msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1！"
+        pic = await get_msg_pic(msg)#
+        await creat_auction.finish(MessageSegment.image(pic), at_sender=True)
         await creat_auction.finish(msg)
 
     msg = "本次交友会结束！"
     msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}！"
     for group_id in groups:
         try:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
+            pic = await get_msg_pic(msg)#
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
         except ActionFailed:#发送群消息失败
             continue
         
@@ -638,15 +743,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = event.group_id
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
         
     isUser, user_info, msg = check_user(event)
     if not isUser:
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
     
     global auction
     if auction == {}:
         msg = f'本群不存在交友会，请等待交友会开启！'
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
     
     price = args.extract_plain_text().strip()
@@ -654,15 +765,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         price = int(price)
     except ValueError:
         msg = f"请发送正确的灵石数量"
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
     
     now_price = auction['now_price']
     min_price = int(now_price * 0.05)#最低加价5%
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
         msg = f"走开走开，别捣乱！小心清空你灵石捏！"
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
     if price - now_price < min_price:
         msg = f"交友不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}！"
+        pic = await get_msg_pic(msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(msg, at_sender=True)
     
     global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
@@ -679,7 +796,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     error_msg = ''
     for group_id in groups:
         try:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
+            pic = await get_msg_pic(msg)#
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
         except ActionFailed:
             error_msg = f"消息发送失败，可能被风控，当前交友物品金额为：{auction['now_price']}！"
             continue
@@ -687,6 +805,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if error_msg == '':
         await offer_auction.finish()
     else:
+        pic = await get_msg_pic(error_msg)#
+        await offer_auction.finish(MessageSegment.image(pic), at_sender=True)
         await offer_auction.finish(error_msg)
 
 @set_auction.handle()
@@ -698,21 +818,32 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
     if mode == '开启':
         if is_in_group:
+            msg = f'本群已开启群交流会，请勿重复开启!'
+            pic = await get_msg_pic(msg)#
+            await set_auction.finish(MessageSegment.image(pic), at_sender=True)
             await set_auction.finish(f'本群已开启群交流会，请勿重复开启!')
         else:
             config['open'].append(group_id)
             savef(config)
+            pic = await get_msg_pic(f'已开启本群交流会!')#
+            await set_auction.finish(MessageSegment.image(pic), at_sender=True)
             await set_auction.finish(f'已开启本群交流会!')
 
     elif mode == '关闭':
         if is_in_group:
             config['open'].remove(group_id)
             savef(config)
+            pic = await get_msg_pic(f'已关闭本群交流会!')#
+            await set_auction.finish(MessageSegment.image(pic), at_sender=True)
             await set_auction.finish(f'已关闭本群交流会!')
         else:
+            pic = await get_msg_pic(f'本群未开启群交流会!')#
+            await set_auction.finish(MessageSegment.image(pic), at_sender=True)
             await set_auction.finish(f'本群未开启群交流会!')
     
     else:
+        pic = await get_msg_pic(__back_help__)#
+        await set_auction.finish(MessageSegment.image(pic), at_sender=True)
         await set_auction.finish(__back_help__) 
 
 
