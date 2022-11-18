@@ -278,8 +278,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg += f"数量：无限\n"
         data_list.append(msg)
     await send_forward_msg(bot, event, '坊市', bot.self_id, data_list)
-    pic = await get_msg_pic(msg)#
-    await shop.finish(MessageSegment.image(pic), at_sender=True)
     await shop.finish()
 
 @shop_added_by_admin.handle()

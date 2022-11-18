@@ -264,6 +264,16 @@ def get_item_msg(goods_id):
         
     elif item_info['item_type'] == '法器':
         msg = get_weapon_info_msg(goods_id, item_info)
+    elif item_info['item_type'] == "药材":
+        msg = get_yaocai_info_msg(goods_id, item_info)
+    else:
+        msg = '不支持的物品'
+    return msg
+
+def get_yaocai_info_msg(goods_id, item_info):
+    msg = f"名字：{item_info['name']}\n"
+    msg += f"品级：{item_info['level']}\n"
+    msg += get_yaocai_info(item_info)
     return msg
 
 def check_use_elixir(user_id, goods_id):
