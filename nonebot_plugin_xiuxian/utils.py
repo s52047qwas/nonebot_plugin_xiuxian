@@ -282,7 +282,7 @@ class Txt2Img:
         base64_str = "base64://" + b64encode(buf.getvalue()).decode()
         return base64_str
 
-async def get_msg_pic(msg, title=' ', font_size=30):
+async def get_msg_pic(msg, title=' ', font_size=55):
     img = Txt2Img(font_size)
     pic = img.save(title, msg)
     return pic
