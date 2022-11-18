@@ -341,7 +341,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
                     sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1],
                                                       int(result_hp_mp[2] / 10))
-                    msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, int(exp / 2))
+                    msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, int(exp / 2),
+                                                                      result_msg[0], result_msg[1])
                     pic = await get_msg_pic(msg)#
                     await out_closing.finish(MessageSegment.image(pic), at_sender=True)
                     await out_closing.finish(
