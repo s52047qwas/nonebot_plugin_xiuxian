@@ -346,7 +346,7 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     if pause_flag:
         msg = f"检测到背包有丹药：{elixir_name}，效果：{elixir_desc}请发送 使用、不使用或取消来选择是否使用丹药或取消突破！本次突破概率为：{level_rate + user_leveluprate}%"
         pic = await get_msg_pic(msg)#
-        await level_up.finish(MessageSegment.image(pic), at_sender=True)
+        await level_up.pause(prompt=MessageSegment.image(pic), at_sender=True)
         await level_up.pause(prompt=msg)
     
     le = OtherSet().get_type(exp, level_rate + user_leveluprate, level_name)
@@ -391,6 +391,8 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
         await level_up.finish("恭喜道友突破{}成功".format(le[0]))
     else:
         # 最高境界
+        pic = await get_msg_pic(le)#
+        await level_up.finish(MessageSegment.image(pic), at_sender=True)
         await level_up.finish(le)
 
 @command.level_up.handle()
@@ -445,6 +447,8 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
             await level_up.finish("恭喜道友突破{}成功".format(le[0]))
         else:
             # 最高境界
+            pic = await get_msg_pic(le)#
+            await level_up.finish(MessageSegment.image(pic), at_sender=True)
             await level_up.finish(le)
 
     elif mode == "不使用":
