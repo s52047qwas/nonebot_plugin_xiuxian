@@ -1,0 +1,178 @@
+{
+   "江湖好手": {
+      "易": {
+         "level": "易",
+         "award": 60,
+         "needexp": 100,
+         "time": 60
+      }
+   },
+   "练气境": {
+      "易": {
+         "level": "易",
+         "award": 78,
+         "needexp": 1000,
+         "time": 60
+      },
+      "中": {
+         "level": "中",
+         "award": 176,
+         "needexp": 2000,
+         "time": 120
+      }
+   },
+   "筑基境": {
+      "易": {
+         "level": "易",
+         "award": 136,
+         "needexp": 6000,
+         "time": 60
+      },
+      "中": {
+         "level": "中",
+         "award": 306,
+         "needexp": 8000,
+         "time": 120
+      }
+   },
+   "结丹境": {
+      "易": {
+         "level": "易",
+         "award": 196,
+         "needexp": 25000,
+         "time": 60
+      },
+      "中": {
+         "level": "中",
+         "award": 441,
+         "needexp": 50000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 686,
+         "needexp": 90000,
+         "time": 180
+      }
+   },
+   "元婴境": {
+      "易": {
+         "level": "易",
+         "award": 256,
+         "needexp": 160000,
+         "time": 60
+      },
+      "中": {
+         "level": "中",
+         "award": 576,
+         "needexp": 200000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 896,
+         "needexp": 288000,
+         "time": 180
+      }
+   },
+   "化神境": {
+      "中": {
+         "level": "中",
+         "award": 711,
+         "needexp": 440000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 1106,
+         "needexp": 550000,
+         "time": 180
+      },
+      "高难": {
+         "level": "高难",
+         "award": 1580,
+         "needexp": 700000,
+         "time": 240
+      }
+   },
+   "炼虚境": {
+      "中": {
+         "level": "中",
+         "award": 846,
+         "needexp": 1040000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 1316,
+         "needexp": 1280000,
+         "time": 180
+      },
+      "高难": {
+         "level": "高难",
+         "award": 1880,
+         "needexp": 1664000,
+         "time": 240
+      }
+   },
+   "合体境": {
+      "中": {
+         "level": "中",
+         "award": 981,
+         "needexp": 2400000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 1526,
+         "needexp": 2950000,
+         "time": 180
+      },
+      "高难": {
+         "level": "高难",
+         "award": 2180,
+         "needexp": 3840000,
+         "time": 240
+      }
+   },
+   "大乘境": {
+      "中": {
+         "level": "中",
+         "award": 1116,
+         "needexp": 5440000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 1736,
+         "needexp": 6700000,
+         "time": 180
+      },
+      "高难": {
+         "level": "高难",
+         "award": 2475,
+         "needexp": 8700000,
+         "time": 240
+      }
+   },
+   "渡劫境": {
+      "中": {
+         "level": "中",
+         "award": 1269,
+         "needexp": 12160000,
+         "time": 120
+      },
+      "难": {
+         "level": "难",
+         "award": 1974,
+         "needexp": 15000000,
+         "time": 180
+      },
+      "高难": {
+         "level": "高难",
+         "award": 3000,
+         "needexp": 21936000,
+         "time": 240
+      }
+   }
+}

@@ -104,12 +104,12 @@ class Items:
         l_id = []
         for k, v in self.items.items():
             if item_type != None:
-                if v['item_type'] in item_type  and v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 6:
+                if v['item_type'] in item_type  and int(v['rank']) >= fanil_rank and int(v['rank']) - fanil_rank <= 6:
                     l_id.append(k)
                 else:
                     continue
             else:#全部随机
-                if v['rank'] >= fanil_rank and v['rank'] - fanil_rank <= 9:
+                if int(v['rank']) >= fanil_rank and int(v['rank']) - fanil_rank <= 9:
                     l_id.append(k)
                 else:
                     continue
