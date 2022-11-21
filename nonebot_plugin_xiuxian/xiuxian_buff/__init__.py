@@ -469,10 +469,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
 减伤率：{def_buff}%
 """
     if XiuConfig().img:
-        pic = await get_msg_pic(msg)
+        pic = await get_msg_pic(user)
         await mind_state.finish(MessageSegment.image(pic), at_sender=True)
     else:
-        await mind_state.finish(msg, at_sender=True)
+        await mind_state.finish(user, at_sender=True)
 
 
 @buffinfo.handle()
