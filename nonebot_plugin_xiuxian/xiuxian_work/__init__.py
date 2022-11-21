@@ -242,7 +242,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 key=1, name=user_cd_message.scheduled_time, level=user_info.level, exp=user_info.exp, user_id=user_info.user_id
             )
             if exp_time < time2:
-                amsg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
+                msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
                 pic = await get_msg_pic(msg)#
                 await do_work.finish(MessageSegment.image(pic), at_sender=True)
                 await do_work.finish(msg, at_sender=True)
