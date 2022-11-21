@@ -43,14 +43,10 @@ async def _():
     logger.info("用户悬赏令刷新次数重置成功")
 
 do_work = on_regex(
-    r"(江湖好手|练气境|筑基境|结丹境|元婴境|化神境|炼虚境|合体境|大乘境|渡劫境)?(悬赏令)+(刷新|终止|结算|接取)?(\d+)?",
+    r"(江湖好手|练气境|筑基境|结丹境|元婴境|化神境|炼虚境|合体境|大乘境|渡劫境)?(悬赏令)+(刷新|终止|结算|接取|帮助)?(\d+)?",
     priority=5,
     permission=PRIVATE_FRIEND | GROUP,
 )
-
-work_help = on_command("悬赏令帮助", priority=5, permission= GROUP)
-
-
 __work_help__ = f"""
 悬赏令帮助信息:
 指令：
@@ -61,14 +57,6 @@ __work_help__ = f"""
 4、悬赏令结算：结算悬赏奖励
 5、悬赏令接取+编号：接取对应的悬赏令
 """.strip()
-
-@work_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    await data_check_conf(bot, event)
-    msg = __work_help__
-    pic = await get_msg_pic(msg)#
-    await work_help.finish(MessageSegment.image(pic), at_sender=True)
-    await work_help.finish(__work_help__)
         
 @do_work.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
@@ -344,6 +332,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             pic = await get_msg_pic(msg)#
             await do_work.finish(MessageSegment.image(pic), at_sender=True)
             await do_work.finish(msg, at_sender=True)
+    elif mode == "帮助":
+        msg = __work_help__
+        pic = await get_msg_pic(msg)#
+        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+        await do_work.finish(__work_help__)
             
 def get_work_msg(work):
     msg = f"{work[0]},完成机率{work[1]},基础报酬{work[2]}灵石,预计需{work[3]}分钟{work[4]}\n"
