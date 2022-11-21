@@ -263,11 +263,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             shop_msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
             shop_msg = shop_msg1 + shop_msg2
             sql_message.update_ls(shop_data[group_id][str(arg)]['user_id'], give_stone, 1)
-            if XiuConfig().img:
-                pic = await get_msg_pic(shop_msg)
-                await bot.send(event=event, message=MessageSegment.image(pic))
-            else:
-                await bot.send(event=event, message=shop_msg)
+            await bot.send(event=event, message=shop_msg)
             del shop_data[group_id][str(arg)]
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
