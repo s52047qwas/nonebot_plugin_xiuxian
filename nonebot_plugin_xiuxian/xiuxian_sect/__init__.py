@@ -836,9 +836,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
     msg_list = []
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        pic = await get_msg_pic(msg)#
-        await sect_users.finish(MessageSegment.image(pic), at_sender=True)
-        await sect_users.finish(msg)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await sect_users.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await sect_users.finish(msg, at_sender=True)
 
     if user_info:
         sect_id = user_info.sect_id

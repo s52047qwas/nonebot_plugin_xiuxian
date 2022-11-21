@@ -263,9 +263,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             shop_msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
             shop_msg = shop_msg1 + shop_msg2
             sql_message.update_ls(shop_data[group_id][str(arg)]['user_id'], give_stone, 1)
-            await bot.send(event=event, message=shop_msg)
             if XiuConfig().img:
-                pic = await get_msg_pic(msg)
+                pic = await get_msg_pic(shop_msg)
                 await bot.send(event=event, message=MessageSegment.image(pic))
             else:
                 await bot.send(event=event, message=shop_msg)
@@ -372,9 +371,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     try:
         args[2]
         msg = "请输入正确指令！例如：系统坊市上架 物品 金额"
-        pic = await get_msg_pic(msg)#
-        await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
-        await shop_added_by_admin.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await shop_added_by_admin.finish(msg, at_sender=True)
     except IndexError:
         pass
     
@@ -443,7 +444,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             break
     if not in_flag:
         msg = f"请检查该道具 {goods_name} 是否在背包内！"
-        await use.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await shop_added.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await shop_added.finish(msg, at_sender=True)
     try:
         price = args[1]
     except IndexError:
@@ -554,7 +559,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await shop_off.finish(msg, at_sender=True)
     except  ValueError:
         msg = "请输入正确的编号！"
-        await shop_off.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await shop_off.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await shop_off.finish(msg, at_sender=True)
     
     if shop_data[group_id][str(arg)]['user_id'] == user_id:
         sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
@@ -614,7 +623,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        await buy.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await mind_back.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await mind_back.finish(msg, at_sender=True)
     user_id = user_info.user_id
 
     # ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
@@ -969,6 +982,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             config['open'].append(group_id)
             savef(config)
+            msg = "已开启群交流会"
             if XiuConfig().img:
                 pic = await get_msg_pic(msg)
                 await set_auction.finish(MessageSegment.image(pic), at_sender=True)

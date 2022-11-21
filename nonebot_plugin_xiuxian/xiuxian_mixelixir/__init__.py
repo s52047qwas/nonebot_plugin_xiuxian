@@ -325,8 +325,11 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
         else:
             await mix_elixir.finish(msg, at_sender=True)
     msg = "正在匹配背包中的丹方，请等待"
-    pic = await get_msg_pic(msg)#
-    await mix_elixir.send(MessageSegment.image(pic), at_sender=True)
+    if XiuConfig().img:
+        pic = await get_msg_pic(msg)
+        await mix_elixir.send(MessageSegment.image(pic), at_sender=True)
+    else:
+        await mix_elixir.send(msg, at_sender=True)
     finall_mix_elixir_msg = await get_mix_elixir_msg(yaocai_dict)
     if finall_mix_elixir_msg == {}:
         msg = "系统未检测到丹方，道友背包内的药材不满足！"
@@ -421,6 +424,11 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
             check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + yaoyin_num)
             if not check:
                 msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
+                else:
+                    await mix_elixir.reject(prompt=msg, at_sender=True)
                 
         ldl_name = matched.groups()[6]
         check, ldl_info = await check_ldl_name_in_back(user_id, ldl_name)
@@ -475,6 +483,7 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
                     mix_elixir_info['炼丹记录'][id]['name'] = goods_info['name']
                     mix_elixir_info['炼丹记录'][id]['num'] = num
                     mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * num
+                    msg += f"获得炼丹经验{goods_info['mix_exp'] * num}点"
                     save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
                 
                 if XiuConfig().img:

@@ -62,8 +62,11 @@ async def _():
             rift.time = config['rift'][rift.name]['time']
             group_rift[group_id] = rift
             msg = f"野生的{rift.name}已开启！可探索次数：{rift.count}次，请诸位道友发送 探索秘境 来加入吧！"
-            pic = await get_msg_pic(msg)#
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+            else:
+                await bot.send_group_msg(group_id=int(group_id), message=msg)
 
 @rift_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
@@ -71,7 +74,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
     msg = __rift_help__
     pic = await get_msg_pic(msg)#
     await rift_help.finish(MessageSegment.image(pic), at_sender=True)
-    await rift_help.finish(__rift_help__)
 
 #生成秘境
 @create_rift.handle()
