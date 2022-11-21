@@ -21,7 +21,7 @@ from nonebot.log import logger
 from .reward_data_source import PLAYERSDATA
 import os
 from ..item_json import Items
-from ..xiuxian_config import USERRANK
+from ..xiuxian_config import USERRANK, XiuConfig
 
 # 定时任务
 resetrefreshnum = require("nonebot_plugin_apscheduler").scheduler
@@ -63,16 +63,21 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        pic = await get_msg_pic(msg)#
-        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-        await do_work.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await do_work.finish(msg, at_sender=True)
     user_id = user_info.user_id
     user_cd_message = sql_message.get_user_cd(user_id)
     if not os.path.exists(PLAYERSDATA / str(user_id) / "workinfo.json") and user_cd_message.type == 2:
         sql_message.do_work(user_id, 0)
         msg = f"悬赏令已更新，已重置道友的状态！"
-        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-        await do_work.finish(msg, at_sender=True)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await do_work.finish(msg, at_sender=True)
     work_level = args[0] #境界
     mode = args[2]#刷新、终止、结算、接取
     if work_level == None:
@@ -83,9 +88,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
     if mode == None:#接取逻辑
         if USERRANK[user_info.level] <= 22:
             msg = f"道友的境界过高，悬赏令已经不能满足道友了，请尝试获取低境界的悬赏令"
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
         try:
             if work[user_id]:
                 if (datetime.now() - work[user_id].time).seconds // 60 >= 60:
@@ -101,14 +108,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                     work[user_id].msg = work_msg_f
                     work[user_id].world = work_list
                     msg = work[user_id].msg
-                    pic = await get_msg_pic(msg)#
-                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                    await do_work.finish(msg, at_sender=True)
+                    if XiuConfig().img:
+                        pic = await get_msg_pic(msg)
+                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                    else:
+                        await do_work.finish(msg, at_sender=True)
                 else:
                     msg = work[user_id].msg
-                    pic = await get_msg_pic(msg)#
-                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                    await do_work.finish(msg, at_sender=True)
+                    if XiuConfig().img:
+                        pic = await get_msg_pic(msg)
+                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                    else:
+                        await do_work.finish(msg, at_sender=True)
         except KeyError:
             pass
         
@@ -127,15 +138,19 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             work[user_id].msg = work_msg_f
             work[user_id].world = work_list
             msg = work_msg_f
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
         
         elif user_cd_message.type == 1:
             msg = "已经在闭关中，请输入【出关】结束后才能获取悬赏令！"
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
             
         elif user_cd_message.type == 2:
             work_time = datetime.strptime(
@@ -145,14 +160,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time, user_id=user_info.user_id)
             if exp_time < time2:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
             else:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
     elif mode == "刷新":#刷新逻辑
         if user_cd_message.type == 2:
             work_time = datetime.strptime(
@@ -162,27 +181,35 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time, user_id=user_info.user_id)
             if exp_time < time2:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
             else:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
         try:
             work[user_id]
         except KeyError:
             msg = f"道友还没有获取过悬赏令！"
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
         
         if int(user_info.stone) < lscost:
             msg = f"道友的灵石不足以刷新，每次刷新消耗灵石：{lscost}枚"
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
             
         try:
             usernums = refreshnum[user_id]
@@ -210,10 +237,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         refreshnum[user_id] = usernums + 1
         sql_message.update_ls(user_id, lscost, 2)
         msg = work_msg_f
-        pic = await get_msg_pic(msg)#
-        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-        await do_work.finish(msg, at_sender=True)
-    
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await do_work.finish(msg, at_sender=True)
+
     elif mode == "终止":
         is_type, msg = check_user_type(user_id, 2)#需要在悬赏令中的用户
         if is_type:
@@ -221,13 +250,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             sql_message.update_j_exp(user_id, exps)
             sql_message.do_work(user_id, 0)
             msg = f"道友不讲诚信，被打了一顿修为减少{exps},悬赏令已终止！"
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
         else:
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
     
     elif mode == "结算":
         is_type, msg = check_user_type(user_id, 2)#需要在悬赏令中的用户
@@ -243,9 +276,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             )
             if exp_time < time2:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
             else:
                 msg, give_stone, s_o_f, item_id, big_suc = workhandle().do_work(2, work_list= user_cd_message.scheduled_time,
                                             level=user_info.level, exp=user_info.exp, user_id=user_info.user_id)
@@ -257,41 +292,49 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 if big_suc: #大成功
                     sql_message.update_ls(user_id, give_stone * 2, 1)
                     sql_message.do_work(user_id, 0)
-                    msg = f"悬赏令结算，{msg}，获得报酬{give_stone * 2}枚灵石"
+                    msg = f"悬赏令结算，{msg}获得报酬{give_stone * 2}枚灵石"
                     #todo 战利品结算sql
                     if item_flag:
                         sql_message.send_back(user_id, item_id, item_info['name'], item_info['type'], 1)
                         msg += f"，额外获得奖励：{item_msg}！"
                     else:
                         msg += "！"
-                    pic = await get_msg_pic(msg)#
-                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                    await do_work.finish(msg, at_sender=True)
+                    if XiuConfig().img:
+                        pic = await get_msg_pic(msg)
+                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                    else:
+                        await do_work.finish(msg, at_sender=True)
 
                     
                 else: 
                     sql_message.update_ls(user_id, give_stone, 1)
                     sql_message.do_work(user_id, 0)
-                    msg = f"悬赏令结算，{msg}，获得报酬{give_stone}枚灵石"
+                    msg = f"悬赏令结算，{msg}获得报酬{give_stone}枚灵石"
                     if s_o_f:#普通成功
                         if item_flag:
                             sql_message.send_back(user_id, item_id, item_info['name'], item_info['type'], 1)
                             msg += f"，额外获得奖励：{item_msg}！"
                         else:
                             msg += "！"
-                        pic = await get_msg_pic(msg)#
-                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                        await do_work.finish(msg, at_sender=True)
+                        if XiuConfig().img:
+                            pic = await get_msg_pic(msg)
+                            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                        else:
+                            await do_work.finish(msg, at_sender=True)
                     else:#失败
                         msg += "！"
-                        pic = await get_msg_pic(msg)#
-                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                        await do_work.finish(msg, at_sender=True)
+                        if XiuConfig().img:
+                            pic = await get_msg_pic(msg)
+                            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                        else:
+                            await do_work.finish(msg, at_sender=True)
                         
         else:
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
             
     elif mode == "接取":
         num = args[3]
@@ -299,9 +342,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if is_type:#接取逻辑
             if num == None or str(num) not in ['1', '2', '3']:
                 msg = '请输入正确的任务序号'
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
             
             try:
                 if work[user_id]:
@@ -311,30 +356,40 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                     sql_message.do_work(user_id, 2, get_work[0])
                     del work[user_id]
                     msg = f"接取任务【{get_work[0]}】成功"
-                    pic = await get_msg_pic(msg)#
-                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                    await do_work.finish(msg, at_sender=True)
+                    if XiuConfig().img:
+                        pic = await get_msg_pic(msg)
+                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                    else:
+                        await do_work.finish(msg, at_sender=True)
                 except IndexError:
                     msg = "没有这样的任务"
-                    pic = await get_msg_pic(msg)#
-                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                    await do_work.finish(msg, at_sender=True)
+                    if XiuConfig().img:
+                        pic = await get_msg_pic(msg)
+                        await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                    else:
+                        await do_work.finish(msg, at_sender=True)
 
             except KeyError:
                 msg = "没有查到你的悬赏令信息呢！"
-                pic = await get_msg_pic(msg)#
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-                await do_work.finish(msg, at_sender=True)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
                         
         else:
-            pic = await get_msg_pic(msg)#
-            await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            await do_work.finish(msg, at_sender=True)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await do_work.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await do_work.finish(msg, at_sender=True)
     elif mode == "帮助":
         msg = __work_help__
-        pic = await get_msg_pic(msg)#
-        await do_work.finish(MessageSegment.image(pic), at_sender=True)
-        await do_work.finish(__work_help__)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await do_work.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await do_work.finish(msg, at_sender=True)
             
 def get_work_msg(work):
     msg = f"{work[0]},完成机率{work[1]},基础报酬{work[2]}灵石,预计需{work[3]}分钟{work[4]}\n"
