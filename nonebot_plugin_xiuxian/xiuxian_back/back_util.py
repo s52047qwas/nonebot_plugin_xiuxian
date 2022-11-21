@@ -300,8 +300,6 @@ def check_use_elixir(user_id, goods_id):
             msg = f"道友成功使用丹药：{goods_name}，下一次突破的成功概率提高{goods_info['buff']}%！"
             
     elif goods_info['buff_type'] == "level_up_big":#增加大境界突破概率的丹药
-        goods_day_num = back.day_num
-        goods_all_num = back.all_num
         if goods_rank != user_rank:#使用限制
             msg = f"丹药：{goods_name}的使用境界为{goods_info['境界']}，道友不满足使用条件！"
         else:
