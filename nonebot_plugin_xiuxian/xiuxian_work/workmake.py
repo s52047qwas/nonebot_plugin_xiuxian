@@ -35,7 +35,6 @@ def workmake(work_level, exp, user_level):
             item_id = 0
         else:
             item_id = random.choice(item_id)
-        print(f'{i}、寻找{work_name},完成几率{rate},报酬{level_price_data["award"]}灵石,预计需{int(level_price_data["time"] * isOut)}分钟,可能获取额外{item_id}')
         work_json[work_name] = [rate, level_price_data["award"], int(level_price_data["time"] * isOut), item_id, success_msg, fail_msg]
         i += 1
     return work_json

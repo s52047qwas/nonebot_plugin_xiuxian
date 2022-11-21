@@ -61,8 +61,6 @@ __work_help__ = f"""
 @do_work.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     await data_check_conf(bot, event)
-    for a in args:
-        print(a)
     isUser, user_info, msg = check_user(event)
     if not isUser:
         pic = await get_msg_pic(msg)#
