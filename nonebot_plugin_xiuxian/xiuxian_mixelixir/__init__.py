@@ -192,20 +192,25 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if timedeff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) :
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
             num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级']
-            i = 1
-            give_dict = {}
-            while i <= num:
-                id = random.choice(yaocai_id_list)
-                try:
-                    give_dict[id] += 1
-                    i += 1
-                except:
-                    give_dict[id] = 1
-                    i += 1
-            for k, v in give_dict.items():
-                goods_info = items.get_data_by_item_id(k)
-                msg += f"道友成功收获药材：{goods_info['name']} {v} 个！\n"
-                sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
+            msg = ''
+            if yaocai_id_list == []:
+                sql_message.send_back(user_info.user_id, 3001, '恒心草', '药材', num)#没有合适的，保底
+                msg += f"道友成功收获药材：恒心草 {num} 个！\n"
+            else:
+                i = 1
+                give_dict = {}
+                while i <= num:
+                    id = random.choice(yaocai_id_list)
+                    try:
+                        give_dict[id] += 1
+                        i += 1
+                    except:
+                        give_dict[id] = 1
+                        i += 1
+                for k, v in give_dict.items():
+                    goods_info = items.get_data_by_item_id(k)
+                    msg += f"道友成功收获药材：{goods_info['name']} {v} 个！\n"
+                    sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
             mix_elixir_info['收取时间'] = nowtime
             save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
             if XiuConfig().img:
@@ -220,15 +225,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
             else:
                 await yaocai_get.finish(msg, at_sender=True)
-    else:#第一次创建
-        mix_elixir_info['收取时间'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
-        msg = f"道友的灵田还不能收取，下次收取时间为：{GETCONFIG['time_cost']}小时之后"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await yaocai_get.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await yaocai_get.finish(msg, at_sender=True)
 
 @my_mix_elixir_info.handle()
 async def _(bot: Bot, event: GroupMessageEvent):

@@ -82,6 +82,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     else:
         sql_message.update_ls(user_id, BLESSEDSPOTCOST, 2)
         sql_message.update_user_blessed_spot_flag(user_id)
+        mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+        mix_elixir_info['收取时间'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
         msg = f"恭喜道友拥有了自己的洞天福地，请收集聚灵旗来提升洞天福地的等级吧~"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)

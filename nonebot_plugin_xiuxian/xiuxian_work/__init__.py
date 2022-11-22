@@ -82,10 +82,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
     mode = args[2]#刷新、终止、结算、接取
     if work_level == None:
         user_level = user_info.level
-    else:
-        user_level = work_level
-    work_list = []
-    if mode == None:#接取逻辑
         if USERRANK[user_info.level] <= 22:
             msg = f"道友的境界过高，悬赏令已经不能满足道友了，请尝试获取低境界的悬赏令"
             if XiuConfig().img:
@@ -93,6 +89,10 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 await do_work.finish(MessageSegment.image(pic), at_sender=True)
             else:
                 await do_work.finish(msg, at_sender=True)
+    else:
+        user_level = work_level
+    work_list = []
+    if mode == None:#接取逻辑
         try:
             if work[user_id]:
                 if (datetime.now() - work[user_id].time).seconds // 60 >= 60:
@@ -177,7 +177,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             work_time = datetime.strptime(
                 user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
             )
-            exp_time = (datetime.now() - work_time).seconds // 60  # 闭关时长计算
+            exp_time = (datetime.now() - work_time).seconds // 60
             time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time, user_id=user_info.user_id)
             if exp_time < time2:
                 msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
@@ -202,14 +202,6 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 await do_work.finish(MessageSegment.image(pic), at_sender=True)
             else:
                 await do_work.finish(msg, at_sender=True)
-        
-        if int(user_info.stone) < lscost:
-            msg = f"道友的灵石不足以刷新，每次刷新消耗灵石：{lscost}枚"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await do_work.finish(MessageSegment.image(pic), at_sender=True)
-            else:
-                await do_work.finish(msg, at_sender=True)
             
         try:
             usernums = refreshnum[user_id]
@@ -219,6 +211,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         freenum = count - usernums
         if freenum < 0:
             freenum = 0
+            if int(user_info.stone) < lscost:
+                msg = f"道友的灵石不足以刷新，每次刷新消耗灵石：{lscost}枚"
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await do_work.finish(MessageSegment.image(pic), at_sender=True)
+                else:
+                    await do_work.finish(msg, at_sender=True)
             
         work_msg = workhandle().do_work(0, level=user_info.level, exp=user_info.exp, user_id=user_id)
         n = 1
