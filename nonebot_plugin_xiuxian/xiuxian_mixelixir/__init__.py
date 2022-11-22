@@ -412,7 +412,7 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
         if zhuyao_name == fuyao_name:
             check, fuyao_goods_id = await check_yaocai_name_in_back(user_id, fuyao_name, fuyao_num + zhuyao_num)
             if not check:
-                msg = f"请检查药材：{yaoyin_name} 是否在背包中，或者数量是否足够！"
+                msg = f"请检查药材：{zhuyao_name} 是否在背包中，或者数量是否足够！"
                 if XiuConfig().img:
                     pic = await get_msg_pic(msg)
                     await mix_elixir.reject(prompt=MessageSegment.image(pic), at_sender=True)
