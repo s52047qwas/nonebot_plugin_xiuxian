@@ -234,7 +234,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         work[user_id].world = work_list
         
         refreshnum[user_id] = usernums + 1
-        sql_message.update_ls(user_id, lscost, 2)
+        if freenum == 0:
+            sql_message.update_ls(user_id, lscost, 2)
         msg = work_msg_f
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
