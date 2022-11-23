@@ -470,17 +470,17 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
                         msg += f"该丹药道友已炼制{now_num}次，无法获得炼丹经验了~"
                     elif now_num + num >= goods_info['mix_all']:
                         exp_num = goods_info['mix_all'] - now_num
-                        mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * exp_num
+                        mix_elixir_info['炼丹经验'] += goods_info['mix_exp'] * exp_num
                         msg += f"获得炼丹经验{goods_info['mix_exp'] * exp_num}点"
                     else:
-                        mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * num
+                        mix_elixir_info['炼丹经验'] += goods_info['mix_exp'] * num
                         msg += f"获得炼丹经验{goods_info['mix_exp'] * num}点"
                     mix_elixir_info['炼丹记录'][id]['num'] += num
                 except:
                     mix_elixir_info['炼丹记录'][id] = {}
                     mix_elixir_info['炼丹记录'][id]['name'] = goods_info['name']
                     mix_elixir_info['炼丹记录'][id]['num'] = num
-                    mix_elixir_info['炼丹经验'] = goods_info['mix_exp'] * num
+                    mix_elixir_info['炼丹经验'] += goods_info['mix_exp'] * num
                     msg += f"获得炼丹经验{goods_info['mix_exp'] * num}点"
                     save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
                 
