@@ -208,7 +208,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         except KeyError:
             usernums = 0
             
-        freenum = count - usernums
+        freenum = count - usernums - 1
         if freenum < 0:
             freenum = 0
             if int(user_info.stone) < lscost:
