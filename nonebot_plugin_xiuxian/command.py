@@ -13,12 +13,10 @@ package = on_command("我的纳戒", aliases={"升级纳戒"}, priority=5)
 sign_in = on_command("修仙签到", priority=5)
 help_in = on_command("修仙帮助", priority=5)
 rank = on_command("排行榜", aliases={"修仙排行榜", "灵石排行榜", "战力排行榜", "境界排行榜", "宗门排行榜"}, priority=5)
-time_mes = on_message(priority=999)
 remaname = on_command("改名", priority=5)
 level_up = on_command("突破", priority=5)
 in_closing = on_command("闭关", priority=5)
 give_stone = on_command("送灵石", priority=5)
-do_work = on_command("悬赏令", priority=5)
 dufang = on_regex(
     r"(金银阁)\s?(\d+)\s?([大|小|奇|偶|猜])?\s?(\d+)?",
     flags=I,
