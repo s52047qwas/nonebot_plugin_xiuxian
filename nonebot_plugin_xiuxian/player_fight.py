@@ -170,7 +170,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                             play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                             player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
                             play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
-                            player1_js = player1_f_js - user1_skill_sh if player2_f_js - user1_skill_sh > 0.1 else 0.1
+                            player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
 
                     elif user1_skill_type == 4:  # 封印类技能
                         player1_turn_cost = player1_turn_cost - 1
@@ -516,7 +516,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                                 boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                                 boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                                 play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                                player1_js = player1_f_js - user1_skill_sh
+                                player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
                                 sh += player1_sh
 
                         elif user1skill_type == 4:  # 封印类技能
@@ -591,7 +591,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                            player1_js = player1_f_js - user1_skill_sh
+                            player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
                             sh += player1_sh
 
                     elif user1skill_type == 4:  # 封印类技能
