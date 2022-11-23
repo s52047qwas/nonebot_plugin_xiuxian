@@ -145,7 +145,7 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     if mode == '猜':
         mode_num = args[3]  # 猜的数值
         if str(mode_num) not in ['1', '2', '3', '4', '5', '6']:
-            msg = f"请输入正确的指令，例如金银阁10大、金银阁10猜3"
+            msg = f"请输入正确的指令，例如金银阁10大、、金银阁10奇、金银阁10猜3"
             if XiuConfig().img:
                 pic = await get_msg_pic(msg)
                 await dufang.finish(MessageSegment.image(pic), at_sender=True)
