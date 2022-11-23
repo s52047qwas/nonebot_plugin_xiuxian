@@ -18,7 +18,7 @@ level_up = on_command("突破", priority=5)
 in_closing = on_command("闭关", priority=5)
 give_stone = on_command("送灵石", priority=5)
 dufang = on_regex(
-    r"(金银阁)\s?(\d+)\s?([大|小|猜])?\s?(\d+)?",
+    r"(金银阁)\s?(\d+)\s?([大|小|奇|偶|猜])?\s?(\d+)?",
     flags=I,
     permission=PRIVATE_FRIEND | GROUP,
 )

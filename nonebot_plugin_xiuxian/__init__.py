@@ -133,16 +133,21 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     add_cd(event, XiuConfig().dufang_cd, '金银阁')
 
     if args[2] is None:
-        pic = await get_msg_pic(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")#MessageSegment.image(pic)
-        await dufang.finish(MessageSegment.image(pic))
+        msg = f"请输入正确的指令，例如金银阁10大、金银阁10奇、金银阁10猜3"
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await dufang.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await dufang.finish(msg, at_sender=True)
+        
 
     price = args[1]  # 300
-    mode = args[2]  # 大、小、猜
+    mode = args[2]  # 大、小、奇、偶、猜
     mode_num = 0
     if mode == '猜':
         mode_num = args[3]  # 猜的数值
         if str(mode_num) not in ['1', '2', '3', '4', '5', '6']:
-            msg = f"请输入正确的指令，例如金银阁10大、金银阁10猜3"
+            msg = f"请输入正确的指令，例如金银阁10大、、金银阁10奇、金银阁10猜3"
             if XiuConfig().img:
                 pic = await get_msg_pic(msg)
                 await dufang.finish(MessageSegment.image(pic), at_sender=True)
@@ -179,6 +184,24 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
             await dufang.finish(msg, at_sender=True)
         
     elif value <= 3 and str(mode) == "小":
+        sql_message.update_ls(user_id, price_num, 1)
+        await dufang.send(msg)
+        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await dufang.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await dufang.finish(msg, at_sender=True)
+    elif value %2==1 and str(mode) == "奇":
+        sql_message.update_ls(user_id, price_num, 1)
+        await dufang.send(msg)
+        msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await dufang.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await dufang.finish(msg, at_sender=True)
+    elif value %2==0 and str(mode) == "偶":
         sql_message.update_ls(user_id, price_num, 1)
         await dufang.send(msg)
         msg = "最终结果为{}，你猜对了，收获灵石{}块".format(value, price_num)
