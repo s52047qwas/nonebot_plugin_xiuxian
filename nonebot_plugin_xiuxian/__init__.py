@@ -133,11 +133,13 @@ async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup())
     add_cd(event, XiuConfig().dufang_cd, '金银阁')
 
     if args[2] is None:
-      if XiuConfig().img:
-        await dufang.finish(f"请输入正确的指令，例如金银阁10大、金银阁10奇、金银阁10猜3"
-      else:
-        pic = await get_msg_pic(f"请输入正确的指令，例如金银阁10大、金银阁10猜3")#MessageSegment.image(pic)
-        await dufang.finish(MessageSegment.image(pic))
+        msg = f"请输入正确的指令，例如金银阁10大、金银阁10奇、金银阁10猜3"
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await dufang.finish(MessageSegment.image(pic))
+        else:
+            await dufang.finish(msg)
+        
 
     price = args[1]  # 300
     mode = args[2]  # 大、小、奇、偶、猜
