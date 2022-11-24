@@ -25,7 +25,7 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
-from .utils import Txt2Img, data_check_conf, check_user_type, get_msg_pic
+from .utils import Txt2Img, data_check_conf, check_user_type, get_msg_pic, check_user
 from .item_json import Items
 
 
@@ -487,6 +487,9 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
 @command.level_up.handle()
 async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = EventPlainText()):
     await data_check_conf(bot, event)
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        await level_up.finish()
     if mode not in ['使用', '不使用', '取消']:
         msg = "指令错误，应该为 使用、不使用或取消！"
         if XiuConfig().img:
