@@ -652,6 +652,19 @@ class XiuxianDateManage:
         for r in result:
             results.append(SectInfo(*r))
         return results
+    
+    def get_top1_user(self):
+        """
+        获取修为第一的用户
+        """
+        cur = self.conn.cursor()
+        sql = f"select * from user_xiuxian ORDER BY exp DESC LIMIT 1"
+        cur.execute(sql)
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserDate(*result)
 
     def donate_update(self, sect_id, stone_num):
         """宗门捐献更新建设度及可用灵石"""
