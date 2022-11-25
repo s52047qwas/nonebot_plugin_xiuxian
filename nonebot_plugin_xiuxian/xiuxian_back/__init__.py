@@ -234,7 +234,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await buy.finish(msg, at_sender=True)
         
     goods_price = shop_data[group_id][str(arg)]['price']
-    if user_info.stone <= goods_price:
+    if user_info.stone < goods_price:
         msg = '没钱还敢来买东西！！'
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
@@ -250,21 +250,27 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await buy.finish(msg, at_sender=True)
     else:
         sql_message.update_ls(user_id, goods_price, 2)
-        sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
-        if shop_data[group_id][str(arg)]['user_id'] == 0:#0为系统
-            msg = f"道友成功购买物品{shop_data[group_id][str(arg)]['goods_name']}，消耗灵石{goods_price}枚！"
+        shop_user_id = shop_data[group_id][str(arg)]['user_id']
+        shop_goods_name = shop_data[group_id][str(arg)]['goods_name']
+        shop_user_name = shop_data[group_id][str(arg)]['goods_name']
+        shop_goods_id = shop_data[group_id][str(arg)]['goods_id']
+        shop_goods_type = shop_data[group_id][str(arg)]['goods_type']
+        sql_message.send_back(user_id, shop_goods_id, shop_goods_name, shop_goods_type, 1)
+        if shop_user_id == 0:#0为系统
+            msg = f"道友成功购买物品{shop_goods_name}，消耗灵石{goods_price}枚！"
         else:
-            msg = f"道友成功购买{shop_data[group_id][str(arg)]['user_name']}道友寄售的物品{shop_data[group_id][str(arg)]['goods_name']}，消耗灵石{goods_price}枚！"
-            # sql_message.update_ls(user_id, goods_price, 2)
-            # sql_message.send_back(user_id, shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
+            msg = f"道友成功购买{shop_user_name}道友寄售的物品{shop_goods_name}，消耗灵石{goods_price}枚！"
             service_charge = int(goods_price * 0.05)#手续费5%
             give_stone = goods_price - service_charge
-            shop_msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！")
-            shop_msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
+            shop_msg1 = Message(f"道友上架的{shop_goods_name}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！")
+            shop_msg2 = Message(f"[CQ:at,qq={shop_user_id}]")
             shop_msg = shop_msg1 + shop_msg2
-            sql_message.update_ls(shop_data[group_id][str(arg)]['user_id'], give_stone, 1)
-            await bot.send(event=event, message=shop_msg)
+            sql_message.update_ls(shop_user_id, give_stone, 1)
             del shop_data[group_id][str(arg)]
+            try:
+                await bot.send(event=event, message=shop_msg)
+            except ActionFailed:
+                pass
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
         save_shop(shop_data)
         if XiuConfig().img:
