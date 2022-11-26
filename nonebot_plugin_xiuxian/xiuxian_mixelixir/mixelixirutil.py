@@ -64,13 +64,13 @@ async def get_mix_elixir_msg(yaocai):
     num = 0
     for k, v in yaocai.items():#这里是用户所有的药材dict
         i = 1
-        while i <= v['num']:#尝试第一个药材为主药
+        while i <= v['num'] and i <= 5:#尝试第一个药材为主药
             # _zhuyao = v['主药']['h_a_c']['type'] * v['主药']['h_a_c']['power'] * i
             for kk, vv in yaocai.items():
                 if kk == k:#相同的药材不能同时做药引
                     continue
                 o = 1
-                while o <= vv['num']:
+                while o <= vv['num'] and o <= 5:
                     # _yaoyin = vv['药引']['h_a_c']['type'] * vv['药引']['h_a_c']['power'] * o
                     if await tiaohe(v, i, vv, o):#调和失败
                     # if await absolute(_zhuyao + _yaoyin) > yonhudenji:#调和失败
@@ -84,7 +84,7 @@ async def get_mix_elixir_msg(yaocai):
                         for kkk, vvv in yaocai.items():
                             p = 1
                             #尝试加入辅药
-                            while p <= vvv['num']:
+                            while p <= vvv['num'] and p <= 5:
                                 fuyao_type = str(vvv['辅药']['type'])
                                 fuyao_power = vvv['辅药']['power'] * p
                                 elixir_config = {}

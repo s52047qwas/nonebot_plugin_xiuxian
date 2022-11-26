@@ -482,7 +482,7 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
                     mix_elixir_info['炼丹记录'][id]['num'] = num
                     mix_elixir_info['炼丹经验'] += goods_info['mix_exp'] * num
                     msg += f"获得炼丹经验{goods_info['mix_exp'] * num}点"
-                    save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+                save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
                 
                 if XiuConfig().img:
                     pic = await get_msg_pic(msg)
