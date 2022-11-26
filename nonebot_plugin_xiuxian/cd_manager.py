@@ -51,7 +51,11 @@ def add_cd(event: MessageEvent, config_time, cdtype, times: int = 1):
       * `event: MessageEvent`: 事件
       * `times: int`: 倍数, 默认为 `1`
     """
-    cd_data[event.get_user_id()] = {}
+    try:
+        cd_data[event.get_user_id()]
+    except:
+        cd_data[event.get_user_id()] = {}
+    
     cd_data[event.get_user_id()][cdtype] = event.time + times * config_time
     logger.debug("查询CD: {}".format(cd_data))
     
