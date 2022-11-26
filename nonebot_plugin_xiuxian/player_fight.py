@@ -637,7 +637,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
 
         if boss['气血'] <= 0:  # boss气血小于0，结算
             play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
-            suc = f"{player1['道号']}"
+            suc = "群友赢了"
             get_stone = boss_now_stone
             if isSql:
                 XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1_hp_buff)),
@@ -666,7 +666,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
             play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(boss['name'])}})
-            suc = f"{boss['name']}"
+            suc = "Boss赢了"
             get_stone = int(boss_now_stone * (sh / qx))
             boss['stone'] = boss_now_stone - get_stone
 

@@ -118,7 +118,7 @@ async def get_boss_battle_info(user_info, rift_rank, bot_id):
     
     result, victor, bossinfo_new, stone = await Boss_fight(player, boss_info, bot_id=bot_id) #未开启，1不写入，2写入
 
-    if victor == player['道号']:#获胜
+    if victor == "群友赢了":#获胜
         user_rank = 50 - USERRANK[user_info.level]#50-用户当前等级
         success_info = STORY['战斗']['Boss战斗']["success"]
         msg = success_info['desc'].format(boss_info["name"])

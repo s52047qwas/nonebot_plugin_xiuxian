@@ -309,7 +309,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     more_msg = ''
     battle_flag[group_id] = True
     result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
-    if victor == bossinfo['name']:
+    if victor == "Boss赢了":
         group_boss[group_id][boss_num - 1] = bossinfo_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
         #新增boss战斗积分点数
@@ -336,7 +336,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await battle.finish(msg, at_sender=True)
         
-    elif victor == player['道号']:
+    elif victor == "群友赢了":
         #新增boss战斗积分点数
         boss_all_hp = bossinfo['总血量']#总血量
         boss_integral = int((boss_old_hp / boss_all_hp) * 100)
