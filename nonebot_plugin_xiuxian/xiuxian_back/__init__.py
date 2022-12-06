@@ -262,13 +262,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             msg = f"道友成功购买{shop_user_name}道友寄售的物品{shop_goods_name}，消耗灵石{goods_price}枚！"
             service_charge = int(goods_price * 0.05)#手续费5%
             give_stone = goods_price - service_charge
-            shop_msg1 = Message(f"道友上架的{shop_goods_name}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！")
+            shop_msg1 = f"道友上架的{shop_goods_name}已被购买，获得灵石{give_stone}枚，坊市收取手续费：{service_charge}枚灵石！"
             shop_msg2 = Message(f"[CQ:at,qq={shop_user_id}]")
-            shop_msg = shop_msg1 + shop_msg2
             sql_message.update_ls(shop_user_id, give_stone, 1)
             del shop_data[group_id][str(arg)]
             try:
-                await bot.send(event=event, message=shop_msg)
+                if XiuConfig().img:
+                    pic = await get_msg_pic(shop_msg1)
+                    await bot.send(event=event, message=MessageSegment.image(pic) + shop_msg2)
+                else:
+                    await bot.send(event=event, message=Message(shop_msg1) + shop_msg2)
             except ActionFailed:
                 pass
         shop_data[group_id] = reset_dict_num(shop_data[group_id])
@@ -593,17 +596,19 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             sql_message.send_back(shop_data[group_id][str(arg)]['user_id'], shop_data[group_id][str(arg)]['goods_id'], shop_data[group_id][str(arg)]['goods_name'], shop_data[group_id][str(arg)]['goods_type'], 1)
             msg = f"成功下架{shop_data[group_id][str(arg)]['user_id']}的物品：{shop_data[group_id][str(arg)]['goods_name']}！"
-            msg1 = Message(f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被管理员{user_id}下架！")
+            msg1 = f"道友上架的{shop_data[group_id][str(arg)]['goods_name']}已被管理员{user_id}下架！"
             msg2 = Message(f"[CQ:at,qq={shop_data[group_id][str(arg)]['user_id']}]")
-            msg3 = msg1 + msg2
             del shop_data[group_id][str(arg)]
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg3)
-                await bot.send(event=event, message=MessageSegment.image(pic))
-            else:
-                await bot.send(event=event, message=msg3)
+            try:
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg1)
+                    await bot.send(event=event, message=MessageSegment.image(pic) + msg2)
+                else:
+                    await bot.send(event=event, message=Message(msg1) + msg2)
+            except ActionFailed:
+                pass
                 
             if XiuConfig().img:
                 pic = await get_msg_pic(msg)
