@@ -19,6 +19,7 @@ JINGJIEEXP = {#数值为中期和圆满的平均值
     "金仙境":75968000,
     "太乙境":150968000,
 }
+MINJINJIE = 4 #向下取4个等级
 jinjie_list = [k for k, v in JINGJIEEXP.items()]
 sql_message = XiuxianDateManage()  # sql类
 
@@ -29,7 +30,13 @@ def createboss():
         level = "渡劫境"
     else:
         level = top_user_level[:3]
-    boss_jj = random.choice(jinjie_list[:jinjie_list.index(level) + 1])
+    
+    now_jinjie_index = jinjie_list.index(level) + 1
+    if now_jinjie_index <= MINJINJIE:
+        jinjie_list = jinjie_list[:now_jinjie_index]
+    else:
+        jinjie_list = jinjie_list[now_jinjie_index - MINJINJIE:now_jinjie_index]
+    boss_jj = random.choice(jinjie_list)
     bossinfo = get_boss_exp(boss_jj)
     bossinfo['name'] = random.choice(config["Boss名字"])
     bossinfo['jj'] = boss_jj
