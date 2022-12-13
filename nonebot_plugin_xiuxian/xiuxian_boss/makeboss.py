@@ -33,10 +33,9 @@ def createboss():
     
     now_jinjie_index = jinjie_list.index(level) + 1
     if now_jinjie_index <= MINJINJIE:
-        jinjie_list = jinjie_list[:now_jinjie_index]
+        boss_jj = random.choice(jinjie_list[:now_jinjie_index])
     else:
-        jinjie_list = jinjie_list[now_jinjie_index - MINJINJIE:now_jinjie_index]
-    boss_jj = random.choice(jinjie_list)
+        boss_jj = random.choice(jinjie_list[now_jinjie_index - MINJINJIE:now_jinjie_index])
     bossinfo = get_boss_exp(boss_jj)
     bossinfo['name'] = random.choice(config["Boss名字"])
     bossinfo['jj'] = boss_jj
