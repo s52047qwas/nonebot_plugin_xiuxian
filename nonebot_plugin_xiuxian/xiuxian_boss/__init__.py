@@ -303,7 +303,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['exp'] = userinfo.exp
     
     bossinfo = group_boss[group_id][boss_num - 1]
-    boss_rank = USERRANK[(bossinfo['jj'] + '中期')]
+    boss_rank = USERRANK[bossinfo['jj']]
     user_rank = USERRANK[userinfo.level]
     boss_old_hp = bossinfo['气血']#打之前的血量
     more_msg = ''
