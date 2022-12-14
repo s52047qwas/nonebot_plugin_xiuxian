@@ -83,8 +83,8 @@ git pull
 
 ## 一些问题
 
-- 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录nonebot_plugin_xiuxian ——>xiuxian
-处下载文件，放置于bot目录，data -> xiuxian文件夹处
+- 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录data -> xiuxian
+处下载的文件，放置于bot目录，data -> xiuxian文件夹处
 - 当为放置为plugins目录使用时，请修改根目录下__init__.py文件中的42行：src=''中的内容，填写的是存放插件的目录，一般情况下 src='src.plugins.'  如有不同请按照格式修改
 ## 特别感谢
 
