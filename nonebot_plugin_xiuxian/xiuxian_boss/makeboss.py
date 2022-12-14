@@ -32,7 +32,7 @@ def createboss():
     bossinfo = get_boss_exp(boss_jj)
     bossinfo['name'] = random.choice(config["Boss名字"])
     bossinfo['jj'] = boss_jj
-    bossinfo['stone'] = config["Boss灵石"][boss_jj]
+    bossinfo['stone'] = config["Boss灵石v1.1"][boss_jj]
     return bossinfo
 
 def get_boss_exp(boss_jj):

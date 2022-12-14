@@ -2,10 +2,10 @@ import json
 import os
 from pathlib import Path
 
-configkey = ["Boss灵石", "Boss名字", "Boss倍率", "Boss个数上限", "Boss生成时间参数", 'open', "世界积分商品"]
+configkey = ["Boss名字", "Boss倍率", "Boss个数上限", "Boss生成时间参数", 'open', "世界积分商品","Boss灵石v1.1"]
 CONFIG = {
     "open":[],
-    "Boss灵石" : {
+    "Boss灵石v1.1" : {
     #生成Boss给的灵石
     '练气境初期':5000,
     '练气境中期':5000,
