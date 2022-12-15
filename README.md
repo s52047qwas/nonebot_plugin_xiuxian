@@ -28,6 +28,7 @@ _:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
 
 ```
 pip install nonebot-plugin-xiuxian
+nb plugin install nonebot-plugin-xiuxian
 ```
 
 - 使用github处拉取源码使用
