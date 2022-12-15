@@ -18,6 +18,7 @@ _:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
   5、灵庄：银行系统，发送 灵庄帮助 获取信息<br>
   6、功法：功法系统，发送指令 功法帮助<br>
   7、炼丹：发送 炼丹帮助 获取对应操作指令，需要炼丹炉，可在世界boss处获取。<br>
+  8、秘境：发送 秘境帮助 获取对应操作指令。<br>
 
 ## 安装
 1、下载插件文件
@@ -27,6 +28,7 @@ _:tada::tada::tada:修仙模拟器！:tada::tada::tada:_
 
 ```
 pip install nonebot-plugin-xiuxian
+nb plugin install nonebot-plugin-xiuxian
 ```
 
 - 使用github处拉取源码使用
@@ -82,8 +84,8 @@ git pull
 
 ## 一些问题
 
-- 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录nonebot_plugin_xiuxian ——>xiuxian
-处下载文件，放置于bot目录，data -> xiuxian文件夹处
+- 当前首次使用，未自动创建json文件及sql文件，请在[githut](https://github.com/s52047qwas/nonebot_plugin_xiuxian)处，目录data -> xiuxian
+处下载的文件，放置于bot目录，data -> xiuxian文件夹处
 - 当为放置为plugins目录使用时，请修改根目录下__init__.py文件中的42行：src=''中的内容，填写的是存放插件的目录，一般情况下 src='src.plugins.'  如有不同请按照格式修改
 ## 特别感谢
 
