@@ -47,7 +47,7 @@ boss_time = config["Boss生成时间参数"]
 __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
-1、生成世界boss：生成一只随机大境界的世界Boss,超管权限
+1、生成世界boss、生成世界boss+数量：生成一只随机大境界的世界Boss、生成指定数量的世界boss,超管权限
 2、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
 3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
 4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
@@ -439,7 +439,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await boss_info.finish(msg, at_sender=True)
 
 @create.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     group_id = event.group_id
     isInGroup = isInGroups(event)
@@ -450,13 +450,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await create.finish(MessageSegment.image(pic), at_sender=True)
         else:
             await create.finish(msg, at_sender=True)
-    
-    bossinfo = createboss()
     try:
         group_boss[group_id]
     except:
         group_boss[group_id] = []
-        
     if len(group_boss[group_id]) >= config['Boss个数上限']:
         msg = f"本群世界Boss已达到上限{config['Boss个数上限']}个，无法继续生成"
         if XiuConfig().img:
@@ -464,13 +461,32 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await create.finish(MessageSegment.image(pic), at_sender=True)
         else:
             await create.finish(msg, at_sender=True)
-    group_boss[group_id].append(bossinfo)
-    msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(msg)
-        await create.finish(MessageSegment.image(pic), at_sender=True)
+    args = args.extract_plain_text().strip()
+    num = re.findall("\d+", args)  
+    if num:
+        num = int(num[0]) #数量
+        i = 0
+        while(i < num):
+            bossinfo = createboss()
+            group_boss[group_id].append(bossinfo)
+            i += 1
+            if len(group_boss[group_id]) >= config['Boss个数上限']:
+                break
+        msg = f"已生成{i}个世界boss，请发送 查询世界boss 来查看boss"
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await create.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await create.finish(msg, at_sender=True)
     else:
-        await create.finish(msg, at_sender=True)
+        bossinfo = createboss()
+        group_boss[group_id].append(bossinfo)
+        msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await create.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await create.finish(msg, at_sender=True)
 
 
 
