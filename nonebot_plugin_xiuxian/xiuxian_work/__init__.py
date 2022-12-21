@@ -107,6 +107,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                     work_msg_f += "(悬赏令每小时更新一次)"
                     work[user_id].msg = work_msg_f
                     work[user_id].world = work_list
+                    work[user_id].time = datetime.now()
                     msg = work[user_id].msg
                     if XiuConfig().img:
                         pic = await get_msg_pic(msg)
