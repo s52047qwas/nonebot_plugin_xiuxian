@@ -668,7 +668,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await use.finish(msg, at_sender=True)
     user_id = user_info.user_id
     # await use.finish('调试中，未开启！')
-    arg = args.extract_plain_text().strip()
+    arg = args.extract_plain_text().split()
+    try:
+        name = arg[0]
+    except IndexError:
+        msg = f"请输入正确的指令！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await use.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await use.finish(msg, at_sender=True)
+    
     
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg == None:
@@ -680,13 +690,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await use.finish(msg, at_sender=True)
     in_flag = False #判断指令是否正确，道具是否在背包内
     for back in back_msg:
-        if arg == back.goods_name:
+        if name == back.goods_name:
             in_flag = True
             goods_id = back.goods_id
             goods_type = back.goods_type
+            goods_num = back.goods_num
             break
     if not in_flag:
-        msg = f"请检查该道具 {arg} 是否在背包内！"
+        msg = f"请检查该道具 {name} 是否在背包内！"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
             await use.finish(MessageSegment.image(pic), at_sender=True)
@@ -710,7 +721,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.updata_user_faqi_buff(user_id, goods_id)
             if item_type == "防具":
                 sql_message.updata_user_armor_buff(user_id, goods_id)
-            msg = f"成功装备{arg}！"
+            msg = f"成功装备{name}！"
             if XiuConfig().img:
                 pic = await get_msg_pic(msg)
                 await use.finish(MessageSegment.image(pic), at_sender=True)
@@ -743,7 +754,37 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await use.finish(msg, at_sender=True)
     elif goods_type == "丹药":
-        msg = check_use_elixir(user_id, goods_id)
+        
+        try:
+            use_num = arg[1]
+        except IndexError:
+            use_num = 1
+        
+        check_num = False
+        try:
+            use_num = int(use_num)
+            if use_num < 0:
+                check_num = True
+        except TypeError:
+            check_num = True
+            
+        if check_num:
+            msg = '请输入正确的使用数量！'
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await use.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await use.finish(msg, at_sender=True)
+                
+        if goods_num < use_num:
+            msg = f'背包内{name}的数量为{goods_num}，不足{use_num}个！'
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await use.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await use.finish(msg, at_sender=True)
+
+        msg = check_use_elixir(user_id, goods_id, use_num=use_num)
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
             await use.finish(MessageSegment.image(pic), at_sender=True)
@@ -1072,3 +1113,9 @@ def get_auction_msg(auction_id):
         msg += f"效果:{item_info['desc']}"
     
     return msg
+
+def absolute(x):
+    if x >= 0:
+        return x
+    else:
+        return -x
