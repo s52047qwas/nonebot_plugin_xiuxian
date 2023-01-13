@@ -763,7 +763,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         check_num = False
         try:
             use_num = int(use_num)
-            if use_num < 0:
+            if use_num <= 0:
                 check_num = True
         except TypeError:
             check_num = True
@@ -1113,9 +1113,3 @@ def get_auction_msg(auction_id):
         msg += f"效果:{item_info['desc']}"
     
     return msg
-
-def absolute(x):
-    if x >= 0:
-        return x
-    else:
-        return -x
