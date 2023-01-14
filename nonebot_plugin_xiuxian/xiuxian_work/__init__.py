@@ -217,10 +217,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             usernums = refreshnum[user_id]
         except KeyError:
             usernums = 0
-            
+        cost_bool = False
         freenum = count - usernums - 1
         if freenum < 0:
             freenum = 0
+            cost_bool = True
             if int(user_info.stone) < lscost:
                 msg = f"道友的灵石不足以刷新，每次刷新消耗灵石：{lscost}枚"
                 if XiuConfig().img:
@@ -244,7 +245,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         work[user_id].world = work_list
         
         refreshnum[user_id] = usernums + 1
-        if freenum == 0:
+        if cost_bool:
             sql_message.update_ls(user_id, lscost, 2)
         msg = work_msg_f
         if XiuConfig().img:
