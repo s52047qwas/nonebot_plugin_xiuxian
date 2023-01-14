@@ -17,11 +17,11 @@ remaname = on_command("改名", priority=5)
 level_up = on_command("突破", priority=5)
 in_closing = on_command("闭关", priority=5)
 give_stone = on_command("送灵石", priority=5)
-dufang = on_regex(
-    r"(金银阁)\s?(\d+)\s?([大|小|奇|偶|猜])?\s?(\d+)?",
-    flags=I,
-    permission=PRIVATE_FRIEND | GROUP,
-)
+# dufang = on_regex(
+#     r"(金银阁)\s?(\d+)\s?([大|小|奇|偶|猜])?\s?(\d+)?",
+#     flags=I,
+#     permission=PRIVATE_FRIEND | GROUP,
+# )
 steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=5)
 gm_command = on_command("神秘力量", permission=SUPERUSER, priority=5)
 gmm_command = on_command("未知力量", permission=SUPERUSER, priority=5)
