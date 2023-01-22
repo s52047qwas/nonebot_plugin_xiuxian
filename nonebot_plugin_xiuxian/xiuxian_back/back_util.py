@@ -386,7 +386,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
             sql_message.update_exp(user_id, exp)
             sql_message.update_power2(user_id)  # 更新战力
             sql_message.update_user_attribute(user_id, user_hp, user_mp, user_atk)#这种事情要放在update_exp方法里
-            sql_message.update_back_j(user_id, goods_id, use_key=1)
+            sql_message.update_back_j(user_id, goods_id, num=use_num, use_key=1)
             msg = f"道友实际成功使用丹药：{goods_name} {use_num}个，修为增加{exp}点！"
             
     else:
