@@ -27,20 +27,27 @@ from ..read_buff import UserBuffDate
 from pathlib import Path
 import json
 import os
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
 
 config = get_config()
 # 定时任务
 set_boss = require("nonebot_plugin_apscheduler").scheduler
 
-create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER))
-boss_info = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP)
-set_group_boss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
+create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP | GUILD and (SUPERUSER | GUILD_SUPERUSER))
+boss_info = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP | GUILD)
+set_group_boss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP | GUILD and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER | GUILD_SUPERUSER | GUILD_ADMIN | GUILD_OWNER))
+battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP | GUILD)
 boss_help = on_command("世界boss帮助", aliases={"世界Boss帮助", "世界BOSS帮助"}, priority=4, block=True)
-boss_delete = on_command("天罚boss", aliases={"天罚世界boss", "天罚Boss", "天罚BOSS", "天罚世界Boss","天罚世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-boss_delete_all = on_command("天罚所有boss", aliases={"天罚所有世界boss", "天罚所有Boss", "天罚所有BOSS", "天罚所有世界Boss","天罚所有世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
-boss_integral_info = on_command("世界积分查看", priority=5, permission= GROUP)
-boss_integral_use = on_command("世界积分兑换", priority=5, permission= GROUP)
+boss_delete = on_command("天罚boss", aliases={"天罚世界boss", "天罚Boss", "天罚BOSS", "天罚世界Boss","天罚世界BOSS"}, priority=5, permission= GROUP | GUILD and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER | GUILD_SUPERUSER | GUILD_ADMIN | GUILD_OWNER))
+boss_delete_all = on_command("天罚所有boss", aliases={"天罚所有世界boss", "天罚所有Boss", "天罚所有BOSS", "天罚所有世界Boss","天罚所有世界BOSS"}, priority=5, permission= GROUP | GUILD and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER | GUILD_SUPERUSER | GUILD_ADMIN | GUILD_OWNER))
+boss_integral_info = on_command("世界积分查看", priority=5, permission= GROUP | GUILD)
+boss_integral_use = on_command("世界积分兑换", priority=5, permission= GROUP | GUILD)
 
 
 boss_time = config["Boss生成时间参数"]
@@ -93,17 +100,17 @@ async def _():
         
         
 @boss_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     msg = __boss_help__
     pic = await get_msg_pic(msg)#
     await boss_help.finish(MessageSegment.image(pic), at_sender=True)
 
 @boss_delete.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     msg = args.extract_plain_text().strip()
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     boss_num = re.findall("\d+", msg)  # boss编号
     
     isInGroup = isInGroups(event)
@@ -164,9 +171,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @boss_delete_all.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
@@ -204,15 +211,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await boss_delete_all.finish(msg, at_sender=True)
 
 @battle.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     try:
-        user_id, userinfo = await data_check(bot, event)
+        isUser, userinfo, msg = check_user(event)
     except MsgError:
         return
     
     msg = args.extract_plain_text().strip()
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     boss_num = re.findall("\d+", msg)  # boss编号
     
     isInGroup = isInGroups(event)
@@ -326,10 +333,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         save_user_boss_fight_info(user_id, user_boss_fight_info)
         msg = f"道友不敌{bossinfo['name']}，重伤逃遁，临逃前收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
         battle_flag[group_id] = False
-        try:
-            await send_forward_msg_list(bot, event, result)
-        except ActionFailed:
-            msg += "\nBoss战消息发送错误，可能被风控！"
+        if isinstance(event, GroupMessageEvent):
+            try:
+                await send_forward_msg_list(bot, event, result)
+            except ActionFailed:
+                msg += "\nBoss战消息发送错误，可能被风控！"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
             await battle.finish(MessageSegment.image(pic), at_sender=True)
@@ -352,10 +360,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
         msg = f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
-        try:
-            await send_forward_msg_list(bot, event, result)
-        except ActionFailed:
-            msg += "\nBoss战消息发送错误，可能被风控！"
+        if isinstance(event, GroupMessageEvent):
+            try:
+                await send_forward_msg_list(bot, event, result)
+            except ActionFailed:
+                msg += "\nBoss战消息发送错误，可能被风控！"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
             await battle.finish(MessageSegment.image(pic), at_sender=True)
@@ -363,9 +372,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await battle.finish(msg, at_sender=True)
 
 @boss_info.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
         msg = f'本群尚未开启世界Boss，请联系管理员开启!'
@@ -439,9 +448,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await boss_info.finish(msg, at_sender=True)
 
 @create.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
         msg = f'本群尚未开启世界Boss，请联系管理员开启!'
@@ -491,11 +500,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @set_group_boss.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     mode = args.extract_plain_text().strip()
-    group_id = event.group_id
+    user_id, group_id, mess = await data_check(bot, event)
     isInGroup = isInGroups(event) #True在，False不在
+    print("群号配置:",isInGroup)
+    print("群号:",group_id)
+    print("已开启群聊:",groups)
 
     if mode == '开启':
         if isInGroup:
@@ -550,17 +562,14 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @boss_integral_info.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await boss_integral_info.finish(MessageSegment.image(pic), at_sender=True)
-        else:
-            await boss_integral_info.finish(msg, at_sender=True)
 
-    user_id = user_info.user_id
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
+
     isInGroup = isInGroups(event)
     if not isInGroup:#不在配置表内
         msg = f'本群尚未开启世界Boss，请联系管理员开启!'
@@ -582,20 +591,24 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             l_msg.append(msg)
     else:
         l_msg.append(f"世界积分商店内空空如也！")
-    await send_forward_msg(bot, event, '世界积分商店', bot.self_id, l_msg)
-    await boss_integral_info.finish()
-        
-@boss_integral_use.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    await data_check_conf(bot, event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
+    if isinstance(event, GroupMessageEvent):
+        await send_forward_msg(bot, event, '世界积分商店', bot.self_id, l_msg)
+        await boss_integral_info.finish()
+    elif isinstance(event, GuildMessageEvent):
+        msg = ' '.join(l_msg)
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
-            await boss_integral_use.finish(MessageSegment.image(pic), at_sender=True)
+            await boss_integral_info.finish(MessageSegment.image(pic), at_sender=True)
         else:
-            await boss_integral_use.finish(msg, at_sender=True)
-    user_id = user_info.user_id
+            await boss_integral_info.finish(msg, at_sender=True)
+        
+@boss_integral_use.handle()
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    try:
+        user_id, group_id, mess = await data_check(bot, event)
+    except MsgError:
+        return
     msg = args.extract_plain_text().strip()
     shop_num = re.findall("\d+", msg)  # boss编号
     
@@ -664,34 +677,59 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await boss_integral_use.finish(msg, at_sender=True)
 
-
-
-
-
+async def get_group_id(session_id):
+    """获取group_id"""
+    print("session_id内容:",session_id)
+    res = re.findall("_(.*)_", session_id)
+    print("res内容:",res)
+    group_id = int(res[0])
+    print("群号:",group_id)
+    return group_id
 
 async def data_check(bot, event):
     """
     判断用户信息是否存在
     """
-    user_qq = event.get_user_id()
-    msg = XiuxianDateManage().get_user_message(user_qq)
+    if isinstance(event, GroupMessageEvent):
+        user_qq = event.get_user_id()
+        group_id = await get_group_id(event.get_session_id())
+        print("群号:",group_id)
+        msg = sql_message.get_user_message(user_qq)
+        if msg:
+            pass
+        else:
+            await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
+            raise MsgError
+    elif isinstance(event, GuildMessageEvent):
+        tiny_id = event.get_user_id()
+        group_id = f"{event.guild_id}@{event.channel_id}"
+        print("群号:",group_id)
+        msg = sql_message.get_user_message3(tiny_id)
+        print("tiny_id", tiny_id)
+        if msg:
+            user_qq = msg.user_id
+            pass
+        else:
+            await bot.send(event=event, message=f"没有您的QQ绑定信息，输入【绑定QQ+QQ号码】进行绑定后再输入【我要修仙】加入！")
+            raise MsgError
 
-    if msg:
-        pass
-    else:
-        msg = f"没有您的信息，输入【我要修仙】加入！"
-        pic = await get_msg_pic(msg)#
-        await bot.send(event=event, message=MessageSegment.image(pic))
-        raise MsgError
-
-    return user_qq, msg
-
+    return user_qq, group_id, msg
 
 class MsgError(ValueError):
     pass
 
-def isInGroups(event: GroupMessageEvent):
-    return event.group_id in groups
+
+class ConfError(ValueError):
+    pass
+
+def isInGroups(event: MessageEvent):
+    if isinstance(event, GroupMessageEvent):
+        print("event里面的群号",event.group_id)
+        return event.group_id in groups
+    elif isinstance(event, GuildMessageEvent):
+        group_id = f"{event.guild_id}@{event.channel_id}"
+        print("event里面的频道群号",group_id)
+        return group_id in groups
 
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 

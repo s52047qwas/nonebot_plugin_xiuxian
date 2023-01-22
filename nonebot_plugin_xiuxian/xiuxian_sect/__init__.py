@@ -21,6 +21,13 @@ from ..cd_manager import add_cd, check_cd, cd_msg
 from ..utils import check_user,send_forward_msg, data_check_conf, get_msg_pic
 from ..read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
 from ..item_json import Items
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
 
 items = Items()
 config = get_config()
@@ -81,7 +88,7 @@ __sect_help__ = f"""
 userstask = {}
 
 @sect_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """修仙帮助"""
     await data_check_conf(bot, event)
     font_size = 26
@@ -123,7 +130,7 @@ async def _():
     logger.info('已重置用户宗门任务次数、宗门丹药领取次数，已扣除丹房维护费')
 
 @sect_elixir_room_make.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -192,7 +199,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_elixir_room_make.finish(msg, at_sender=True)
         
 @sect_elixir_get.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -302,7 +309,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_elixir_get.finish(msg, at_sender=True)
 
 @sect_buff_info.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -366,7 +373,7 @@ buffrankkey = {
 }
 
 @sect_mainbuff_learn.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -448,7 +455,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_mainbuff_learn.finish(msg, at_sender=True)
 
 @sect_mainbuff_get.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     isUser, user_info, msg = check_user(event)
@@ -525,7 +532,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_mainbuff_get.finish(msg, at_sender=True)
 
 @sect_secbuff_get.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     isUser, user_info, msg = check_user(event)
@@ -603,7 +610,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_secbuff_get.finish(msg, at_sender=True)
         
 @sect_secbuff_learn.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     await data_check_conf(bot, event)
 
     isUser, user_info, msg = check_user(event)
@@ -688,16 +695,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @upatkpractice.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     try:
         user_id, group_id, userinfo = await data_check(bot, event)
+        sect_id = userinfo.sect_id
     except MsgError:
         return
 
-    
-    sect_id = userinfo.sect_id
     if sect_id:
         sect_materials = int(sql_message.get_sect_info(sect_id).sect_materials)#当前资材
         useratkpractice = int(userinfo.atkpractice) #当前等级
@@ -763,7 +769,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await upatkpractice.finish(msg, at_sender=True)
 
 @sect_task_refresh.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     isUser, user_info, msg = check_user(event)
@@ -810,7 +816,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_task_refresh.finish(msg, at_sender=True)
 
 @sect_list.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """宗门列表：当前为返回转发内容"""
     await data_check_conf(bot, event)
 
@@ -822,13 +828,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
         user_name = sql_message.get_user_message(sect.sect_owner).user_name
         msg += f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
         msg_list.append(f'编号{sect.sect_id}：{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
-
-    await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
-    await sect_list.finish()
+    if isinstance(event, GroupMessageEvent):
+        await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
+        await sect_list.finish()
+    elif isinstance(event, GuildMessageEvent):
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await sect_list.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await sect_list.finish(msg, at_sender=True)
     # await sect_list.finish(msg)
 
 @sect_users.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """查看所在宗门成员信息"""
     await data_check_conf(bot, event)
     
@@ -858,12 +870,18 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg_list.append("一介散修，莫要再问。")
     else:
         msg_list.append("未曾踏入修仙世界，输入 我要修仙 加入我们，看破这世间虚妄!")
-    await send_forward_msg(bot, event, '宗门成员', bot.self_id, msg_list)
-    await sect_users.finish()
-
+    if isinstance(event, GroupMessageEvent):
+        await send_forward_msg(bot, event, '宗门成员', bot.self_id, msg_list)
+        await sect_users.finish()
+    elif isinstance(event, GuildMessageEvent):
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await sect_users.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await sect_users.finish(msg, at_sender=True)
 
 @sect_task.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     try:
@@ -907,7 +925,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @sect_task_complete.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     try:
@@ -998,12 +1016,15 @@ async def _(bot: Bot, event: GroupMessageEvent):
             await sect_task_complete.finish(msg, at_sender=True)
 
 @sect_owner_change.handle()
-async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: MessageEvent, args: Message = CommandArg()):
     """宗主传位"""
     await data_check_conf(bot, event)
 
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
+    try:
+        user_id, group_id, user_message = await data_check(bot, event)
+    except MsgError:
+        return
+
     if not user_message:
         msg = "修仙界没有你的信息！请输入我要修仙，踏入修行"
         if XiuConfig().img:
@@ -1029,9 +1050,14 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_owner_change.finish(msg, at_sender=True)
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
-        # print(args)
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
+            if isinstance(event, GuildMessageEvent):
+                give_qq_info = sql_message.get_user_message3(give_qq)
+                if give_qq_info:
+                    give_qq = give_qq_info.user_id
+                else:
+                    give_qq = None
     if give_qq:
         if give_qq == user_id:
             msg = "无法对自己的进行传位操作。"
@@ -1069,7 +1095,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @create_sect.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """创建宗门，对灵石、修为等级有要求，且需要当前状态无宗门"""
     await data_check_conf(bot, event)
 
@@ -1113,12 +1139,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await create_sect.finish(msg, at_sender=True)
 
 @sect_kick_out.handle()
-async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: MessageEvent, args: Message = CommandArg()):
     """踢出宗门"""
     await data_check_conf(bot, event)
 
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
+    user_id, group_id, user_message = await data_check(bot, event)
     if not user_message:
         msg = "修仙界没有你的信息！请输入我要修仙，踏入修行"
         if XiuConfig().img:
@@ -1135,9 +1160,14 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_kick_out.finish(msg, at_sender=True)
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
-        # print(args)
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
+            if isinstance(event, GuildMessageEvent):
+                give_qq_info = sql_message.get_user_message3(give_qq)
+                if give_qq_info:
+                    give_qq = give_qq_info.user_id
+                else:
+                    give_qq = None
     if give_qq:
         if give_qq == user_id:
             msg = "无法对自己的进行踢出操作，试试退出宗门？"
@@ -1195,12 +1225,11 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @sect_out.handle()
-async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: MessageEvent, args: Message = CommandArg()):
     """退出宗门"""
     await data_check_conf(bot, event)
 
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
+    user_id, group_id, user_message = await data_check(bot, event)
     if not user_message:
         msg = "修仙界没有你的信息！请输入我要修仙，踏入修行"
         if XiuConfig().img:
@@ -1264,12 +1293,11 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_out.finish(msg, at_sender=True)
 
 @sect_donate.handle()
-async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot,event: MessageEvent, args: Message = CommandArg()):
     """宗门捐献"""
     await data_check_conf(bot, event)
 
-    user_id = event.get_user_id()
-    user_message = sql_message.get_user_message(user_id)
+    user_id, group_id, user_message = await data_check(bot, event)
     if not user_message:
         msg = "修仙界没有你的信息！请输入我要修仙，踏入修行"
         if XiuConfig().img:
@@ -1314,7 +1342,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
 
 
 @sect_position_update.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """宗门职位变更，首先确认操作者的职位是长老及以上（宗主可以变更宗主及以下，长老可以变更长老以下），然后读取变更等级及艾特目标"""
     await data_check_conf(bot, event)
 
@@ -1337,10 +1365,16 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     msg = args.extract_plain_text().strip()
     position_num = re.findall("\d+", msg)  # 职位品阶
 
+    give_qq = None  # 艾特的时候存到这里
     for arg in args:
-        # print(args)
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
+            if isinstance(event, GuildMessageEvent):
+                give_qq_info = sql_message.get_user_message3(give_qq)
+                if give_qq_info:
+                    give_qq = give_qq_info.user_id
+                else:
+                    give_qq = None
     if give_qq:
         if give_qq == user_id:
             msg = "无法对自己的职位进行管理。"
@@ -1394,7 +1428,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await sect_position_update.finish(msg, at_sender=True)
 
 @join_sect.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """加入宗门，后跟宗门ID，要求加入者当前状态无宗门，入门默认为外门弟子"""
     await data_check_conf(bot, event)
 
@@ -1430,7 +1464,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 
 # editer:zyp981204
 @my_sect.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """查看所在宗门信息"""
     await data_check_conf(bot, event)
 
@@ -1582,30 +1616,42 @@ def get_sect_level(sect_id):
     sect = sql_message.get_sect_info(sect_id)
     return divmod(sect.sect_scale, config["等级建设度"])
 
+async def get_group_id(session_id):
+    """获取group_id"""
+
+    res = re.findall("_(.*)_", session_id)
+    group_id = int(res[0])
+    return group_id
+
 async def data_check(bot, event):
     """
     判断用户信息是否存在
     """
-    user_qq = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
-    msg = sql_message.get_user_message(user_qq)
-
-    if msg:
-        pass
-    else:
-        await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
-        raise MsgError
+    if isinstance(event, GroupMessageEvent):
+        user_qq = event.get_user_id()
+        group_id = await get_group_id(event.get_session_id())
+        msg = sql_message.get_user_message(user_qq)
+        if msg:
+            pass
+        else:
+            await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
+            raise MsgError
+    elif isinstance(event, GuildMessageEvent):
+        tiny_id = event.get_user_id()
+        group_id = f"{event.guild_id}@{event.channel_id}"
+        msg = sql_message.get_user_message3(tiny_id)
+        if msg:
+            user_qq = msg.user_id
+            pass
+        else:
+            await bot.send(event=event, message=f"没有您的QQ绑定信息，输入【绑定QQ+QQ号码】进行绑定后再输入【我要修仙】加入！")
+            raise MsgError
 
     return user_qq, group_id, msg
-
-
-async def get_group_id(session_id):
-    """获取group_id"""
-    res = re.findall("_(.*)_", session_id)
-    group_id = res[0]
-    return group_id
 
 class MsgError(ValueError):
     pass
 
 
+class ConfError(ValueError):
+    pass

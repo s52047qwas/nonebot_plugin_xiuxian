@@ -10,6 +10,13 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment
 )
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
 from nonebot.permission import SUPERUSER
 from ..xiuxian2_handle import XiuxianDateManage
 from datetime import datetime
@@ -29,14 +36,14 @@ sql_message = XiuxianDateManage()  # sql类
 items = Items()
 from .mix_elixir_config import MIXELIXIRCONFIG
 
-mix_elixir = on_command("炼丹", priority=5, permission=GROUP)
-elixir_help = on_command("炼丹帮助", priority=5, permission=GROUP)
-mix_elixir_help = on_command("炼丹配方帮助", priority=5, permission=GROUP)
-yaocai_get = on_command("灵田收取", aliases={"灵田结算"}, priority=5, permission=GROUP)
-my_mix_elixir_info = on_command("我的炼丹信息", priority=5, permission=GROUP)
-mix_elixir_sqdj_up = on_command("升级收取等级", priority=5, permission=GROUP)
-mix_elixir_dykh_up = on_command("升级丹药控火", priority=5, permission=GROUP)
-mix_elixir_nyx_up = on_command("升级丹药耐药性", priority=5, permission=GROUP)
+mix_elixir = on_command("炼丹", priority=5, permission= GROUP | GUILD)
+elixir_help = on_command("炼丹帮助", priority=5, permission= GROUP | GUILD)
+mix_elixir_help = on_command("炼丹配方帮助", priority=5, permission= GROUP | GUILD)
+yaocai_get = on_command("灵田收取", aliases={"灵田结算"}, priority=5, permission= GROUP | GUILD)
+my_mix_elixir_info = on_command("我的炼丹信息", priority=5, permission= GROUP | GUILD)
+mix_elixir_sqdj_up = on_command("升级收取等级", priority=5, permission= GROUP | GUILD)
+mix_elixir_dykh_up = on_command("升级丹药控火", priority=5, permission= GROUP | GUILD)
+mix_elixir_nyx_up = on_command("升级丹药耐药性", priority=5, permission= GROUP | GUILD)
 
 __elixir_help__ = f"""
 炼丹帮助信息:
@@ -57,7 +64,7 @@ __mix_elixir_help__ = f"""
 3、草药的类型控制产出丹药的类型
 """
 @mix_elixir_sqdj_up.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """收取等级升级"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -104,7 +111,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await mix_elixir_sqdj_up.finish(msg, at_sender=True)
     
 @mix_elixir_dykh_up.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """丹药控火升级"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -144,7 +151,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await mix_elixir_dykh_up.finish(msg, at_sender=True)
 
 @mix_elixir_nyx_up.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """丹药耐药性升级"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -162,7 +169,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await mix_elixir_nyx_up.finish(msg, at_sender=True)
 
 @yaocai_get.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """灵田收取"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -227,7 +234,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 await yaocai_get.finish(msg, at_sender=True)
 
 @my_mix_elixir_info.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -252,17 +259,25 @@ async def _(bot: Bot, event: GroupMessageEvent):
             msg = f"编号：{i}，{v['name']}，炼成次数：{v['num']}次"
             l_msg.append(msg)
             i += 1
-    await send_forward_msg(bot, event, '炼丹信息', bot.self_id, l_msg)
-    await my_mix_elixir_info.finish()
+    if isinstance(event, GroupMessageEvent):
+        await send_forward_msg(bot, event, '炼丹信息', bot.self_id, l_msg)
+        await my_mix_elixir_info.finish()
+    elif isinstance(event, GuildMessageEvent):
+        msg = ' '.join(l_msg)
+        if XiuConfig().img:
+            pic = await get_msg_pic(msg)
+            await my_mix_elixir_info.finish(MessageSegment.image(pic), at_sender=True)
+        else:
+            await my_mix_elixir_info.finish(msg, at_sender=True)
 
 @elixir_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     pic = await get_msg_pic(__elixir_help__)#
     await elixir_help.finish(MessageSegment.image(pic), at_sender=True)
 
 @mix_elixir_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     pic = await get_msg_pic(__mix_elixir_help__)#
     await mix_elixir_help.finish(MessageSegment.image(pic), at_sender=True)
@@ -271,7 +286,7 @@ user_ldl_dict = {}
 user_ldl_flag = {}
 
 @mix_elixir.handle()
-async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
+async def _mix_elixir(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -350,7 +365,15 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
             l_msg.append(msg)
         if len(l_msg) > 51:
             l_msg = l_msg[:50]
-        await send_forward_msg(bot, event, '配方', bot.self_id, l_msg)
+        if isinstance(event, GroupMessageEvent):
+            await send_forward_msg(bot, event, '配方', bot.self_id, l_msg)
+        elif isinstance(event, GuildMessageEvent):
+            msg = ' '.join(l_msg)
+            if XiuConfig().img:
+                pic = await get_msg_pic(msg)
+                await shop_added_by_admin.finish(MessageSegment.image(pic), at_sender=True)
+            else:
+                await shop_added_by_admin.finish(msg, at_sender=True)
         msg = f"请道友输入配方公式 或者 取消，若想自己合成，请参考炼丹配方帮助"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
@@ -359,7 +382,7 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent):
             await mix_elixir.pause(prompt=msg, at_sender=True)
 
 @mix_elixir.handle()
-async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlainText()):
+async def _mix_elixir(bot: Bot, event: MessageEvent, mode : str = EventPlainText()):
     await data_check_conf(bot, event)
     if mode == "取消":
         msg = "本次炼丹已取消！"
@@ -368,7 +391,8 @@ async def _mix_elixir(bot: Bot, event: GroupMessageEvent, mode : str = EventPlai
             await mix_elixir.finish(MessageSegment.image(pic), at_sender=True)
         else:
             await mix_elixir.finish(msg, at_sender=True)
-    user_id = event.user_id
+    isUser, user_info, msg = check_user(event)
+    user_id = user_info.user_id
     pattern = r"主药([\u4e00-\u9fa5]+)(\d+)药引([\u4e00-\u9fa5]+)(\d+)辅药([\u4e00-\u9fa5]+)(\d+)丹炉([\u4e00-\u9fa5]+)+"
     matched = re.search(pattern, mode)
     if matched == None:

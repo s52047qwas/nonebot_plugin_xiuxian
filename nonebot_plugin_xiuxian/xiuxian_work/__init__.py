@@ -1,7 +1,13 @@
 from typing import Any, Tuple, Dict
 from nonebot import on_regex, require, on_command
 from nonebot.params import RegexGroup, CommandArg
-
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
@@ -20,6 +26,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg, check_user_ty
 from nonebot.log import logger
 from .reward_data_source import PLAYERSDATA
 import os
+import re
 from ..item_json import Items
 from ..xiuxian_config import USERRANK, XiuConfig
 
@@ -45,7 +52,7 @@ async def _():
 do_work = on_regex(
     r"^(江湖好手|练气境|筑基境|结丹境|元婴境|化神境|炼虚境|合体境|大乘境|渡劫境)?(悬赏令)+(刷新|终止|结算|接取|帮助)?(\d+)?",
     priority=5,
-    permission=PRIVATE_FRIEND | GROUP,
+    permission=PRIVATE_FRIEND | GROUP | GUILD,
 )
 __work_help__ = f"""
 悬赏令帮助信息:
@@ -59,7 +66,7 @@ __work_help__ = f"""
 """.strip()
         
 @do_work.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGroup()):
+async def _(bot: Bot, event: MessageEvent, args: Tuple[Any, ...] = RegexGroup()):
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
     if not isUser:

@@ -7,6 +7,14 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment
 )
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
+import re
 from datetime import datetime
 from nonebot import get_bot, on_command, on_regex, require
 from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
@@ -46,7 +54,7 @@ __buff_help__ = f"""
 """.strip()
 
 @buff_help.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """修仙帮助"""
     await data_check_conf(bot, event)
     msg = __buff_help__
@@ -54,7 +62,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     await buff_help.finish(MessageSegment.image(pic), at_sender=True)
 
 @blessed_spot_creat.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """洞天福地开启"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -93,7 +101,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await blessed_spot_creat.finish(msg, at_sender=True)
 
 @blessed_spot_info.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """洞天福地信息"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -128,7 +136,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await blessed_spot_info.finish(msg, at_sender=True)
     
 @ling_tian_up.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """洞天福地灵田升级"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -183,7 +191,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await ling_tian_up.finish(msg, at_sender=True)
 
 @blessed_spot_rename.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """洞天福地改名"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -223,7 +231,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
 
 @qc.handle()
-async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def _(bot: Bot, event: MessageEvent, args: Message = CommandArg()):
     """切磋，不会掉血"""
     await data_check_conf(bot, event)
     isUser, user_info, msg = check_user(event)
@@ -237,8 +245,15 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     
     give_qq = None  # 艾特的时候存到这里
     for arg in args:
+        # print(args)
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
+            if isinstance(event, GuildMessageEvent):
+                give_qq_info = sql_message.get_user_message3(give_qq)
+                if give_qq_info:
+                    give_qq = give_qq_info.user_id
+                else:
+                    give_qq = None
     if give_qq:
         if give_qq == str(user_id):
             msg = "道友不会左右互搏之术！"
@@ -290,7 +305,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         result, victor = Player_fight(player1, player2, 1, bot.self_id)
         add_cd(event, 300, '切磋')
         # await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
-        await send_forward_msg_list(bot, event, result)
+        if isinstance(event, GroupMessageEvent):
+            await send_forward_msg_list(bot, event, result)
         msg = f"获胜的是{victor}"
         if XiuConfig().img:
             pic = await get_msg_pic(msg)
@@ -306,7 +322,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await qc.finish(msg, at_sender=True)
 
 @out_closing.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """出关"""
     await data_check_conf(bot, event)
     user_type = 0  # 状态0为无事件
@@ -426,7 +442,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     await out_closing.finish(msg, at_sender=True)
 
 @mind_state.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """我的状态信息。"""
     await data_check_conf(bot, event)
     isUser, user_msg, msg = check_user(event)
@@ -479,7 +495,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
 
 @buffinfo.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     await data_check_conf(bot, event)
 
     isUser, user_info, msg = check_user(event)

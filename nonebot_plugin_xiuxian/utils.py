@@ -10,7 +10,7 @@ from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from wcwidth import wcwidth
 import re
-
+from nonebot_plugin_guild_patch import GuildMessageEvent
 from .data_source import jsondata
 from .xiuxian_config import JsonConfig
 
@@ -47,7 +47,7 @@ def check_user_type(user_id, need_type):
 
     return isType, msg
 
-def check_user(event: GroupMessageEvent):
+def check_user(event: MessageEvent):
     """
     判断用户信息是否存在
     :返回参数:
@@ -57,13 +57,22 @@ def check_user(event: GroupMessageEvent):
     """
     
     isUser = False
-    user_id = event.get_user_id()
-    user_info = XiuxianDateManage().get_user_message(user_id)
-    if user_info is None:
-        msg = "修仙界没有道友的信息，请输入【我要修仙】加入！"
-    else:
-        isUser = True
-        msg = ''
+    if isinstance(event, GroupMessageEvent):
+        user_id = event.get_user_id()
+        user_info = XiuxianDateManage().get_user_message(user_id)
+        if user_info is None:
+            msg = "修仙界没有道友的信息，请输入【我要修仙】加入！"
+        else:
+            isUser = True
+            msg = ''
+    elif isinstance(event, GuildMessageEvent):
+        tiny_id = event.get_user_id()
+        user_info = XiuxianDateManage().get_user_message3(tiny_id)
+        if user_info is None:
+            msg = "修仙界没有道友的QQ绑定信息，输入【绑定QQ+QQ号码】进行绑定，而后请输入【我要修仙】加入！"
+        else:
+            isUser = True
+            msg = ''
     
     return isUser, user_info, msg
 

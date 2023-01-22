@@ -12,7 +12,6 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment,
 )
-
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..data_source import jsondata
 from .draw_user_info import draw_user_info_img
@@ -20,6 +19,13 @@ from ..cd_manager import add_cd, check_cd, cd_msg
 from .infoconfig import get_config
 from ..utils import data_check_conf
 from ..read_buff import UserBuffDate
+from nonebot_plugin_guild_patch import (
+    GUILD,
+    GUILD_OWNER,
+    GUILD_ADMIN,
+    GUILD_SUPERUSER,
+    GuildMessageEvent
+)
 
 config = get_config()
 
@@ -32,7 +38,7 @@ xiuxian_message = on_command("我的修仙信息", aliases={"我的存档"}, pri
 sql_message = XiuxianDateManage()  # sql类
 
 @xiuxian_message.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
+async def _(bot: Bot, event: MessageEvent):
     """我的修仙信息"""
     await data_check_conf(bot, event)
 
@@ -115,7 +121,10 @@ async def _(bot: Bot, event: GroupMessageEvent):
     "法器":weapon_name,
     "防具":armor_name,
     }
-    if config['是否开启图片信息']:
+    if isinstance(event, GroupMessageEvent) and config['是否开启群聊图片信息']:
+        img_res = await draw_user_info_img(user_id, DETAIL_MAP)
+        await xiuxian_message.finish(MessageSegment.image(img_res), at_sender=True)
+    elif isinstance(event, GuildMessageEvent) and config['是否开启频道图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
         await xiuxian_message.finish(MessageSegment.image(img_res), at_sender=True)
     else:
@@ -130,15 +139,24 @@ async def _(bot: Bot, event: GroupMessageEvent):
     
 
 async def data_check(bot, event):
-    user_qq = event.get_user_id()
-    group_id = await get_group_id(event.get_session_id())
-    msg = sql_message.get_user_message(user_qq)
-
-    if msg:
-        pass
-    else:
-        await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
-        raise MsgError
+    if isinstance(event, GroupMessageEvent):
+        user_qq = event.get_user_id()
+        group_id = await get_group_id(event.get_session_id())
+        msg = sql_message.get_user_message(user_qq)
+        if msg:
+            pass
+        else:
+            await bot.send(event=event, message=f"没有您的信息，输入【我要修仙】加入！")
+            raise MsgError
+    elif isinstance(event, GuildMessageEvent):
+        tiny_id = event.get_user_id()
+        group_id = f"{event.guild_id}@{event.channel_id}"
+        msg = sql_message.get_user_message3(tiny_id)
+        if msg:
+            user_qq = msg.user_id
+        else:
+            await bot.send(event=event, message=f"没有您的QQ绑定信息，输入【绑定QQ+QQ号码】进行绑定后再输入【我要修仙】加入！")
+            raise MsgError
 
     return user_qq, group_id, msg
 

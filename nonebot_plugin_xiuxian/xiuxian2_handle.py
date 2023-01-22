@@ -4,9 +4,7 @@ import random
 import sqlite3
 from collections import namedtuple
 from pathlib import Path
-
 from nonebot.log import logger
-
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
 
@@ -17,7 +15,7 @@ xiuxian_data = namedtuple("xiuxian_data", ["no", "user_id", "linggen", "level"])
 UserDate = namedtuple("UserDate",
                       ["id", "user_id", "stone", "root", "root_type", "level", "power", "create_time", "is_sign", "exp",
                        "user_name", "level_up_cd", "level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
-                       "sect_task", "sect_contribution", "sect_elixir_get", "blessed_spot_flag", "blessed_spot_name"])
+                       "sect_task", "sect_contribution", "sect_elixir_get", "blessed_spot_flag", "blessed_spot_name", "tiny_id"])
 
 UserCd = namedtuple("UserCd", ["user_id", "type", "create_time", "scheduled_time"])
 
@@ -97,7 +95,8 @@ class XiuxianDateManage:
       "exp" integer DEFAULT 0,
       "user_name" TEXT DEFAULT NULL,
       "level_up_cd" integer DEFAULT NULL,
-      "level_up_rate" integer DEFAULT 0
+      "level_up_rate" integer DEFAULT 0,
+      "tiny_id" INTEGER NOT NULL
     );""")
             elif i == "user_cd":
                 try:
@@ -194,11 +193,11 @@ class XiuxianDateManage:
     def close_dbs(cls):
         XiuxianDateManage().close()
 
-    def _create_user(self, user_id: str, root: str, type: str, power: str, create_time, user_name) -> None:
+    def _create_user(self, user_id: str, root: str, type: str, power: str, create_time, user_name, tiny_id: str) -> None:
         """在数据库中创建用户并初始化"""
         c = self.conn.cursor()
-        sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name,exp) VALUES (?,0,?,?,'江湖好手',?,?,?,100)"
-        c.execute(sql, (user_id, root, type, power, create_time, user_name))
+        sql = f"INSERT INTO user_xiuxian (user_id,stone,root,root_type,level,power,create_time,user_name,exp,tiny_id) VALUES (?,0,?,?,'江湖好手',?,?,?,100,?)"
+        c.execute(sql, (user_id, root, type, power, create_time, user_name, tiny_id))
         self.conn.commit()
 
     def get_user_message(self, user_id):
@@ -250,6 +249,17 @@ class XiuxianDateManage:
         else:
             return UserDate(*result)
 
+    def get_user_message3(self, tiny_id):
+        """根据TINY_ID获取用户信息，不获取功法加成"""
+        cur = self.conn.cursor()
+        sql = f"select * from user_xiuxian where tiny_id=?"
+        cur.execute(sql, (tiny_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserDate(*result)
+
     def create_user(self, user_id, *args):
         """校验用户是否存在"""
         cur = self.conn.cursor()
@@ -257,7 +267,7 @@ class XiuxianDateManage:
         cur.execute(sql, (user_id,))
         result = cur.fetchone()
         if not result:
-            self._create_user(user_id, args[0], args[1], args[2], args[3], args[4])
+            self._create_user(user_id, args[0], args[1], args[2], args[3], args[4], args[5])
             self.conn.commit()
             return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1], args[2], args[3])
         else:
@@ -764,6 +774,13 @@ class XiuxianDateManage:
         sql = f"UPDATE user_xiuxian SET sect_contribution=? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (sect_contribution, user_id))
+        self.conn.commit()
+
+    def update_tiny_id(self, tiny_id, user_id):
+        """更新用户tiny_id"""
+        sql = f"UPDATE user_xiuxian SET tiny_id=? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (tiny_id, user_id,))
         self.conn.commit()
 
     def update_user_hp(self,user_id):
