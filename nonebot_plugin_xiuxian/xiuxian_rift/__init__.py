@@ -62,12 +62,14 @@ async def _():
             rift.time = config['rift'][rift.name]['time']
             group_rift[group_id] = rift
             msg = f"野生的{rift.name}已开启！可探索次数：{rift.count}次，请诸位道友发送 探索秘境 来加入吧！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)
-                await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(group_id), message=msg)
-
+            try:
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+                else:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+            except Exception as e:
+                logger.error(f"群秘境生成推送失败：{e}")
 @rift_help.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     await data_check_conf(bot, event)
