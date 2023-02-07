@@ -25,7 +25,7 @@ from .xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from .xiuxian_config import XiuConfig, JsonConfig
 from .xiuxian_opertion import do_is_work
 from .read_buff import UserBuffDate
-from .utils import Txt2Img, data_check_conf, check_user_type, get_msg_pic, check_user
+from .utils import Txt2Img, data_check_conf, check_user_type, get_msg_pic, check_user, pic_msg_format
 from .item_json import Items
 
 
@@ -1366,9 +1366,3 @@ class ConfError(ValueError):
 async def close_db():
     sql_message.close_dbs()
 
-async def pic_msg_format(msg, event):
-    user_name = (
-        event.sender.card if event.sender.card else event.sender.nickname
-    )
-    result = "@" + user_name + "\n" + msg
-    return result

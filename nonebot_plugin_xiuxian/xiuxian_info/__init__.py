@@ -117,7 +117,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     }
     if config['是否开启图片信息']:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
-        await xiuxian_message.finish(MessageSegment.image(img_res), at_sender=True)
+        await xiuxian_message.finish(MessageSegment.image(img_res))
     else:
         msg = f"""{user_name}道友的信息
 灵根为：{mess.root}({mess.root_type}+{int(level_rate * 100)}%)

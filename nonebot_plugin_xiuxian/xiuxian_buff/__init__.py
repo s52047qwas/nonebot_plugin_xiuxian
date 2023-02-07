@@ -17,7 +17,7 @@ from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
-from ..utils import send_forward_msg_list, data_check_conf, check_user_type, get_msg_pic
+from ..utils import send_forward_msg_list, data_check_conf, check_user_type, get_msg_pic, pic_msg_format
 from ..cd_manager import add_cd, check_cd, cd_msg
 from ..read_buff import get_player_info, save_player_info
 
@@ -50,6 +50,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     """修仙帮助"""
     await data_check_conf(bot, event)
     msg = __buff_help__
+    msg = await pic_msg_format(msg, event)
     pic = await get_msg_pic(msg)#
     await buff_help.finish(MessageSegment.image(pic), at_sender=True)
 
@@ -60,23 +61,26 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_creat.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_creat.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_creat.finish(msg, at_sender=True)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) != 0:
         msg = f"道友已经拥有洞天福地了，请发送洞天福地查看吧~"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_creat.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_creat.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_creat.finish(msg, at_sender=True)
     if user_info.stone < BLESSEDSPOTCOST:
         msg = f"道友的灵石不足{BLESSEDSPOTCOST}枚，无法购买洞天福地"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_creat.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_creat.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_creat.finish(msg, at_sender=True)
     else:
@@ -87,8 +91,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
         msg = f"恭喜道友拥有了自己的洞天福地，请收集聚灵旗来提升洞天福地的等级吧~"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_creat.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_creat.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_creat.finish(msg, at_sender=True)
 
@@ -99,16 +104,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_info.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_info.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_info.finish(msg, at_sender=True)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_info.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_info.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_info.finish(msg, at_sender=True)
     msg = f'\n道友的洞天福地：\n'
@@ -122,8 +129,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     msg += f"修炼速度：增加{int(user_buff_data.blessed_spot) * 100}%\n"
     msg += f"灵田数量：{mix_elixir_info['灵田数量']}"
     if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(msg)
-        await blessed_spot_info.finish(MessageSegment.image(pic), at_sender=True)
+        await blessed_spot_info.finish(MessageSegment.image(pic))
     else:
         await blessed_spot_info.finish(msg, at_sender=True)
     
@@ -134,16 +142,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await ling_tian_up.finish(MessageSegment.image(pic), at_sender=True)
+            await ling_tian_up.finish(MessageSegment.image(pic))
         else:
             await ling_tian_up.finish(msg, at_sender=True)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await ling_tian_up.finish(MessageSegment.image(pic), at_sender=True)
+            await ling_tian_up.finish(MessageSegment.image(pic))
         else:
             await ling_tian_up.finish(msg, at_sender=True)
     LINGTIANCONFIG = {
@@ -177,8 +187,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
             sql_message.update_ls(user_id, cost, 2)
     if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(msg)
-        await ling_tian_up.finish(MessageSegment.image(pic), at_sender=True)
+        await ling_tian_up.finish(MessageSegment.image(pic))
     else:
         await ling_tian_up.finish(msg, at_sender=True)
 
@@ -189,16 +200,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_rename.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_rename.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_rename.finish(msg, at_sender=True)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_rename.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_rename.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_rename.finish(msg, at_sender=True)
     arg = args.extract_plain_text().strip()
@@ -206,8 +219,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     if arg == "":
         msg = "请输入洞天福地的名字！"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await blessed_spot_rename.finish(MessageSegment.image(pic), at_sender=True)
+            await blessed_spot_rename.finish(MessageSegment.image(pic))
         else:
             await blessed_spot_rename.finish(msg, at_sender=True)
     if len(arg) > 9:
@@ -216,8 +230,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         msg = f"道友的洞天福地成功改名为：{arg}"
         sql_message.update_user_blessed_spot_name(user_id, arg)
     if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(msg)
-        await blessed_spot_rename.finish(MessageSegment.image(pic), at_sender=True)
+        await blessed_spot_rename.finish(MessageSegment.image(pic))
     else:
         await blessed_spot_rename.finish(msg, at_sender=True)
     
@@ -229,8 +244,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await qc.finish(MessageSegment.image(pic), at_sender=True)
+            await qc.finish(MessageSegment.image(pic))
         else:
             await qc.finish(msg, at_sender=True)
     user_id = user_info.user_id
@@ -243,8 +259,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if give_qq == str(user_id):
             msg = "道友不会左右互搏之术！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await qc.finish(MessageSegment.image(pic), at_sender=True)
+                await qc.finish(MessageSegment.image(pic))
             else:
                 await qc.finish(msg, at_sender=True)
                 
@@ -252,8 +269,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             # 如果 CD 还没到 则直接结束
             msg = cd_msg(cd)
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await qc.finish(MessageSegment.image(pic), at_sender=True)
+                await qc.finish(MessageSegment.image(pic))
             else:
                 await qc.finish(msg, at_sender=True)
         player1 = {"user_id": None, "道号": None, "气血": None,
@@ -293,15 +311,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         await send_forward_msg_list(bot, event, result)
         msg = f"获胜的是{victor}"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await qc.finish(MessageSegment.image(pic), at_sender=True)
+            await qc.finish(MessageSegment.image(pic))
         else:
             await qc.finish(msg, at_sender=True)
     else:
         msg = "没有对方的信息！"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await qc.finish(MessageSegment.image(pic), at_sender=True)
+            await qc.finish(MessageSegment.image(pic))
         else:
             await qc.finish(msg, at_sender=True)
 
@@ -313,8 +333,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+            await out_closing.finish(MessageSegment.image(pic))
         else:
             await out_closing.finish(msg, at_sender=True)
     user_id = user_info.user_id
@@ -338,8 +359,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     is_type, msg = check_user_type(user_id, 1)
     if not is_type:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+            await out_closing.finish(MessageSegment.image(pic))
         else:
             await out_closing.finish(msg, at_sender=True)
     else:
@@ -369,8 +391,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
             sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
             msg = "闭关结束，本次闭关到达上限，共增加修为：{}{}{}".format(user_get_exp_max, result_msg[0], result_msg[1])
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+                await out_closing.finish(MessageSegment.image(pic))
             else:
                 await out_closing.finish(msg, at_sender=True)
         else:
@@ -391,8 +414,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, int(exp / 2),
                                                                       result_msg[0], result_msg[1])
                     if XiuConfig().img:
+                        msg = await pic_msg_format(msg, event)
                         pic = await get_msg_pic(msg)
-                        await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+                        await out_closing.finish(MessageSegment.image(pic))
                     else:
                         await out_closing.finish(msg, at_sender=True)
                 else:
@@ -407,8 +431,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}，消耗灵石{}枚{}{}".format(exp_time, exp, user_stone,
                                                                   result_msg[0], result_msg[1])
                     if XiuConfig().img:
+                        msg = await pic_msg_format(msg, event)
                         pic = await get_msg_pic(msg)
-                        await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+                        await out_closing.finish(MessageSegment.image(pic))
                     else:
                         await out_closing.finish(msg, at_sender=True)
             else:
@@ -420,8 +445,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
                                                           result_msg[1])
                 if XiuConfig().img:
+                    msg = await pic_msg_format(msg, event)
                     pic = await get_msg_pic(msg)
-                    await out_closing.finish(MessageSegment.image(pic), at_sender=True)
+                    await out_closing.finish(MessageSegment.image(pic))
                 else:
                     await out_closing.finish(msg, at_sender=True)
 
@@ -432,8 +458,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_msg, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await mind_state.finish(MessageSegment.image(pic), at_sender=True)
+            await mind_state.finish(MessageSegment.image(pic))
         else:
             await mind_state.finish(msg, at_sender=True)
     user_id = user_msg.user_id
@@ -472,8 +499,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
 减伤率：{def_buff}%
 """
     if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(user)
-        await mind_state.finish(MessageSegment.image(pic), at_sender=True)
+        await mind_state.finish(MessageSegment.image(pic))
     else:
         await mind_state.finish(user, at_sender=True)
 
@@ -485,8 +513,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await buffinfo.finish(MessageSegment.image(pic), at_sender=True)
+            await buffinfo.finish(MessageSegment.image(pic))
         else:
             await buffinfo.finish(msg, at_sender=True)
     user_id = user_info.user_id
@@ -504,8 +533,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
 {secbuffmsg}
 """
     if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(msg)
-        await buffinfo.finish(MessageSegment.image(pic), at_sender=True)
+        await buffinfo.finish(MessageSegment.image(pic))
     else:
         await buffinfo.finish(msg, at_sender=True)
 

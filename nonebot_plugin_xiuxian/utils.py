@@ -286,3 +286,10 @@ async def get_msg_pic(msg, title=' ', font_size=55):
     img = Txt2Img(font_size)
     pic = img.save(title, msg)
     return pic
+
+async def pic_msg_format(msg, event):
+    user_name = (
+        event.sender.card if event.sender.card else event.sender.nickname
+    )
+    result = "@" + user_name + "\n" + msg
+    return result

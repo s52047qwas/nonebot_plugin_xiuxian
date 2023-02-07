@@ -13,7 +13,7 @@ import os
 from ..xiuxian2_handle import XiuxianDateManage
 from datetime import datetime
 from .bankconfig import get_config
-from ..utils import data_check_conf, get_msg_pic
+from ..utils import data_check_conf, get_msg_pic, pic_msg_format
 from ..xiuxian_config import XiuConfig
 
 config = get_config()
@@ -48,8 +48,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
     if mode == None:
         msg = __bank_help__
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
 
@@ -60,15 +61,17 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
             if num <= 0:
                 msg = f'请输入正确的金额！'
                 if XiuConfig().img:
+                    msg = await pic_msg_format(msg, event)
                     pic = await get_msg_pic(msg)
-                    await bank.finish(MessageSegment.image(pic), at_sender=True)
+                    await bank.finish(MessageSegment.image(pic))
                 else:
                     await bank.finish(msg, at_sender=True)
         except ValueError:
             msg = f'请输入正确的金额！'
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
         
@@ -78,8 +81,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
     if sql_message.get_user_message(user_id) is None:
         msg = "修仙界没有道友的信息，请输入【我要修仙】加入！"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
     
@@ -96,8 +100,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if int(userinfo.stone) < num:
             msg = f"道友所拥有的灵石为{userinfo.stone}枚，金额不足，请重新输入！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
 
@@ -107,8 +112,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if num > nowmax:
             msg = f"道友当前灵庄会员等级为{BANKLEVEL[bankinfo['banklevel']]['level']}，可存储的最大灵石为{max}枚,当前已存{bankinfo['savestone']}枚灵石，可以继续存{nowmax}枚灵石！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
             
@@ -122,8 +128,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         savef(user_id, bankinfo)
         msg = f"道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚!\n道友存入灵石{num}枚，当前所拥有灵石{userinfonowstone + give_stone}枚，灵庄存有灵石{bankinfo['savestone']}枚"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
 
@@ -131,8 +138,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if int(bankinfo['savestone']) < num:
             msg = f"道友当前灵庄所存有的灵石为{bankinfo['savestone']}枚，金额不足，请重新输入！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
         
@@ -145,8 +153,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         savef(user_id, bankinfo)
         msg = f"道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚!\n取出灵石{num}枚，当前所拥有灵石{userinfonowstone}枚，灵庄存有灵石{bankinfo['savestone']}枚!"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
         
@@ -155,8 +164,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if userlevel == str(len(BANKLEVEL)):
             msg = f"道友已经是本灵庄最大的会员啦！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
         
@@ -164,8 +174,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         if int(userinfo.stone) < stonecost:
             msg = f"道友所拥有的灵石为{userinfo.stone}枚，当前升级会员等级需求灵石{stonecost}枚金额不足，请重新输入！"
             if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
                 pic = await get_msg_pic(msg)
-                await bank.finish(MessageSegment.image(pic), at_sender=True)
+                await bank.finish(MessageSegment.image(pic))
             else:
                 await bank.finish(msg, at_sender=True)
         
@@ -174,8 +185,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         savef(user_id, bankinfo)
         msg = f"道友成功升级灵庄会员等级，消耗灵石{stonecost}枚，当前为：{BANKLEVEL[f'{int(userlevel) + 1}']['level']}，灵庄可存有灵石上限{BANKLEVEL[f'{int(userlevel) + 1}']['savemax']}枚"
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
     
@@ -189,8 +201,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
 当前等级存储灵石上限：{BANKLEVEL[bankinfo['banklevel']]['savemax']}枚
                         '''
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
     
@@ -201,8 +214,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
         savef(user_id, bankinfo)
         msg = f'道友本次结息时间为：{timedeff}小时，获得灵石：{give_stone}枚！'
         if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await bank.finish(MessageSegment.image(pic), at_sender=True)
+            await bank.finish(MessageSegment.image(pic))
         else:
             await bank.finish(msg, at_sender=True)
 
