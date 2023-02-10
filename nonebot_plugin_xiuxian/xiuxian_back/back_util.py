@@ -296,7 +296,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         
         else:#检查完毕
-            use_num = 批量使用检查(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
+            use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
             sql_message.update_back_j(user_id, goods_id, num=use_num, use_key=1)
             sql_message.update_levelrate(user_id, user_info.level_up_rate + goods_info['buff'] * use_num)
             msg = f"道友实际成功使用丹药：{goods_name} {use_num}个，下一次突破的成功概率提高{goods_info['buff'] * use_num}%！"
@@ -308,7 +308,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
             if  goods_all_num >= goods_info['all_num']:
                 msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
             else:#检查完毕
-                use_num = 批量使用检查(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
+                use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
                 sql_message.update_back_j(user_id, goods_id, num=use_num, use_key=1)
                 sql_message.update_levelrate(user_id, user_info.level_up_rate + goods_info['buff'] * use_num)
                 msg = f"道友实际成功使用丹药：{goods_name} {use_num}个，下一次突破的成功概率提高{goods_info['buff'] * use_num}%！"
@@ -321,7 +321,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
         elif goods_all_num > goods_info['all_num']:
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
-            use_num = 批量使用检查(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
+            use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
             user_max_hp = int(user_info.exp / 2)
             user_max_mp = int(user_info.exp)
             if user_info.hp == user_max_hp and user_info.mp == user_max_mp:
@@ -366,7 +366,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
         elif goods_all_num > goods_info['all_num']:
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
-            use_num = 批量使用检查(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
+            use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
             buff = goods_info['buff'] * use_num
             sql_message.updata_user_atk_buff(user_id, buff)
             sql_message.update_back_j(user_id, goods_id, num=use_num, use_key=1)
@@ -378,7 +378,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
         elif goods_all_num > goods_info['all_num']:
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
-            use_num = 批量使用检查(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
+            use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
             exp = goods_info['buff'] * use_num
             user_hp = int(user_info.hp + (exp / 2))
             user_mp = int(user_info.mp + exp)
@@ -386,7 +386,7 @@ def check_use_elixir(user_id, goods_id, use_num=1):
             sql_message.update_exp(user_id, exp)
             sql_message.update_power2(user_id)  # 更新战力
             sql_message.update_user_attribute(user_id, user_hp, user_mp, user_atk)#这种事情要放在update_exp方法里
-            sql_message.update_back_j(user_id, goods_id, use_key=1)
+            sql_message.update_back_j(user_id, goods_id, num=use_num, use_key=1)
             msg = f"道友实际成功使用丹药：{goods_name} {use_num}个，修为增加{exp}点！"
             
     else:
@@ -438,7 +438,7 @@ def save_shop(data):
         f.write(data)
     return True
 
-def 批量使用检查(goods_info, use_num, goods_day_num, goods_all_num):
+def bulk_use_check(goods_info, use_num, goods_day_num, goods_all_num):
     
     if goods_day_num + use_num > goods_info['day_num']:
         day_can_use_num = goods_info['day_num'] - goods_day_num

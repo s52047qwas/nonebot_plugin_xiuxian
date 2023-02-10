@@ -85,12 +85,15 @@ async def _():
             bossinfo = createboss()
             group_boss[g].append(bossinfo)
             msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(msg)#
-                await bot.send_group_msg(group_id=int(g), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(g), message=msg)
-            logger.info('已生成世界boss')
+            try:
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)#
+                    await bot.send_group_msg(group_id=int(g), message=MessageSegment.image(pic))
+                else:
+                    await bot.send_group_msg(group_id=int(g), message=msg)
+                logger.info('已生成世界boss')
+            except Exception as e:
+                logger.error(f"群boss生成推送失败：{e}")
         
         
 @boss_help.handle()
