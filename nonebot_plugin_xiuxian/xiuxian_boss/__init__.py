@@ -18,7 +18,7 @@ from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import USERRANK, XiuConfig
-from .makeboss import createboss
+from .makeboss import createboss,createboss_jj
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
 from ..item_json import Items
@@ -560,7 +560,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await create_appoint.finish(MessageSegment.image(pic))
         else:
             await create_appoint.finish(msg, at_sender=True)
-    bossinfo = createboss(name)
+    bossinfo = createboss_jj(name)
     group_boss[group_id].append(bossinfo)
     msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
     if XiuConfig().img:
