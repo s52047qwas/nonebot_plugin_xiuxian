@@ -1124,6 +1124,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
             if give_user.sect_id == user_message.sect_id:
                 sql_message.update_usr_sect(give_user.user_id, give_user.sect_id, owner_position)
                 sql_message.update_usr_sect(user_message.user_id, user_message.sect_id, owner_position + 1)
+                sql_message.sect_owner_update(give_user.user_id, user_message.sect_id)
                 sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
                 msg = f"传老宗主{user_message.user_name}法旨，即日起{give_user.user_name}继任{sect_info.sect_name}宗主"
                 if XiuConfig().img:

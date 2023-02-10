@@ -49,14 +49,15 @@ __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
 1、生成世界boss、生成世界boss+数量：生成一只随机大境界的世界Boss、生成指定数量的世界boss,超管权限
-2、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
-3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
-4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
-5、世界boss帮助、世界boss：获取世界Boss帮助信息
-6、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
-7、天罚所有boss、天罚所有世界boss：删除所有的世界Boss,管理员权限
+2、生成指定世界boss、生成指定世界boss+id：生成一只指定id境界的世界Boss、如'生成指定世界boss12',超管权限
+3、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
+4、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
+5、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
+6、世界boss帮助、世界boss：获取世界Boss帮助信息
+7、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
+8、天罚所有boss、天罚所有世界boss：删除所有的世界Boss,管理员权限
 9、世界积分查看：查看自己的世界积分，和世界积分兑换商品
-0、世界积分兑换+编号：兑换对应的商品
+10、世界积分兑换+编号：兑换对应的商品
 非指令：
 1、拥有定时任务：每{str(boss_time['hours']) + '小时' if boss_time['hours'] != 0 else ''}{str(boss_time['minutes']) + '分钟' if boss_time['minutes'] != 0 else ''}生成一只随机大境界的世界Boss
 """.strip()
