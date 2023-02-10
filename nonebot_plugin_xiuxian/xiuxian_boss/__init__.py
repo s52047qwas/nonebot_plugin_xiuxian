@@ -49,7 +49,7 @@ __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
 1、生成世界boss、生成世界boss+数量：生成一只随机大境界的世界Boss、生成指定数量的世界boss,超管权限
-2、生成指定世界boss、生成指定世界boss+id：生成一只指定id境界的世界Boss、如'生成指定世界boss12',超管权限
+2、生成指定世界boss、生成指定世界boss+id：生成一只指定id境界的世界Boss、如'生成指定世界boss元婴境圆满',超管权限
 3、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
 4、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
 5、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
@@ -534,9 +534,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if XiuConfig().img:
             msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await create.finish(MessageSegment.image(pic))
+            await create_appoint.finish(MessageSegment.image(pic))
         else:
-            await create.finish(msg, at_sender=True)
+            await create_appoint.finish(msg, at_sender=True)
     try:
         group_boss[group_id]
     except:
@@ -546,20 +546,29 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         if XiuConfig().img:
             msg = await pic_msg_format(msg, event)
             pic = await get_msg_pic(msg)
-            await create.finish(MessageSegment.image(pic))
+            await create_appoint.finish(MessageSegment.image(pic))
         else:
-            await create.finish(msg, at_sender=True)
-    args = args.extract_plain_text().strip()
-    num = re.findall("\d+", args)
-    bossinfo = createboss(num)
+            await create_appoint.finish(msg, at_sender=True)
+    arg = args.extract_plain_text().split()
+    try:
+        name = arg[0]
+    except IndexError:
+        msg = f"请输入正确的指令！"
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create_appoint.finish(MessageSegment.image(pic))
+        else:
+            await create_appoint.finish(msg, at_sender=True)
+    bossinfo = createboss(name)
     group_boss[group_id].append(bossinfo)
     msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
     if XiuConfig().img:
         msg = await pic_msg_format(msg, event)
         pic = await get_msg_pic(msg)
-        await create.finish(MessageSegment.image(pic))
+        await create_appoint.finish(MessageSegment.image(pic))
     else:
-        await create.finish(msg, at_sender=True)
+        await create_appoint.finish(msg, at_sender=True)
 
 @set_group_boss.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
