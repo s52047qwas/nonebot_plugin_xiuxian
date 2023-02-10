@@ -33,6 +33,7 @@ config = get_config()
 set_boss = require("nonebot_plugin_apscheduler").scheduler
 
 create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER))
+create_appoint = on_command("生成指定世界boss", aliases={"生成指定世界boss", "生成指定世界BOSS", "生成指定BOSS", "生成指定boss"}, priority=5, permission= GROUP and (SUPERUSER))
 boss_info = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP)
 set_group_boss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
@@ -519,6 +520,42 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await create.finish(msg, at_sender=True)
 
 
+@create_appoint.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    group_id = event.group_id
+    isInGroup = isInGroups(event)
+    if not isInGroup:#不在配置表内
+        msg = f'本群尚未开启世界Boss，请联系管理员开启!'
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create.finish(MessageSegment.image(pic))
+        else:
+            await create.finish(msg, at_sender=True)
+    try:
+        group_boss[group_id]
+    except:
+        group_boss[group_id] = []
+    if len(group_boss[group_id]) >= config['Boss个数上限']:
+        msg = f"本群世界Boss已达到上限{config['Boss个数上限']}个，无法继续生成"
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create.finish(MessageSegment.image(pic))
+        else:
+            await create.finish(msg, at_sender=True)
+    args = args.extract_plain_text().strip()
+    num = re.findall("\d+", args)
+    bossinfo = createboss(num)
+    group_boss[group_id].append(bossinfo)
+    msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
+    if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
+        pic = await get_msg_pic(msg)
+        await create.finish(MessageSegment.image(pic))
+    else:
+        await create.finish(msg, at_sender=True)
 
 @set_group_boss.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
