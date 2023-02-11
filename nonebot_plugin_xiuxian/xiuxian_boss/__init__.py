@@ -324,7 +324,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         else:
             await battle.finish(msg, at_sender=True)
 
-    add_cd(event, 60 * 30, '讨伐boss')
+    add_cd(event, XiuConfig().battle_boss_cd, '讨伐boss')
 
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
     userinfo = XiuxianDateManage().get_user_real_info(user_id)

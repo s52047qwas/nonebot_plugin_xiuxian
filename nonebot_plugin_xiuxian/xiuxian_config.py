@@ -33,6 +33,7 @@ class XiuConfig:
         self.dufang_cd = config_data['dufang_cd']  # 金银阁cd
         self.dufang_cd_msg = config_data['dufang_cd_msg']
         self.tou_cd = config_data['tou_cd']  # 偷灵石CD
+        self.battle_boss_cd = config_data['battle_boss_cd']  # 讨伐bossCD
         # self.ggg = config_data['ggg']
 
         self.sql_table = ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo"]  # 数据库表校验
