@@ -190,7 +190,7 @@ async def _():
 
 
 # 定时任务上架坊市道具
-@set_shop_added_by_scheduler.scheduled_job("interval",hours=4,minutes=0)
+@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/2", minute=20)
 async def _():
     """上架坊市"""
     bot = get_bot()
