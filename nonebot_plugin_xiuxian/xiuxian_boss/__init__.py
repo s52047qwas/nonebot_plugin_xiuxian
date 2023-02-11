@@ -25,8 +25,10 @@ from ..item_json import Items
 from ..utils import data_check_conf, send_forward_msg_list, check_user, send_forward_msg, get_msg_pic, pic_msg_format
 from ..read_buff import UserBuffDate
 from pathlib import Path
+from ..cd_manager import add_cd, check_cd, cd_msg
 import json
 import os
+
 
 config = get_config()
 # 定时任务
@@ -226,7 +228,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_id, userinfo = await data_check(bot, event)
     except MsgError:
         return
-    
+
+    if cd := check_cd(event, '讨伐boss'):
+        # 如果 CD 还没到 则直接结束
+        msg = cd_msg(cd)
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await battle.finish(MessageSegment.image(pic))
+        else:
+            await battle.finish(msg, at_sender=True)
+
+
     msg = args.extract_plain_text().strip()
     group_id = event.group_id
     boss_num = re.findall("\d+", msg)  # boss编号
@@ -310,7 +323,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await battle.finish(MessageSegment.image(pic))
         else:
             await battle.finish(msg, at_sender=True)
-        
+
+    add_cd(event, 60 * 30, '讨伐boss')
+
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
     userinfo = XiuxianDateManage().get_user_real_info(user_id)
     user_weapon_data = UserBuffDate(userinfo.user_id).get_user_weapon_data()
