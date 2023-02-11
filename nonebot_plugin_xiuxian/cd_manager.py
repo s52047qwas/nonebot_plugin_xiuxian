@@ -1,14 +1,14 @@
 from random import choice
-from typing import Dict
+from typing import Dict, Any
 
 from nonebot import get_driver
 from nonebot.log import logger
-from nonebot.adapters.onebot.v11 import MessageEvent, PrivateMessageEvent
-from .xiuxian_config import XiuConfig
+from nonebot.adapters.onebot.v11 import MessageEvent
+
 
 driver = get_driver()
-
-cd_data: Dict[str, int] = {}
+cdtype :Dict[str, int] = {}
+cd_data :Dict[str, Any] = {}
 
 
 cdmsg = [
@@ -18,7 +18,7 @@ cdmsg = [
     
 ]
 
-def check_cd(event: MessageEvent) -> int:
+def check_cd(event: MessageEvent, cdtype: str) -> int:
     """
     :说明: `check_cd`
         * 检查是否达到CD时间\n
@@ -26,13 +26,14 @@ def check_cd(event: MessageEvent) -> int:
         * 如果未达到则返回 `剩余CD时间`
     :参数:
       * `event: MessageEvent`: 事件对象
+      * `cdtype: str`: cd类型
     :返回:
       - `int`: 剩余时间
     """
     uid = event.get_user_id()
     # cd = 设置的到期时间 - 当前时间
     try:
-        cd: int = cd_data[uid] - event.time
+        cd: int = cd_data[uid][cdtype] - event.time
         logger.debug(f"{uid} 还剩: {cd}")
     except KeyError:
         cd = -1
@@ -42,7 +43,7 @@ def check_cd(event: MessageEvent) -> int:
         return cd
     
     
-def add_cd(event: MessageEvent, config_time, times: int = 1):
+def add_cd(event: MessageEvent, config_time, cdtype, times: int = 1):
     """
     :说明: `add_cd`
     > 添加cd, 到期时间 = 当前时间 + 设定的CD * 倍数
@@ -50,8 +51,14 @@ def add_cd(event: MessageEvent, config_time, times: int = 1):
       * `event: MessageEvent`: 事件
       * `times: int`: 倍数, 默认为 `1`
     """
-    cd_data[event.get_user_id()] = event.time + times * config_time
+    try:
+        cd_data[event.get_user_id()]
+    except:
+        cd_data[event.get_user_id()] = {}
+    
+    cd_data[event.get_user_id()][cdtype] = event.time + times * config_time
     logger.debug("查询CD: {}".format(cd_data))
+    
     
 def cd_msg(time_last) -> str:
     """获取CD提示信息"""

@@ -1,0 +1,552 @@
+{
+  "9001": {
+    "name": "吐纳功法",
+    "hpbuff": 0.03,
+    "mpbuff": 0.02,
+    "atkbuff": 0.03,
+    "ratebuff": 0.02,
+    "desc": "",
+    "rank": "人阶下品",
+    "level": "50"
+  },
+  "9002": {
+    "name": "冰心诀",
+    "hpbuff": 0.06,
+    "mpbuff": 0.02,
+    "atkbuff": 0,
+    "ratebuff": 0.02,
+    "desc": "",
+    "rank": "人阶下品",
+    "level": "50"
+  },
+  "9003": {
+    "name": "飞云劲",
+    "hpbuff": 0.03,
+    "mpbuff": 0.02,
+    "atkbuff": 0.05,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "人阶下品",
+    "level": "50"
+  },
+  "9004": {
+    "name": "沛然决",
+    "hpbuff": 0.03,
+    "mpbuff": 0.02,
+    "atkbuff": 0,
+    "ratebuff": 0.05,
+    "desc": "",
+    "rank": "人阶下品",
+    "level": "50"
+  },
+  "9005": {
+    "name": "练体术",
+    "hpbuff": 0.03,
+    "mpbuff": 0.02,
+    "atkbuff": 0.05,
+    "ratebuff": 0.05,
+    "desc": "",
+    "rank": "人阶下品",
+    "level": "50"
+  },
+  "9011": {
+    "name": "禾山经",
+    "hpbuff": 0.06,
+    "mpbuff": 0.04,
+    "atkbuff": 0.06,
+    "ratebuff": 0.04,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "45"
+  },
+  "9012": {
+    "name": "浪击决",
+    "hpbuff": 0.06,
+    "mpbuff": 0.04,
+    "atkbuff": 0.1,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "45"
+  },
+  "9013": {
+    "name": "地元炼体功",
+    "hpbuff": 0.06,
+    "mpbuff": 0.04,
+    "atkbuff": 0,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "45"
+  },
+  "9014": {
+    "name": "上青诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.04,
+    "atkbuff": 0.06,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "45"
+  },
+  "9100": {
+    "name": "化焰诀",
+    "hpbuff": 0.06,
+    "mpbuff": 0.04,
+    "atkbuff": 0.09,
+    "ratebuff": 0.06,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "45"
+  },
+  "9099": {
+    "name": "弄焰诀",
+    "hpbuff": 0.06,
+    "mpbuff": 0.04,
+    "atkbuff": 0.09,
+    "ratebuff": 0.06,
+    "desc": "",
+    "rank": "人阶上品",
+    "level": "42"
+  },
+  "9101": {
+    "name": "长生诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.06,
+    "atkbuff": 0.04,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "黄阶下品",
+    "level": "42"
+  },
+  "9102": {
+    "name": "烈焰诀",
+    "hpbuff": 0,
+    "mpbuff": 0.06,
+    "atkbuff": 0.2,
+    "ratebuff": 0.04,
+    "desc": "",
+    "rank": "黄阶下品",
+    "level": "42"
+  },
+  "9103": {
+    "name": "幽魂录",
+    "hpbuff": 0.2,
+    "mpbuff": 0.06,
+    "atkbuff": 0,
+    "ratebuff": 0.04,
+    "desc": "",
+    "rank": "黄阶下品",
+    "level": "42"
+  },
+  "9104": {
+    "name": "魑魅鬼卷",
+    "hpbuff": 0.1,
+    "mpbuff": 0.06,
+    "atkbuff": 0.1,
+    "ratebuff": 0.04,
+    "desc": "",
+    "rank": "黄阶下品",
+    "level": "42"
+  },
+  "9200": {
+    "name": "夺灵诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.06,
+    "atkbuff": 0.15,
+    "ratebuff": 0.04,
+    "desc": "",
+    "rank": "黄阶下品",
+    "level": "42"
+  },
+  "9201": {
+    "name": "万木诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.1,
+    "atkbuff": 0.1,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "黄阶上品",
+    "level": "39"
+  },
+  "9202": {
+    "name": "真阳功",
+    "hpbuff": 0.2,
+    "mpbuff": 0.1,
+    "atkbuff": 0.05,
+    "ratebuff": 0.05,
+    "desc": "",
+    "rank": "黄阶上品",
+    "level": "39"
+  },
+  "9203": {
+    "name": "龟息术",
+    "hpbuff": 0.1,
+    "mpbuff": 0.1,
+    "atkbuff": 0,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "黄阶上品",
+    "level": "39"
+  },
+  "9204": {
+    "name": "天晶诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.1,
+    "atkbuff": 0.2,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "黄阶上品",
+    "level": "39"
+  },
+  "9300": {
+    "name": "五府锻元诀",
+    "hpbuff": 0.1,
+    "mpbuff": 0.1,
+    "atkbuff": 0.1,
+    "ratebuff": 0.15,
+    "desc": "",
+    "rank": "黄阶上品",
+    "level": "39"
+  },
+  "9301": {
+    "name": "水灵妙法",
+    "hpbuff": 0.2,
+    "mpbuff": 0.1,
+    "atkbuff": 0.2,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "9302": {
+    "name": "五藏炼尘功",
+    "hpbuff": 0.2,
+    "mpbuff": 0.1,
+    "atkbuff": 0.1,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "9303": {
+    "name": "游神御水诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.1,
+    "atkbuff": 0.3,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "9304": {
+    "name": "聚尘诀",
+    "hpbuff": 0.4,
+    "mpbuff": 0.1,
+    "atkbuff": 0.1,
+    "ratebuff": 0,
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "9400": {
+    "name": "流光真诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.1,
+    "atkbuff": 0.2,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "9401": {
+    "name": "混元引气诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.2,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "玄阶上品",
+    "level": "33"
+  },
+  "9402": {
+    "name": "焚心诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.05,
+    "ratebuff": 0.235,
+    "desc": "",
+    "rank": "玄阶上品",
+    "level": "33"
+  },
+  "9403": {
+    "name": "怒涛诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.35,
+    "ratebuff": 0.05,
+    "desc": "",
+    "rank": "玄阶上品",
+    "level": "33"
+  },
+  "9404": {
+    "name": "三才化甲诀",
+    "hpbuff": 0.4,
+    "mpbuff": 0.2,
+    "atkbuff": 0.1,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "玄阶上品",
+    "level": "33"
+  },
+  "9500": {
+    "name": "混元尘引录",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.3,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "玄阶上品",
+    "level": "33"
+  },
+  "9501": {
+    "name": "紫阳混元劲",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.2,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "地阶下品",
+    "level": "30"
+  },
+  "9502": {
+    "name": "浑天术",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.05,
+    "ratebuff": 0.235,
+    "desc": "",
+    "rank": "地阶下品",
+    "level": "30"
+  },
+  "9503": {
+    "name": "七杀剑诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.35,
+    "ratebuff": 0.05,
+    "desc": "",
+    "rank": "地阶下品",
+    "level": "30"
+  },
+  "9504": {
+    "name": "重水普渡诀",
+    "hpbuff": 0.4,
+    "mpbuff": 0.2,
+    "atkbuff": 0.1,
+    "ratebuff": 0.1,
+    "desc": "",
+    "rank": "地阶下品",
+    "level": "30"
+  },
+  "9600": {
+    "name": "九龙引雷诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.3,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "地阶下品",
+    "level": "30"
+  },
+  "9601": {
+    "name": "大罗千幻诀",
+    "hpbuff": 0.4,
+    "mpbuff": 0.4,
+    "atkbuff": 0.4,
+    "ratebuff": 0.4,
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "9602": {
+    "name": "神威录",
+    "hpbuff": 0.4,
+    "mpbuff": 0.4,
+    "atkbuff": 0.2,
+    "ratebuff": 0.6,
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "9603": {
+    "name": "幻影神行诀",
+    "hpbuff": 0.4,
+    "mpbuff": 0.4,
+    "atkbuff": 0.6,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "9604": {
+    "name": "天星润水诀",
+    "hpbuff": 0.8,
+    "mpbuff": 0.4,
+    "atkbuff": 0.2,
+    "ratebuff": 0.2,
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "9700": {
+    "name": "太乙玄功",
+    "hpbuff": 0.4,
+    "mpbuff": 0.4,
+    "atkbuff": 0.5,
+    "ratebuff": 0.5,
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "9701": {
+    "name": "朝元御金诀",
+    "hpbuff": 0.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.5,
+    "ratebuff": 0.5,
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "9702": {
+    "name": "太上化龙诀",
+    "hpbuff": 0.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.3,
+    "ratebuff": 0.7,
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "9703": {
+    "name": "玄阳哺焰诀",
+    "hpbuff": 0.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.7,
+    "ratebuff": 0.3,
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "9704": {
+    "name": "太阴六虚功",
+    "hpbuff": 0.9,
+    "mpbuff": 0.5,
+    "atkbuff": 0.3,
+    "ratebuff": 0.3,
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "9800": {
+    "name": "三阳玄火变",
+    "hpbuff": 0.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.6,
+    "ratebuff": 0.6,
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "9801": {
+    "name": "玄武吐纳术",
+    "hpbuff": 1.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.6,
+    "ratebuff": 0.7,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9802": {
+    "name": "太上化龙真诀",
+    "hpbuff": 0.2,
+    "mpbuff": 0.2,
+    "atkbuff": 0.2,
+    "ratebuff": 0.9,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9803": {
+    "name": "煮海诀",
+    "hpbuff": 0.5,
+    "mpbuff": 0.5,
+    "atkbuff": 0.9,
+    "ratebuff": 0.7,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9804": {
+    "name": "万尘归灵诀",
+    "hpbuff": 1.0,
+    "mpbuff": 1.0,
+    "atkbuff": 0.6,
+    "ratebuff": 0.7,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9900": {
+    "name": "玄清天衍录",
+    "hpbuff": 0.1,
+    "mpbuff": 0.2,
+    "atkbuff": 0.8,
+    "ratebuff": 0.8,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9901": {
+    "name": "万象诀",
+    "hpbuff": 0.6,
+    "mpbuff": 2.0,
+    "atkbuff": 0.6,
+    "ratebuff": 0.7,
+    "desc": "",
+    "rank": "天阶上品",
+    "level": "21"
+  },
+  "9910": {
+    "name": "元磁神光",
+    "hpbuff": 0.9,
+    "mpbuff": 0.9,
+    "atkbuff": 0.9,
+    "ratebuff": 0.9,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
+  },
+  "9911": {
+    "name": "天罗真功",
+    "hpbuff": 2.0,
+    "mpbuff": 2.0,
+    "atkbuff": 0.8,
+    "ratebuff": 0.8,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
+  },
+  "9912": {
+    "name": "托天魔功",
+    "hpbuff": 0.6,
+    "mpbuff": 0.6,
+    "atkbuff": 0.8,
+    "ratebuff": 1.0,
+    "desc": "",
+    "rank": "仙阶下品",
+    "level": "18"
+  }
+}

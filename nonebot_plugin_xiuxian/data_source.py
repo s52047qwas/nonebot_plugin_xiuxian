@@ -14,6 +14,10 @@ class JsonDate:
         self.Reward_that_jsonpath = DATABASE / "悬赏令.json"
         self.level_jsonpath = DATABASE / "境界.json"
         self.sect_json_pth = DATABASE / "宗门玩法配置.json"
+        self.shop_jsonpath = DATABASE / "goods.json"
+        self.BACKGROUND_FILE = DATABASE / "image" / "background.png"
+        self.BANNER_FILE = DATABASE / "image" / "banner.png"
+        self.FONT_FILE = DATABASE / "font" / "sarasa-mono-sc-regular.ttf"
 
     def level_data(self):
         """境界数据"""
@@ -50,6 +54,13 @@ class JsonDate:
             data = json.loads(file_data)
             return data
 
+    def shop_data(self):
+        """获取物品信息"""
+        with open(self.shop_jsonpath, 'r', encoding='utf-8') as e:
+            file_data = e.read()
+            data = json.loads(file_data)
+            return data
+
     def my_test_file(self, pathfile):
         with open(pathfile, 'r', encoding='utf-8') as e:
             file_data = e.read()
@@ -61,11 +72,12 @@ jsondata = JsonDate()
 
 
 if __name__ == '__main__':
-    # P =r"G:\yuzi_bot\yuzi_bot\data\xiuxian\境界.json"
-    # a = JsonDate().my_test_file(pathfile=P)
-    # from pprint import pprint
+    P =r"C:\Users\cyberway\Desktop\xiuxian\nonebot_plugin_xiuxian\nonebot_plugin_xiuxian\nonebot_plugin_xiuxian\xiuxian\goods.json"
+    a = JsonDate().my_test_file(pathfile=P)
+    for i in a.values():
+        print(i)
     # pprint(a["结丹境圆满"]["power"])
-    from datetime import datetime
-    print(datetime.now())
-    if isinstance("2022-09-08 00:42:50.279352", datetime):
-        print('11')
+    # from datetime import datetime
+    # print(datetime.now())
+    # if isinstance("2022-09-08 00:42:50.279352", datetime):
+    #     print('11')
