@@ -1249,7 +1249,7 @@ async def _(bot: Bot,event: GroupMessageEvent, args: Message = CommandArg()):
                     else:
                         sect_info = sql_message.get_sect_info_by_id(give_user.sect_id)
                         sql_message.update_usr_sect(give_user.user_id, None, None)
-                        sql_message.update_user_sect_contribution(user_id, 0)
+                        sql_message.update_user_sect_contribution(give_user.user_id, 0)
                         msg = f"传{jsondata.sect_config_data()[f'{user_message.sect_position}']['title']}" \
                             f"{user_message.user_name}法旨，即日起{give_user.user_name}被" \
                             f"{sect_info.sect_name}除名"
