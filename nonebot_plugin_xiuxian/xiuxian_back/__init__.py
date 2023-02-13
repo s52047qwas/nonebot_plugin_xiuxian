@@ -190,15 +190,16 @@ async def _():
 
 
 # 定时任务上架坊市道具
-@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/2", minute=20)
+@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/1", minute=20)
 async def _():
     """上架坊市"""
     bot = get_bot()
     if groups != []:
         for group_id in groups:
-            # group_id = str(event.group_id)
+            group_id = str(group_id)
             shop_data = get_shop_data(group_id)
             if shop_data == {}:
+                logger.info(f"群号:{group_id},重置全部物品")
                 shop_data[group_id] = {}
             try:
                 auction_id_list = get_shop_auto_add_id_list()
@@ -207,11 +208,12 @@ async def _():
                 msg = "获取不到坊市物品的信息，请检查配置文件！"
                 logger.info(msg)
                 return
-
+            logger.info(f"群号:{group_id},物品:{shop_data[group_id]}")
             goods_info = items.get_data_by_item_id(goods_id)
             price = get_shop_auto_add_price_by_id(goods_id)['start_price']
 
             id = len(shop_data[group_id]) + 1
+            logger.info(f"群号:{group_id},坊市最新id:{id}")
             shop_data[group_id][id] = {}
             shop_data[group_id][id]['user_id'] = bot.self_id
             shop_data[group_id][id]['goods_name'] = goods_info['name']
