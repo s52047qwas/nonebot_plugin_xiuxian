@@ -18,21 +18,24 @@ from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import USERRANK, XiuConfig
-from .makeboss import createboss
+from .makeboss import createboss,createboss_jj
 from .bossconfig import get_config, savef
 from ..player_fight import Boss_fight
 from ..item_json import Items
 from ..utils import data_check_conf, send_forward_msg_list, check_user, send_forward_msg, get_msg_pic, pic_msg_format
 from ..read_buff import UserBuffDate
 from pathlib import Path
+from ..cd_manager import add_cd, check_cd, cd_msg
 import json
 import os
+
 
 config = get_config()
 # 定时任务
 set_boss = require("nonebot_plugin_apscheduler").scheduler
 
 create = on_command("生成世界boss", aliases={"生成世界Boss", "生成世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER))
+create_appoint = on_command("生成指定世界boss", aliases={"生成指定世界boss", "生成指定世界BOSS", "生成指定BOSS", "生成指定boss"}, priority=5, permission= GROUP and (SUPERUSER))
 boss_info = on_command("查询世界boss", aliases={"查询世界Boss", "查询世界BOSS"}, priority=5, permission= GROUP)
 set_group_boss = on_command("世界boss", aliases={"世界Boss", "世界BOSS"}, priority=5, permission= GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER))
 battle = on_command("讨伐boss", aliases={"讨伐世界boss", "讨伐Boss", "讨伐BOSS", "讨伐世界Boss","讨伐世界BOSS"}, priority=5, permission= GROUP)
@@ -48,14 +51,15 @@ __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
 1、生成世界boss、生成世界boss+数量：生成一只随机大境界的世界Boss、生成指定数量的世界boss,超管权限
-2、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
-3、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
-4、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
-5、世界boss帮助、世界boss：获取世界Boss帮助信息
-6、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
-7、天罚所有boss、天罚所有世界boss：删除所有的世界Boss,管理员权限
+2、生成指定世界boss、生成指定世界boss+境界：生成一只指定境界的世界Boss、如'生成指定世界boss元婴境圆满',超管权限
+3、查询世界boss：查询本群全部世界Boss，可加Boss编号查询对应Boss信息
+4、世界boss开启、关闭：开启后才可以生成世界Boss，管理员权限
+5、讨伐boss、讨伐世界boss：讨伐世界Boss，必须加Boss编号
+6、世界boss帮助、世界boss：获取世界Boss帮助信息
+7、天罚boss、天罚世界boss：删除世界Boss，必须加Boss编号,管理员权限
+8、天罚所有boss、天罚所有世界boss：删除所有的世界Boss,管理员权限
 9、世界积分查看：查看自己的世界积分，和世界积分兑换商品
-0、世界积分兑换+编号：兑换对应的商品
+10、世界积分兑换+编号：兑换对应的商品
 非指令：
 1、拥有定时任务：每{str(boss_time['hours']) + '小时' if boss_time['hours'] != 0 else ''}{str(boss_time['minutes']) + '分钟' if boss_time['minutes'] != 0 else ''}生成一只随机大境界的世界Boss
 """.strip()
@@ -224,7 +228,18 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         user_id, userinfo = await data_check(bot, event)
     except MsgError:
         return
-    
+
+    if cd := check_cd(event, '讨伐boss'):
+        # 如果 CD 还没到 则直接结束
+        msg = cd_msg(cd)
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await battle.finish(MessageSegment.image(pic))
+        else:
+            await battle.finish(msg, at_sender=True)
+
+
     msg = args.extract_plain_text().strip()
     group_id = event.group_id
     boss_num = re.findall("\d+", msg)  # boss编号
@@ -308,7 +323,9 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await battle.finish(MessageSegment.image(pic))
         else:
             await battle.finish(msg, at_sender=True)
-        
+
+    add_cd(event, XiuConfig().battle_boss_cd, '讨伐boss')
+
     player = {"user_id": None, "道号": None, "气血": None, "攻击": None, "真元": None, '会心': None, '防御': 0}
     userinfo = XiuxianDateManage().get_user_real_info(user_id)
     user_weapon_data = UserBuffDate(userinfo.user_id).get_user_weapon_data()
@@ -522,6 +539,51 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
             await create.finish(msg, at_sender=True)
 
 
+@create_appoint.handle()
+async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    await data_check_conf(bot, event)
+    group_id = event.group_id
+    isInGroup = isInGroups(event)
+    if not isInGroup:#不在配置表内
+        msg = f'本群尚未开启世界Boss，请联系管理员开启!'
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create_appoint.finish(MessageSegment.image(pic))
+        else:
+            await create_appoint.finish(msg, at_sender=True)
+    try:
+        group_boss[group_id]
+    except:
+        group_boss[group_id] = []
+    if len(group_boss[group_id]) >= config['Boss个数上限']:
+        msg = f"本群世界Boss已达到上限{config['Boss个数上限']}个，无法继续生成"
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create_appoint.finish(MessageSegment.image(pic))
+        else:
+            await create_appoint.finish(msg, at_sender=True)
+    arg = args.extract_plain_text().split()
+    try:
+        name = arg[0]
+    except IndexError:
+        msg = f"请输入正确的指令！"
+        if XiuConfig().img:
+            msg = await pic_msg_format(msg, event)
+            pic = await get_msg_pic(msg)
+            await create_appoint.finish(MessageSegment.image(pic))
+        else:
+            await create_appoint.finish(msg, at_sender=True)
+    bossinfo = createboss_jj(name)
+    group_boss[group_id].append(bossinfo)
+    msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']}，诸位道友请击败Boss获得奖励吧！"
+    if XiuConfig().img:
+        msg = await pic_msg_format(msg, event)
+        pic = await get_msg_pic(msg)
+        await create_appoint.finish(MessageSegment.image(pic))
+    else:
+        await create_appoint.finish(msg, at_sender=True)
 
 @set_group_boss.handle()
 async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):

@@ -672,7 +672,7 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, (stone_num, stone_num * 10, sect_id))
         self.conn.commit()
-    
+
     def update_sect_materials(self, sect_id, sect_materials, key):
         """更新资材  1为增加，2为减少"""
         cur = self.conn.cursor()
@@ -979,7 +979,14 @@ class XiuxianDateManage:
         cur = self.conn.cursor()
         cur.execute(sql, )
         self.conn.commit()
-    
+
+    def sect_owner_update(self, sect_id, sect_owner):
+        """更改宗主"""
+        sql = f"UPDATE sects SET sect_owner=? where sect_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (sect_owner, sect_id))
+        self.conn.commit()
+
     def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num, bind_flag=0):
         """
         插入物品至背包

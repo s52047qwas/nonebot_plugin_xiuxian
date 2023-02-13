@@ -45,13 +45,13 @@ closing_exp_upper_limit : 1.5  # 闭关获取修为上限（例如：1.5 下个�
 level_punishment_floor : 1  # 突破失败扣除修为，惩罚下限（百分比）
 level_punishment_limit : 5  # 突破失败扣除修为，惩罚上限(百分比)
 level_up_probability : 0.3  # 突破失败增加当前境界突破概率的比例
-sign_in_lingshi_lower_limit : 100  # 每日签到灵石下限
-sign_in_lingshi_upper_limit : 2000  # 每日签到灵石上限
-sign_in_xiuwei_lower_limit : 100  # 每日签到修为下限
-sign_in_xiuwei_upper_limit : 2000  # 每日签到修为上限
-tou : 30  # 偷灵石惩罚
-tou_lower_limit : 30  # 偷灵石下限
-tou_upper_limit : 100  # 偷灵石上限
+sign_in_lingshi_lower_limit : 5000  # 每日签到灵石下限
+sign_in_lingshi_upper_limit : 15000  # 每日签到灵石上限
+sign_in_xiuwei_lower_limit : 5000  # 每日签到修为下限
+sign_in_xiuwei_upper_limit : 15000  # 每日签到修为上限
+tou : 500  # 偷灵石惩罚
+tou_lower_limit : 300  # 偷灵石下限
+tou_upper_limit : 5000  # 偷灵石上限
 remake : 1000  # 重入仙途的消费
 sect_min_level : "化神境圆满"  # 创建宗门的最低修为等级要求
 sect_create_cost : 50000  # 创建宗门的灵石需求
@@ -60,6 +60,7 @@ user_info_cd_msg : '你急啥呢？{cd_msg}后再查询吧'
 dufang_cd : 5  # 金银阁cd
 tou_cd : 15  # 偷灵石cd
 dufang_cd_msg : '你急啥呢？{cd_msg}后再来吧'
+battle_boss_cd : 1800
 
 # sql_table : ["user_xiuxian", "user_cd", "sects","back", "BuffInfo"]    # 数据库表校验
 # sql_user_xiuxian : ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice", "sect_task"]   # 数据库字段校验

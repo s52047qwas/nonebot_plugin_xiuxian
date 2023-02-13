@@ -41,6 +41,7 @@ auction_offer_all_count = 0 #控制线程等待时间
 # 定时任务
 set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
 reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
+set_shop_added_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
 
 shop = on_command("坊市查看", aliases={'查看坊市'}, priority=5)
 shop_added = on_command("坊市上架", priority=5)
@@ -72,6 +73,7 @@ __back_help__ = f"""
 10、背包帮助：获取背包帮助指令
 非指令：
 1、定时生成交友会，每天{auction_time_config['hours']}点每整点生成一场交友会
+1、每小时会有神秘人上架回血药到坊市，需要开启交友会
 """.strip()
 
 # 重置丹药每日使用次数
@@ -185,6 +187,52 @@ async def _():
             auction = {}
             auction_offer_time_count = 0
             return
+
+
+# 定时任务上架坊市道具
+@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/1", minute=20)
+async def _():
+    """上架坊市"""
+    bot = get_bot()
+    if groups != []:
+        for group_id in groups:
+            group_id = str(group_id)
+            shop_data = get_shop_data(group_id)
+            if shop_data == {}:
+                logger.info(f"群号:{group_id},重置全部物品")
+                shop_data[group_id] = {}
+            try:
+                auction_id_list = get_shop_auto_add_id_list()
+                goods_id = random.choice(auction_id_list)
+            except IndexError:
+                msg = "获取不到坊市物品的信息，请检查配置文件！"
+                logger.info(msg)
+                return
+            logger.info(f"群号:{group_id},物品:{shop_data[group_id]}")
+            goods_info = items.get_data_by_item_id(goods_id)
+            price = get_shop_auto_add_price_by_id(goods_id)['start_price']
+
+            id = len(shop_data[group_id]) + 1
+            logger.info(f"群号:{group_id},坊市最新id:{id}")
+            shop_data[group_id][id] = {}
+            shop_data[group_id][id]['user_id'] = bot.self_id
+            shop_data[group_id][id]['goods_name'] = goods_info['name']
+            shop_data[group_id][id]['goods_id'] = goods_id
+            shop_data[group_id][id]['goods_type'] = goods_info['type']
+            shop_data[group_id][id]['desc'] = get_item_msg(goods_id)
+            shop_data[group_id][id]['price'] = price
+            shop_data[group_id][id]['user_name'] = "神秘人"
+            save_shop(shop_data)
+            msg = f"神秘人将物品：{goods_info['name']}成功上架坊市，金额：{price}枚灵石！"
+            try:
+                if XiuConfig().img:
+                    pic = await get_msg_pic(msg)
+                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+                else:
+                    await bot.send_group_msg(group_id=int(group_id), message=msg)
+            except ActionFailed:  # 发送群消息失败
+                continue
+
 
 
 @back_help.handle()
@@ -1150,6 +1198,22 @@ def get_auction_id_list():
 
 def get_auction_price_by_id(id):
     auctions = config['auctions']
+    for k, v in auctions.items():
+        if int(v['id']) == int(id):
+            auction_info = auctions[k]
+            break
+    return auction_info
+
+
+def get_shop_auto_add_id_list():
+    auctions = config['shop_auto_add']
+    auction_id_list = []
+    for k, v in auctions.items():
+        auction_id_list.append(v['id'])
+    return auction_id_list
+
+def get_shop_auto_add_price_by_id(id):
+    auctions = config['shop_auto_add']
     for k, v in auctions.items():
         if int(v['id']) == int(id):
             auction_info = auctions[k]
