@@ -73,7 +73,7 @@ __back_help__ = f"""
 10、背包帮助：获取背包帮助指令
 非指令：
 1、定时生成交友会，每天{auction_time_config['hours']}点每整点生成一场交友会
-1、每小时会有神秘人上架回血药到坊市，需要开启交友会
+1、每3小时会有神秘人上架回血药到坊市，需要开启交友会
 """.strip()
 
 # 重置丹药每日使用次数
@@ -190,7 +190,7 @@ async def _():
 
 
 # 定时任务上架坊市道具
-@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/1", minute=20)
+@set_shop_added_by_scheduler.scheduled_job("cron", hour="*/3", minute=20)
 async def _():
     """上架坊市"""
     bot = get_bot()
