@@ -20,6 +20,7 @@ from ..xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import USERRANK, XiuConfig
 from .makeboss import createboss,createboss_jj
 from .bossconfig import get_config, savef
+from .old_boss_info import old_boss_info
 from ..player_fight import Boss_fight
 from ..item_json import Items
 from ..utils import data_check_conf, send_forward_msg_list, check_user, send_forward_msg, get_msg_pic, pic_msg_format
@@ -28,7 +29,9 @@ from pathlib import Path
 from ..cd_manager import add_cd, check_cd, cd_msg
 import json
 import os
+from nonebot import get_driver
 
+driver = get_driver()
 
 config = get_config()
 # 定时任务
@@ -68,6 +71,22 @@ group_boss = {}
 groups = config['open']
 battle_flag = {}
 sql_message = XiuxianDateManage()  # sql类
+
+
+@driver.on_startup
+async def read_boss_():
+    global group_boss
+    for group_str in old_boss_info.read_boss_info():  # sub is a dict
+        group_boss[int(group_str)] = old_boss_info.read_boss_info().get(group_str)
+    print(group_boss)
+    logger.info("历史boss数据读取成功")
+
+
+@driver.on_shutdown
+async def save_boss_():
+    global group_boss
+    old_boss_info.save_boss(group_boss)
+    logger.info("boss数据已保存")
 
 # 定时任务生成世界boss
 @set_boss.scheduled_job("interval", 

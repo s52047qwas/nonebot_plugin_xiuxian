@@ -10,6 +10,7 @@ from nonebot.adapters.onebot.v11 import (
     GROUP_OWNER,
     MessageSegment
 )
+from .old_rift_info import old_rift_info
 from nonebot.permission import SUPERUSER
 from nonebot.log import logger
 from ..xiuxian2_handle import XiuxianDateManage
@@ -20,7 +21,9 @@ from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_t
 import random
 from datetime import datetime
 from ..xiuxian_config import XiuConfig
+from nonebot import get_driver
 
+driver = get_driver()
 config = get_config()
 sql_message = XiuxianDateManage()  # sql类
 
@@ -48,7 +51,22 @@ __rift_help__ = f"""
 
 group_rift = {} #dict
 groups = config['open'] #list
-    
+
+@driver.on_startup
+async def read_rift_():
+    global group_rift
+    group_rift.update(old_rift_info.read_rift_info())
+    print(group_rift)
+    logger.info("历史rift数据读取成功")
+
+
+@driver.on_shutdown
+async def save_rift_():
+    global group_rift
+    old_rift_info.save_rift(group_rift)
+    logger.info("rift数据已保存")
+
+
 # 定时任务生成群秘境
 @set_rift.scheduled_job("cron", hour=18, minute=30)
 async def _():
