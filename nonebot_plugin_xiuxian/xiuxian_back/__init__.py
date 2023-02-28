@@ -19,7 +19,7 @@ from ..utils import data_check_conf, check_user, send_forward_msg, pic_msg_forma
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..item_json import Items
 from ..data_source import jsondata
-from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir, get_use_jlq_msg
+from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equipment_sql, get_shop_data, save_shop, get_item_msg, check_use_elixir, get_use_jlq_msg, get_item_msg_rank
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
@@ -54,6 +54,7 @@ set_auction = on_command("群交流会", priority=5, permission= GROUP and (SUPE
 creat_auction = on_command("举行交友会", priority=5, permission= GROUP and (SUPERUSER))
 offer_auction = on_command("交友", priority=5, permission= GROUP)
 back_help = on_command("背包帮助", priority=5, permission= GROUP)
+goods_re_root = on_command("炼金", priority=6, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()  # sql类
 
@@ -70,10 +71,11 @@ __back_help__ = f"""
 7、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
 8、群交流会开启、关闭：开启交友行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报交友消息
 9、交友+金额：对本次交友会的物品进行交友
-10、背包帮助：获取背包帮助指令
+10、炼金+物品名字：将物品炼化为灵石
+11、背包帮助：获取背包帮助指令
 非指令：
 1、定时生成交友会，每天{auction_time_config['hours']}点每整点生成一场交友会
-1、每3小时会有神秘人上架回血药到坊市，需要开启交友会
+2、每3小时会有神秘人上架回血药到坊市，需要开启交友会
 """.strip()
 
 # 重置丹药每日使用次数
@@ -1245,3 +1247,108 @@ def get_auction_msg(auction_id):
         msg += f"效果:{item_info['desc']}"
     
     return msg
+
+
+@goods_re_root.handle()
+async def goods_re_root_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+    """物品回收"""
+    await data_check_conf(bot, event)
+    group_id = event.group_id
+
+    isUser, user_info, msg = check_user(event)
+    if not isUser:
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+    user_id = user_info.user_id
+    args = args.extract_plain_text().split()
+    if args is None:
+        msg = "请输入要炼化的物品！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+    goods_name = args[0]
+    back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
+    if back_msg is None:
+        msg = "道友的背包空空如也！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+    in_flag = False  # 判断指令是否正确，道具是否在背包内
+    goods_id = None
+    goods_type = None
+    goods_state = None
+    goods_num = None
+    goods_bind_num = None
+    for back in back_msg:
+        if goods_name == back.goods_name:
+            in_flag = True
+            goods_id = back.goods_id
+            goods_type = back.goods_type
+            goods_state = back.state
+            goods_num = back.goods_num
+            goods_bind_num = back.bind_num
+            break
+    if not in_flag:
+        msg = f"请检查该道具 {goods_name} 是否在背包内！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+
+    if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
+        msg = f"装备：{goods_name}已经被道友装备在身，无法炼金！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+
+    if goods_type == "丹药" and int(goods_num) <= int(goods_bind_num):
+        msg = f"该物品是绑定物品，无法炼金！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+    if get_item_msg_rank(goods_id) == 520:
+        msg = "此类物品不支持！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+    price = int((60 - get_item_msg_rank(goods_id)) * 100 * random.randint(10,15))
+    sql_message.update_back_j(user_id, goods_id)
+
+    if price <= 0:
+        msg = f"物品：{goods_name}炼金失败，凝聚{price}枚灵石，记得通知晓楠！"
+        if XiuConfig().img:
+            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+        else:
+            await bot.send_group_msg(group_id=int(group_id), message=msg)
+        await goods_re_root.finish()
+
+    sql_message.update_ls(user_id, price, 1)
+    msg = f"物品：{goods_name}炼金成功，凝聚{price}枚灵石！"
+    if XiuConfig().img:
+        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+        await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+    else:
+        await bot.send_group_msg(group_id=int(group_id), message=msg)
+    await goods_re_root.finish()

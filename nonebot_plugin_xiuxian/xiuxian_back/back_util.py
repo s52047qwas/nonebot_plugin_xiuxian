@@ -450,3 +450,24 @@ def bulk_use_check(goods_info, use_num, goods_day_num, goods_all_num):
         all_can_use_num = use_num
     
     return day_can_use_num if day_can_use_num <= all_can_use_num else all_can_use_num
+
+def get_item_msg_rank(goods_id):
+    """
+    获取单个物品的rank
+    """
+    item_info = items.get_data_by_item_id(goods_id)
+    if item_info['type'] == '丹药':
+        msg = item_info['rank']
+    elif item_info['item_type'] == '神通':
+        msg = item_info['rank']
+    elif item_info['item_type'] == '功法':
+        msg = item_info['rank']
+    elif item_info['item_type'] == '防具':
+        msg = item_info['rank']
+    elif item_info['item_type'] == '法器':
+        msg = item_info['rank']
+    elif item_info['item_type'] == "药材":
+        msg = item_info['rank']
+    else:
+        msg = "520"
+    return int(msg)
