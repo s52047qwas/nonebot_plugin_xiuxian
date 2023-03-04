@@ -1,8 +1,10 @@
+import logging
 from .item_json import Items
 from .xiuxian2_handle import XiuxianDateManage, OtherSet
 from .read_buff import UserBuffDate
 from .xiuxian_config import XiuConfig
 from .data_source import jsondata
+from nonebot.log import logger
 items = Items()
 sql_message = XiuxianDateManage()
 
@@ -39,5 +41,5 @@ def user_get_exp_max(user_id):
         # 校验当当前修为超出上限的问题，不可为负数
         user_get_exp_max = 0
 
-    return 0;
+    return user_get_exp_max
 

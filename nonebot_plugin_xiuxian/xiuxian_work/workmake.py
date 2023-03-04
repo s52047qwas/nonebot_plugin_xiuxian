@@ -38,7 +38,7 @@ def workmake(work_level, exp, user_level):
             item_id = random.choice(item_id)
 
         ## 每15分钟结算一次基础灵石奖励
-        work_json[work_name] = [rate, level_price_data["award"] * level_price_data["time"] / 15, int(level_price_data["time"] * isOut), item_id, success_msg, fail_msg]
+        work_json[work_name] = [rate, int(level_price_data["award"] * level_price_data["time"] / 15), int(level_price_data["time"] * isOut), item_id, success_msg, fail_msg]
         i += 1
     return work_json
 

@@ -315,7 +315,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 msg, give_stone, s_o_f, item_id, big_suc = workhandle().do_work(2, work_list= user_cd_message.scheduled_time,
                                             level=user_info.level, exp=user_info.exp, user_id=user_info.user_id)
                 item_flag = False
-                exp_rate = get_exp_rate(user_info.user_id,False);
+                exp_rate = get_exp_rate(user_info.user_id, False)
                 give_exp = int(exp_rate * exp_time * 0.5)
                 exp_max = user_get_exp_max(user_info.user_id)
                 if give_exp > exp_max:
@@ -325,12 +325,12 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                     item_info = items.get_data_by_item_id(item_id)
                     item_msg = f"{item_info['level']}：{item_info['name']}"
                 if big_suc: #大成功
+                    give_exp = int(give_exp * 1.5)
                     sql_message.update_ls(user_id, give_stone * 2, 1)
-                    sql_message.update_exp(user_id, give_exp * 1.2)
+                    sql_message.update_exp(user_id,give_exp)
                     sql_message.update_power2(user_id)  # 更新战力
-
                     sql_message.do_work(user_id, 0)
-                    msg = f"悬赏令结算，{msg}获得报酬{give_stone * 2}枚灵石，获得修为{give_exp * 1.2}"
+                    msg = f"悬赏令结算，{msg}获得报酬{give_stone * 2}枚灵石，获得修为{give_exp}"
                     #todo 战利品结算sql
                     if item_flag:
                         sql_message.send_back(user_id, item_id, item_info['name'], item_info['type'], 1)
