@@ -22,7 +22,7 @@ from .reward_data_source import PLAYERSDATA
 import os
 from ..item_json import Items
 from ..xiuxian_config import USERRANK, XiuConfig
-
+from ..exp_util import get_exp_rate, user_get_exp_max
 # 定时任务
 resetrefreshnum = require("nonebot_plugin_apscheduler").scheduler
 
@@ -56,6 +56,7 @@ __work_help__ = f"""
 3、悬赏令终止：终止当前悬赏令任务
 4、悬赏令结算：结算悬赏奖励
 5、悬赏令接取+编号：接取对应的悬赏令
+注：执行悬赏令期间，会根据时间获取一定修为
 """.strip()
         
 @do_work.handle()
@@ -244,7 +245,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 else:
                     await do_work.finish(msg, at_sender=True)
             
-        work_msg = workhandle().do_work(0, level=user_info.level, exp=user_info.exp, user_id=user_id)
+        work_msg = workhandle().do_work(0, level=user_level, exp=user_info.exp, user_id=user_id)
         n = 1
         work_list = []
         work_msg_f = f"☆------道友的个人悬赏令------☆\n"
@@ -314,14 +315,22 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                 msg, give_stone, s_o_f, item_id, big_suc = workhandle().do_work(2, work_list= user_cd_message.scheduled_time,
                                             level=user_info.level, exp=user_info.exp, user_id=user_info.user_id)
                 item_flag = False
+                exp_rate = get_exp_rate(user_info.user_id,False);
+                give_exp = int(exp_rate * exp_time * 0.5)
+                exp_max = user_get_exp_max(user_info.user_id)
+                if give_exp > exp_max:
+                    give_exp = exp_max
                 if item_id != 0:
                     item_flag = True
                     item_info = items.get_data_by_item_id(item_id)
                     item_msg = f"{item_info['level']}：{item_info['name']}"
                 if big_suc: #大成功
                     sql_message.update_ls(user_id, give_stone * 2, 1)
+                    sql_message.update_exp(user_id, give_exp * 1.2)
+                    sql_message.update_power2(user_id)  # 更新战力
+
                     sql_message.do_work(user_id, 0)
-                    msg = f"悬赏令结算，{msg}获得报酬{give_stone * 2}枚灵石"
+                    msg = f"悬赏令结算，{msg}获得报酬{give_stone * 2}枚灵石，获得修为{give_exp * 1.2}"
                     #todo 战利品结算sql
                     if item_flag:
                         sql_message.send_back(user_id, item_id, item_info['name'], item_info['type'], 1)
@@ -338,8 +347,11 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Tuple[Any, ...] = RegexGro
                     
                 else: 
                     sql_message.update_ls(user_id, give_stone, 1)
+                    sql_message.update_exp(user_id, give_exp)
+                    sql_message.update_power2(user_id)  # 更新战力
+
                     sql_message.do_work(user_id, 0)
-                    msg = f"悬赏令结算，{msg}获得报酬{give_stone}枚灵石"
+                    msg = f"悬赏令结算，{msg}获得报酬{give_stone}枚灵石，获得修为{give_exp}"
                     if s_o_f:#普通成功
                         if item_flag:
                             sql_message.send_back(user_id, item_id, item_info['name'], item_info['type'], 1)

@@ -26,6 +26,7 @@ def workmake(work_level, exp, user_level):
         work_name = random.choice(work_name_list)
         work_info = w[work_name]
         level_price_data = levelpricedata[work_level][work_info['level']]
+
         rate, isOut = countrate(exp, level_price_data["needexp"])
         success_msg = work_info['succeed']
         fail_msg = work_info['fail']
@@ -35,7 +36,9 @@ def workmake(work_level, exp, user_level):
             item_id = 0
         else:
             item_id = random.choice(item_id)
-        work_json[work_name] = [rate, level_price_data["award"], int(level_price_data["time"] * isOut), item_id, success_msg, fail_msg]
+
+        ## 每15分钟结算一次基础灵石奖励
+        work_json[work_name] = [rate, level_price_data["award"] * level_price_data["time"] / 15, int(level_price_data["time"] * isOut), item_id, success_msg, fail_msg]
         i += 1
     return work_json
 
