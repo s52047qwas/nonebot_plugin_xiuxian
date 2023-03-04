@@ -163,7 +163,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 else:
                     await sect_elixir_room_make.finish(msg, at_sender=True)
             elif elixir_room_level_up_sect_scale_cost > int(sect_info.sect_scale):
-                msg = f"宗门建设度不满足升级条件，当前升级需要消耗宗门建设度：{elixir_room_level_up_sect_scale_cost}点！"
+                msg = f"宗门建设度不满足升级条件，当前升级需要达到宗门建设度：{elixir_room_level_up_sect_scale_cost}点！"
                 if XiuConfig().img:
                     msg = await pic_msg_format(msg, event)
                     pic = await get_msg_pic(msg)
@@ -171,9 +171,9 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 else:
                     await sect_elixir_room_make.finish(msg, at_sender=True)
             else:
-                msg = f"宗门消耗：{elixir_room_level_up_sect_scale_cost}建设度，{elixir_room_level_up_use_stone_cost}宗门灵石\n"
+                msg = f"宗门消耗：{elixir_room_level_up_use_stone_cost}宗门灵石\n"
                 msg += f"成功升级宗门丹房，当前丹房为：{elixir_room_level_up_config[str(to_up_level)]['name']}！"
-                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - elixir_room_level_up_use_stone_cost, sect_info.sect_scale - elixir_room_level_up_sect_scale_cost)
+                sql_message.update_sect_scale_and_used_stone(sect_id, sect_info.sect_used_stone - elixir_room_level_up_use_stone_cost, sect_info.sect_scale)
                 sql_message.update_sect_elixir_room_level(sect_id, to_up_level)
                 if XiuConfig().img:
                     msg = await pic_msg_format(msg, event)
