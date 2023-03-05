@@ -984,7 +984,7 @@ class XiuxianDateManage:
         """更改宗主"""
         sql = f"UPDATE sects SET sect_owner=? where sect_id=?"
         cur = self.conn.cursor()
-        cur.execute(sql, (sect_owner, sect_id))
+        cur.execute(sql, (sect_owner, sect_id,))
         self.conn.commit()
 
     def send_back(self, user_id, goods_id, goods_name, goods_type, goods_num, bind_flag=0):
