@@ -86,7 +86,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     w, h = await linewh(sectinfo, sectword)
     sectinfo_draw = ImageDraw.Draw(sectinfo)
     sectinfo_draw.text((w, h), sectword, first_color, font_40, 'lm')
-    img.paste(sectinfo, (100, 1462), sectinfo)
+    img.paste(sectinfo, (100, 1442), sectinfo)
     
     DETAIL_sectinfo = {}
     DETAIL_sectinfo['所在宗门'] = DETAIL_MAP['所在宗门']
@@ -96,6 +96,23 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
         tasks3.append(_draw_sect_info_line(img, key, value, DETAIL_sectinfo))
     await asyncio.gather(*tasks3)
     
+    paihang = Image.open(
+        TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
+    paihangword = '【排行信息】'
+    w, h = await linewh(paihang, paihangword)
+    paihang_draw = ImageDraw.Draw(paihang)
+    paihang_draw.text((w, h), paihangword, first_color, font_40, 'lm')
+    img.paste(paihang, (100, 1773), paihang)
+
+    DETAIL_paihang = {}
+    DETAIL_paihang['注册位数'] = DETAIL_MAP['注册位数']
+    DETAIL_paihang['修为排行'] = DETAIL_MAP['修为排行']
+    DETAIL_paihang['灵石排行'] = DETAIL_MAP['灵石排行']
+
+    tasks4 = []
+    for key, value in DETAIL_paihang.items():
+        tasks4.append(_draw_ph_info_line(img, key, value, DETAIL_paihang))
+    await asyncio.gather(*tasks4)
     res = await convert_img(img)
     return res
 
@@ -127,9 +144,17 @@ async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
     w, h = await linewh(line, word)
     
     line_draw.text((100, h), word, first_color, font_36, 'lm')
-    img.paste(line, (100, 1565 + list(DETAIL_MAP.keys()).index(key) * 103), line)
+    img.paste(line, (100, 1547 + list(DETAIL_MAP.keys()).index(key) * 103), line)
     
-   
+async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
+
+    line = Image.open(TEXT_PATH / 'line4.png').resize((900, 100))
+    line_draw = ImageDraw.Draw(line)
+    word = f"{key}：{value}"
+    w, h = await linewh(line, word)
+
+    line_draw.text((100, h), word, first_color, font_36, 'lm')
+    img.paste(line, (100, 1878 + list(DETAIL_MAP.keys()).index(key) * 103), line)
 
 async def img_author(img, bg):
     
