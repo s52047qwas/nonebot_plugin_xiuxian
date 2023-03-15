@@ -1,6 +1,6 @@
 from ..item_json import Items
 from ..xiuxian2_handle import XiuxianDateManage
-from ..read_buff import UserBuffDate, get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg
+from ..read_buff import UserBuffDate, get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg, get_sub_info_msg
 from datetime import datetime
 import json
 import os
@@ -224,6 +224,9 @@ def get_skill_msg(l_msg, user_id, goods_id, goods_num):
     elif item_info['item_type'] == '功法':
         msg = f"{item_info['level']}功法-"
         msg += get_main_info_msg(goods_id)[1]
+    elif item_info['item_type'] == '辅修功法':
+        msg = f"{item_info['level']}辅修功法-"
+        msg += get_sub_info_msg(goods_id)[1]
     msg += f"\n拥有数量：{goods_num}"
     l_msg.append(msg)
     return l_msg
@@ -257,7 +260,11 @@ def get_item_msg(goods_id):
         msg = f"名字：{item_info['name']}\n"
         msg += f"品阶：{item_info['level']}\n"
         msg += f"效果：{get_main_info_msg(goods_id)[1]}"
-        
+
+    elif item_info['item_type'] == '辅修功法':
+        msg = f"名字：{item_info['name']}\n"
+        msg += f"品阶：{item_info['level']}\n"
+        msg += f"效果：{get_sub_info_msg(goods_id)[1]}"
     
     elif item_info['item_type'] == '防具':
         msg = get_armor_info_msg(goods_id, item_info)
@@ -461,6 +468,8 @@ def get_item_msg_rank(goods_id):
     elif item_info['item_type'] == '神通':
         msg = item_info['rank']
     elif item_info['item_type'] == '功法':
+        msg = item_info['rank']
+    elif item_info['item_type'] == '辅修功法':
         msg = item_info['rank']
     elif item_info['item_type'] == '防具':
         msg = item_info['rank']

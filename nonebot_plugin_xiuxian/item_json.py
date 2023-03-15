@@ -13,6 +13,7 @@ XIULIANITEMPATH = READPATH / "修炼物品"
 class Items:
     def __init__(self) -> None:
         self.mainbuff_jsonpath = SKILLPATHH / "主功法.json"
+        self.subbuff_jsonpath = SKILLPATHH / "辅修功法.json"
         self.secbuff_jsonpath = SKILLPATHH / "神通.json"
         self.weapon_jsonpath = WEAPONPATH / "法器.json"
         self.armor_jsonpath = WEAPONPATH / "防具.json"
@@ -25,6 +26,7 @@ class Items:
         self.set_item_data(self.get_armor_data(), "防具")
         self.set_item_data(self.get_weapon_data(), "法器")
         self.set_item_data(self.get_main_buff_data(), "功法")
+        self.set_item_data(self.get_sub_buff_data(), "辅修功法")
         self.set_item_data(self.get_sec_buff_data(), "神通")
         self.set_item_data(self.get_elixir_data(), "丹药")
         self.set_item_data(self.get_yaocai_data(), "药材")
@@ -54,6 +56,9 @@ class Items:
     def get_main_buff_data(self):
         return self.readf(self.mainbuff_jsonpath)
 
+    def get_sub_buff_data(self):
+        return self.readf(self.subbuff_jsonpath)
+
     def get_sec_buff_data(self):
         return self.readf(self.secbuff_jsonpath)
     
@@ -77,7 +82,7 @@ class Items:
 
     def set_item_data(self, dict_data, item_type):
         for k, v in dict_data.items():
-            if item_type == '功法' or item_type == '神通':
+            if item_type == '功法' or item_type == '神通' or item_type == '辅修功法':
                 v['rank'], v['level'] = v['level'], v['rank']
                 v['type'] = '技能'
             self.items[k] = v

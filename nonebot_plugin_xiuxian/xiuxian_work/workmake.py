@@ -44,14 +44,17 @@ def workmake(work_level, exp, user_level):
 
 def get_random_item_type():
     type_rate = {
-        "功法":{
-            "type_rate":100,
+        "功法": {
+            "type_rate": 100,
         },
-        "神通":{
-            "type_rate":100,
+        "辅修功法": {
+            "type_rate": 200,
         },
-        "药材":{
-            "type_rate":1000,
+        "神通": {
+            "type_rate": 100,
+        },
+        "药材": {
+            "type_rate": 800,
         }
     }
     temp_dict = {}
