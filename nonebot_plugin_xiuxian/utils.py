@@ -3,6 +3,7 @@ from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
     GroupMessageEvent,
+    MessageSegment,
 )
 import math
 from base64 import b64encode
@@ -79,14 +80,25 @@ async def send_forward_msg(
         return {"type": "node", "data": {"name": name, "uin": uin, "content": msg}}
 
     messages = [to_json(msg) for msg in msgs]
-    if isinstance(event, GroupMessageEvent):
-        await bot.call_api(
-            "send_group_forward_msg", group_id=event.group_id, messages=messages
-        )
-    else:
-        await bot.call_api(
-            "send_private_forward_msg", user_id=event.user_id, messages=messages
-        )
+    try:
+        if isinstance(event, GroupMessageEvent):
+            await bot.call_api(
+                "send_group_forward_msg", group_id=event.group_id, messages=messages
+            )
+        else:
+            await bot.call_api(
+                "send_private_forward_msg", user_id=event.user_id, messages=messages
+            )
+    except Exception as e:  # 发送群消息失败
+        print(messages)
+        if isinstance(event, GroupMessageEvent):
+            msg = ""
+            for message in messages:
+                msg += message['data']['content']
+                msg += "========================\n"
+            pic = await get_msg_pic(msg)
+            await bot.send_group_msg(group_id=event.group_id, message=MessageSegment.image(pic))
+        #logger.error(f"推送失败：{e}")
 
 async def send_forward_msg_list(
     bot: Bot,
