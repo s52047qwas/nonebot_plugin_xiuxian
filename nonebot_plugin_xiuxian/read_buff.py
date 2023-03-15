@@ -144,21 +144,21 @@ def get_sub_info_msg(id):
     print(subbuff)
     submsg = ""
     if subbuff['buff_type'] == '1':
-        submsg = "提升攻击力" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%攻击力"
     if subbuff['buff_type'] == '2':
-        submsg = "提升暴击率" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%暴击率"
     if subbuff['buff_type'] == '3':
-        submsg = "提升暴击伤害" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%暴击伤害"
     if subbuff['buff_type'] == '4':
-        submsg = "提升每回合气血回复" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%每回合气血回复"
     if subbuff['buff_type'] == '5':
-        submsg = "提升每回合真元回复" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%每回合真元回复"
     if subbuff['buff_type'] == '6':
-        submsg = "提升气血吸取" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%气血吸取"
     if subbuff['buff_type'] == '7':
-        submsg = "提升真元吸取" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%真元吸取"
     if subbuff['buff_type'] == '8':
-        submsg = "提升反伤" + subbuff['buff']
+        submsg = "提升" + subbuff['buff'] + "%反伤"
 
     msg = f"{subbuff['name']}：{submsg}。"
     return subbuff, msg

@@ -908,54 +908,54 @@ def start_sub_buff_handle(player1_sub_open, subbuffdata1, user1_battle_buff_date
     if player1_sub_open:
         if subbuffdata1['buff_type'] == '1':
             user1_battle_buff_date.atk_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升攻击力:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%攻击力"
         if subbuffdata1['buff_type'] == '2':
             user1_battle_buff_date.crit_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升暴击率:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%暴击率"
         if subbuffdata1['buff_type'] == '3':
             user1_battle_buff_date.crit_dmg_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升暴击伤害:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%暴击伤害"
         if subbuffdata1['buff_type'] == '4':
             user1_battle_buff_date.health_restore_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升气血回复:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%气血回复"
         if subbuffdata1['buff_type'] == '5':
             user1_battle_buff_date.mana_restore_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升真元回复:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%真元回复"
         if subbuffdata1['buff_type'] == '6':
             user1_battle_buff_date.health_stolen_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升气血吸取:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%气血吸取"
         if subbuffdata1['buff_type'] == '7':
             user1_battle_buff_date.mana_stolen_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升真元吸取:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%真元吸取"
         if subbuffdata1['buff_type'] == '8':
             user1_battle_buff_date.thorns_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升反伤:" + subbuffdata1['buff']
+            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%反伤"
     msg2 = ""
     if player2_sub_open:
         if subbuffdata2['buff_type'] == '1':
             user2_battle_buff_date.atk_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升攻击力:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%攻击力"
         if subbuffdata2['buff_type'] == '2':
             user2_battle_buff_date.crit_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升暴击率:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%暴击率"
         if subbuffdata2['buff_type'] == '3':
             user2_battle_buff_date.crit_dmg_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升暴击伤害:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%暴击伤害"
         if subbuffdata2['buff_type'] == '4':
             user2_battle_buff_date.health_restore_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升气血回复:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%气血回复"
         if subbuffdata2['buff_type'] == '5':
             user2_battle_buff_date.mana_restore_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升真元回复:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%真元回复"
         if subbuffdata2['buff_type'] == '6':
             user2_battle_buff_date.health_stolen_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升气血吸取:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法" + subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%气血吸取"
         if subbuffdata2['buff_type'] == '7':
             user2_battle_buff_date.mana_stolen_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升真元吸取:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%真元吸取"
         if subbuffdata2['buff_type'] == '8':
             user2_battle_buff_date.thorns_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升反伤:" + subbuffdata2['buff']
+            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%反伤"
     msg = msg1 + msg2
     return user1_battle_buff_date, user2_battle_buff_date, msg
 
@@ -985,7 +985,7 @@ def after_atk_sub_buff_handle(player1_sub_open, player1, user1_main_buff_data, s
             msg = "吸取真元:" + str(mana_stolen)
         if subbuffdata1['buff_type'] == '8':
             player2['气血'] = player2['气血'] * int(1 - int(subbuffdata1['buff']) / 100)
-            msg = "缠绕消耗血量:" + str(int(player2['气血'] * int(subbuffdata1['buff']) / 100))
+            msg = "荆棘消耗血量:" + str(int(player2['气血'] * int(subbuffdata1['buff']) / 100))
     return player1, player2, msg
 
 

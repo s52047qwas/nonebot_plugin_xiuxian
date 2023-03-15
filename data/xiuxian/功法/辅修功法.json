@@ -2,31 +2,31 @@
   "10001": {
     "name": "饮血术",
     "buff_type": "6",
-    "buff": "10",
+    "buff": "5",
     "desc": "",
-    "rank": "人阶上品",
-    "level": "45"
+    "rank": "人阶下品",
+    "level": "50"
   },
   "10002": {
     "name": "夺灵诀",
     "buff_type": "7",
-    "buff": "10",
+    "buff": "5",
     "desc": "",
-    "rank": "人阶上品",
-    "level": "45"
+    "rank": "人阶下品",
+    "level": "50"
   },
   "10003": {
     "name": "五府锻元诀",
     "buff_type": "2",
     "buff": "15",
     "desc": "",
-    "rank": "人阶上品",
-    "level": "45"
+    "rank": "人阶下品",
+    "level": "50"
   },
   "10101": {
     "name": "长生诀",
     "buff_type": "4",
-    "buff": "10",
+    "buff": "3",
     "desc": "",
     "rank": "黄阶下品",
     "level": "42"
@@ -37,44 +37,68 @@
     "buff": "15",
     "desc": "",
     "rank": "黄阶下品",
-    "level": "50"
+    "level": "42"
+  },
+  "10201": {
+    "name": "方圆",
+    "buff_type": "4",
+    "buff": "4",
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "33"
   },
   "10202": {
     "name": "敛息术",
     "buff_type": "5",
-    "buff": "10",
+    "buff": "4",
     "desc": "",
-    "rank": "玄阶上品",
-    "level": "33"
+    "rank": "玄阶下品",
+    "level": "36"
+  },
+  "10203": {
+    "name": "飞星剑诀",
+    "buff_type": "3",
+    "buff": "30",
+    "desc": "",
+    "rank": "玄阶下品",
+    "level": "36"
   },
   "10311": {
-    "name": "长春通玄录",
-    "buff_type": "4",
-    "buff": "2",
+    "name": "静气诀",
+    "buff_type": "5",
+    "buff": "5",
     "desc": "",
     "rank": "地阶上品",
     "level": "27"
   },
-  "10311": {
-    "name": "少阳诀",
+  "10312": {
+    "name": "生生造化诀",
     "buff_type": "7",
     "buff": "8",
     "desc": "",
     "rank": "地阶上品",
     "level": "27"
   },
-  "10321": {
-    "name": "紫霄功",
-    "buff_type": "7",
-    "buff": "10",
+  "10313": {
+    "name": "长春通玄录",
+    "buff_type": "4",
+    "buff": "5",
     "desc": "",
     "rank": "地阶上品",
     "level": "27"
   },
-  "10311": {
-    "name": "静气诀",
-    "buff_type": "5",
-    "buff": "5",
+  "10314": {
+    "name": "少阳诀",
+    "buff_type": "6",
+    "buff": "9",
+    "desc": "",
+    "rank": "地阶上品",
+    "level": "27"
+  },
+  "10315": {
+    "name": "紫霄功",
+    "buff_type": "7",
+    "buff": "10",
     "desc": "",
     "rank": "地阶上品",
     "level": "27"
@@ -87,10 +111,42 @@
     "rank": "天阶下品",
     "level": "24"
   },
+  "10402": {
+    "name": "金刚移山诀",
+    "buff_type": "2",
+    "buff": "100",
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "10403": {
+    "name": "太乙剑诀",
+    "buff_type": "3",
+    "buff": "100",
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "10403": {
+    "name": "玄清天衍录",
+    "buff_type": "5",
+    "buff": "7",
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
+  "10408": {
+    "name": "九纹轮回诀",
+    "buff_type": "8",
+    "buff": "5",
+    "desc": "",
+    "rank": "天阶下品",
+    "level": "24"
+  },
   "10411": {
     "name": "真龙九变",
     "buff_type": "1",
-    "buff": "100",
+    "buff": "60",
     "desc": "",
     "rank": "天阶上品",
     "level": "21"
