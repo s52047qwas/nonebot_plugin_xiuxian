@@ -594,6 +594,22 @@ class XiuxianDateManage:
 
         return mess
 
+    def get_exp_rank(self, user_id):
+        """修为排行"""
+        sql = f"select rank from(select user_id,exp,dense_rank() over (ORDER BY exp desc) as 'rank' FROM user_xiuxian) where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        return result
+
+    def get_stone_rank(self, user_id):
+        """灵石排行"""
+        sql = f"select rank from(select user_id,stone,dense_rank() over (ORDER BY stone desc) as 'rank' FROM user_xiuxian) where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        return result
+      
     def stone_top(self):
         sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY stone DESC LIMIT 10"
         cur = self.conn.cursor()
