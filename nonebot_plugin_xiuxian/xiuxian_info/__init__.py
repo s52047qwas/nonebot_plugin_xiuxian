@@ -23,8 +23,21 @@ from ..read_buff import UserBuffDate
 
 config = get_config()
 
-
-
+def format_number(number: int) -> str:
+    if number >= 1000000000000:
+        return str(round(number / 1000000000000, 1)) + "万亿"
+    elif number >= 100000000:
+        return str(round(number / 100000000, 1)) + "亿"
+    elif number >= 10000:
+        return str(round(number / 10000, 1)) + "万"
+    elif number <= -1000000000000:
+        return str(round(number / 1000000000000, 1)) + "万亿"
+    elif number <= -100000000:
+        return str(round(number / 100000000, 1)) + "亿"
+    elif number <= -10000:
+        return str(round(number / 10000, 1)) + "万"
+    else:
+        return str(number)
 
 xiuxian_message = on_command("我的修仙信息", aliases={"我的存档"}, priority=5)
 
