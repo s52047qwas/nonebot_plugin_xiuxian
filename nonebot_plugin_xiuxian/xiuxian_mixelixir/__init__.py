@@ -203,7 +203,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') #str
         timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600, 2)
         if timedeff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) :
-            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
+            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(fanil_rank=USERRANK[user_info.level], item_type = ['药材'])
             num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级']
             msg = ''
             if yaocai_id_list == []:

@@ -98,7 +98,7 @@ class Items:
     def get_random_id_list_by_rank_and_item_type(
         self, 
         fanil_rank : int,
-        work_award: int,
+        work_rank: int = 0,
         item_type : List = None,
         ):
         """
@@ -110,7 +110,7 @@ class Items:
         l_id = []
         for k, v in self.items.items():
             if item_type != None:
-                if v['item_type'] in item_type  and int(v['rank']) >= fanil_rank and int(v['rank']) - max(work_award, fanil_rank) <= 6:
+                if v['item_type'] in item_type  and int(v['rank']) >= fanil_rank and int(v['rank']) - max(work_rank, fanil_rank) <= 6:
                     l_id.append(k)
                 else:
                     continue

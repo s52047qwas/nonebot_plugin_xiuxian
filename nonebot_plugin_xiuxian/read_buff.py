@@ -158,7 +158,7 @@ def get_sub_info_msg(id):
     if subbuff['buff_type'] == '7':
         submsg = "提升" + subbuff['buff'] + "%真元吸取"
     if subbuff['buff_type'] == '8':
-        submsg = "提升" + subbuff['buff'] + "%反伤"
+        submsg = "给对手造成" + subbuff['buff'] + "%中毒"
 
     msg = f"{subbuff['name']}：{submsg}。"
     return subbuff, msg

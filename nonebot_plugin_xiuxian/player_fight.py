@@ -253,6 +253,10 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
             else:
                 play_list.append(get_msg_dict(player1, player1_init_hp, f"☆------{player1['道号']}动弹不得！------☆"))
 
+        ## 自己回合结束 处理
+        player1, boss, msg = after_atk_sub_buff_handle(player1_sub_open,player1, user1_main_buff_data, user1_sub_buff_date, player2_health_temp-player2['气血'], player2)
+        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
+
         if player2['气血'] <= 0:  # 玩家2气血小于0，结算
             play_list.append({"type": "node",
                               "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
@@ -266,11 +270,6 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
         if player1_turn_cost < 0:  # 休息为负数，如果休息，则跳过回合，正常是0
             user1_turn_skip = False
             player1_turn_cost += 1
-
-
-        ## 自己回合结束 处理
-        player1, boss, msg = after_atk_sub_buff_handle(player1_sub_open,player1, user1_main_buff_data, user1_sub_buff_date, player2_health_temp-player2['气血'], player2)
-        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
 
         player1_health_temp = player1['气血']
         if player2_skil_open:  # 有技能
@@ -451,6 +450,11 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
             else:
                 play_list.append(get_msg_dict(player2, player2_init_hp, f"☆------{player2['道号']}动弹不得！------☆"))
 
+        ## 对方回合结束 处理
+        player2, player1, msg = after_atk_sub_buff_handle(player2_sub_open,player2, user2_main_buff_data, user2_sub_buff_date,
+                                                       player1_health_temp - player1['气血'], player1)
+        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
+
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
             play_list.append({"type": "node",
                               "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player2['道号'])}})
@@ -461,10 +465,6 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                                       int(player2['真元'] / (1 + user2_mp_buff)))
             break
 
-        ## 对方回合结束 处理
-        player2, player1, msg = after_atk_sub_buff_handle(player2_sub_open,player2, user2_main_buff_data, user2_sub_buff_date,
-                                                       player1_health_temp - player1['气血'], player1)
-        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
 
         if player2_turn_cost < 0:  # 休息为负数，如果休息，则跳过回合，正常是0
             user2_turn_skip = False
@@ -728,6 +728,10 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
             sh += player1_sh
 
+        ## 自己回合结束 处理
+        player1,boss,msg = after_atk_sub_buff_handle(player1_sub_open,player1,user1_main_buff_data,user1_sub_buff_date,player2_health_temp - boss['气血'],boss)
+        play_list.append(get_msg_dict(player1, player_init_hp, msg))
+
         if boss['气血'] <= 0:  # boss气血小于0，结算
             play_list.append({"type": "node",
                               "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
@@ -743,9 +747,6 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             user1_turn_skip = False
             player1_turn_cost += 1
 
-        ## 自己回合结束 处理
-        player1,boss,msg = after_atk_sub_buff_handle(player1_sub_open,player1,user1_main_buff_data,user1_sub_buff_date,player2_health_temp - boss['气血'],boss)
-        play_list.append(get_msg_dict(player1, player_init_hp, msg))
 
         # 没有技能的derB
         if boss_turn_skip:
@@ -929,7 +930,7 @@ def start_sub_buff_handle(player1_sub_open, subbuffdata1, user1_battle_buff_date
             msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%真元吸取"
         if subbuffdata1['buff_type'] == '8':
             user1_battle_buff_date.thorns_buff = subbuffdata1['buff']
-            msg1 = "使用功法"+subbuffdata1['name'] + ",提升" + subbuffdata1['buff'] + "%反伤"
+            msg1 = "使用功法"+subbuffdata1['name'] + ",给对手造成" + subbuffdata1['buff'] + "%中毒"
     msg2 = ""
     if player2_sub_open:
         if subbuffdata2['buff_type'] == '1':
@@ -955,7 +956,7 @@ def start_sub_buff_handle(player1_sub_open, subbuffdata1, user1_battle_buff_date
             msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%真元吸取"
         if subbuffdata2['buff_type'] == '8':
             user2_battle_buff_date.thorns_buff = subbuffdata2['buff']
-            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",提升" + subbuffdata2['buff'] + "%反伤"
+            msg2 = "。对手使用功法"+subbuffdata2['name'] + ",给对手造成" + subbuffdata2['buff'] + "%中毒"
     msg = msg1 + msg2
     return user1_battle_buff_date, user2_battle_buff_date, msg
 
@@ -984,8 +985,8 @@ def after_atk_sub_buff_handle(player1_sub_open, player1, user1_main_buff_data, s
             player1['真元'] = player1['真元'] + mana_stolen
             msg = "吸取真元:" + str(mana_stolen)
         if subbuffdata1['buff_type'] == '8':
-            player2['气血'] = player2['气血'] * int(1 - int(subbuffdata1['buff']) / 100)
-            msg = "荆棘消耗血量:" + str(int(player2['气血'] * int(subbuffdata1['buff']) / 100))
+            player2['气血'] = int(player2['气血'] * (1 - int(subbuffdata1['buff']) / 100))
+            msg = "中毒消耗血量:" + str(int(player2['气血'] * int(subbuffdata1['buff']) / 100))
     return player1, player2, msg
 
 
