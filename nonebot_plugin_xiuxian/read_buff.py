@@ -16,6 +16,7 @@ class BuffJsonDate:
     def __init__(self):
         """json文件路径"""
         self.mainbuff_jsonpath = SKILLPATHH / "主功法.json"
+        self.subbuff_jsonpath = SKILLPATHH / "辅修功法.json"
         self.secbuff_jsonpath = SKILLPATHH / "神通.json"
         self.gfpeizhi_jsonpath = SKILLPATHH / "功法概率设置.json"
         self.weapon_jsonpath = WEAPONPATH / "法器.json"
@@ -24,6 +25,9 @@ class BuffJsonDate:
     def get_main_buff(self, id):
         return readf(self.mainbuff_jsonpath)[str(id)]
     
+    def get_sub_buff(self, id):
+        return readf(self.subbuff_jsonpath)[str(id)]
+
     def get_sec_buff(self, id):
         return readf(self.secbuff_jsonpath)[str(id)]
     
@@ -52,20 +56,30 @@ class UserBuffDate:
         self.BuffInfo = get_user_buff(self.user_id)
         
     
-    
+    # 主修功法
     def get_user_main_buff_data(self):
         try:
             main_buff_data = items.get_data_by_item_id(self.BuffInfo.main_buff)
         except:
             main_buff_data = None
         return main_buff_data
-    
+
+    # 辅修功法
+    def get_user_sub_buff_data(self):
+        try:
+            sub_buff_data = items.get_data_by_item_id(self.BuffInfo.sub_buff)
+        except:
+            sub_buff_data = None
+        return sub_buff_data
+
+    # 神通
     def get_user_sec_buff_data(self):
         try:
             sec_buff_data = items.get_data_by_item_id(self.BuffInfo.sec_buff)
         except:
             sec_buff_data = None
         return sec_buff_data
+
 
     def get_user_weapon_data(self):
         try:
@@ -125,6 +139,29 @@ def get_main_info_msg(id):
     msg = f"{mainbuff['name']}：{hpmsg},{mpmsg},{atkmsg},{ratemsg}。"
     return mainbuff, msg
 
+def get_sub_info_msg(id):
+    subbuff = items.get_data_by_item_id(id)
+    print(subbuff)
+    submsg = ""
+    if subbuff['buff_type'] == '1':
+        submsg = "提升" + subbuff['buff'] + "%攻击力"
+    if subbuff['buff_type'] == '2':
+        submsg = "提升" + subbuff['buff'] + "%暴击率"
+    if subbuff['buff_type'] == '3':
+        submsg = "提升" + subbuff['buff'] + "%暴击伤害"
+    if subbuff['buff_type'] == '4':
+        submsg = "提升" + subbuff['buff'] + "%每回合气血回复"
+    if subbuff['buff_type'] == '5':
+        submsg = "提升" + subbuff['buff'] + "%每回合真元回复"
+    if subbuff['buff_type'] == '6':
+        submsg = "提升" + subbuff['buff'] + "%气血吸取"
+    if subbuff['buff_type'] == '7':
+        submsg = "提升" + subbuff['buff'] + "%真元吸取"
+    if subbuff['buff_type'] == '8':
+        submsg = "给对手造成" + subbuff['buff'] + "%中毒"
+
+    msg = f"{subbuff['name']}：{submsg}。"
+    return subbuff, msg
 
 def get_user_buff(user_id):
     BuffInfo = XiuxianDateManage().get_user_buff_info(user_id)
@@ -144,6 +181,7 @@ def get_sec_msg(secbuffdata):
     if secbuffdata == None:
         msg = "无"
         return msg
+    print(secbuffdata)
     hpmsg = f"，消耗当前血量{int(secbuffdata['hpcost'] * 100)}%" if secbuffdata['hpcost'] != 0 else ''
     mpmsg = f"，消耗真元{int(secbuffdata['mpcost'] * 100)}%" if secbuffdata['mpcost'] != 0 else ''
 

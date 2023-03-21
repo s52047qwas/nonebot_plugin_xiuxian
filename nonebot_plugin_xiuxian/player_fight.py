@@ -1,8 +1,7 @@
-import datetime
-import json
 import random
-from .xiuxian2_handle import XiuxianDateManage
+
 from .read_buff import UserBuffDate
+from .xiuxian2_handle import XiuxianDateManage
 
 
 def Player_fight(player1: dict, player2: dict, type_in, bot_id):
@@ -32,6 +31,17 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
         user2_skill_date = user2_buff_date.get_user_sec_buff_data()
         player2_skil_open = True
 
+    player1_sub_open = False
+    player2_sub_open = False
+    user1_sub_buff_date = {}
+    user2_sub_buff_date = {}
+    if user1_buff_date.get_user_sub_buff_data() != None:
+        user1_sub_buff_date = user1_buff_date.get_user_sub_buff_data()
+        player1_sub_open = True
+    if user2_buff_date.get_user_sub_buff_data() != None:
+        user2_sub_buff_date = user2_buff_date.get_user_sub_buff_data()
+        player2_sub_open = True
+
     play_list = []
     suc = None
     isSql = False
@@ -52,47 +62,63 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
     user2_skill_sh = 0
     user1_buff_turn = True
     user2_buff_turn = True
+
+    user1_battle_buff_date = UserBattleBuffDate(player1['user_id'])  # 1号的战斗buff信息
+    user2_battle_buff_date = UserBattleBuffDate(player2['user_id'])  # 2号的战斗buff信息
+
     while True:
         msg1 = "{}发起攻击，造成了{}伤害\n"
         msg2 = "{}发起攻击，造成了{}伤害\n"
+
+        user1_battle_buff_date, user2_battle_buff_date, msg = start_sub_buff_handle(player1_sub_open, user1_sub_buff_date, user1_battle_buff_date, player2_sub_open, user2_sub_buff_date , user2_battle_buff_date)
+        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
+
+        player2_health_temp = player2['气血']
         if player1_skil_open:  # 是否开启技能
             if user1_turn_skip:  # 无需跳过回合
                 play_list.append(get_msg_dict(player1, player1_init_hp, f"☆------{player1['道号']}的回合------☆"))
-                user1_hp_cost, user1_mp_cost, user1_skill_type, skill_rate = get_skill_hp_mp_data(player1, user1_skill_date)
+                user1_hp_cost, user1_mp_cost, user1_skill_type, skill_rate = get_skill_hp_mp_data(player1,
+                                                                                                  user1_skill_date)
                 if player1_turn_cost == 0:  # 没有持续性技能生效
                     player1_js = player1_f_js  # 没有持续性技能生效,减伤恢复
                     if isEnableUserSikll(player1, user1_hp_cost, user1_mp_cost, player1_turn_cost,
                                          skill_rate):  # 满足技能要求，#此处为技能的第一次释放
-                        skill_msg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date)
+                        skill_msg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date,
+                                                                                         user1_battle_buff_date)
                         if user1_skill_type == 1:  # 直接伤害类技能
                             play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
                             player1 = calculate_skill_cost(player1, user1_hp_cost, user1_mp_cost)
                             player2['气血'] = player2['气血'] - int(user1_skill_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
 
                         elif user1_skill_type == 2:  # 持续性伤害技能
                             play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
                             player1 = calculate_skill_cost(player1, user1_hp_cost, user1_mp_cost)
                             player2['气血'] = player2['气血'] - int(user1_skill_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
 
                         elif user1_skill_type == 3:  # buff类技能
                             user1_buff_type = user1_skill_date['bufftype']
                             if user1_buff_type == 1:  # 攻击类buff
-                                isCrit, player1_sh = get_turnatk(player1, user1_skill_sh)  # 判定是否暴击
+                                isCrit, player1_sh = get_turnatk(player1, user1_skill_sh,
+                                                                 user1_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg1 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
                                     msg1 = "{}发起攻击，造成了{}伤害\n"
                                 player1 = calculate_skill_cost(player1, user1_hp_cost, user1_mp_cost)
                                 play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
-                                play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                                play_list.append(
+                                    get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                                 player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                                play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                                play_list.append(get_msg_dict(player1, player1_init_hp,
+                                                              f"{player2['道号']}剩余血量{player2['气血']}"))
 
 
                             elif user1_buff_type == 2:  # 减伤类buff,需要在player2处判断
-                                isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                                isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg1 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
@@ -100,9 +126,11 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
 
                                 player1 = calculate_skill_cost(player1, user1_hp_cost, user1_mp_cost)
                                 play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
-                                play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                                play_list.append(
+                                    get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                                 player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                                play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                                play_list.append(get_msg_dict(player1, player1_init_hp,
+                                                              f"{player2['道号']}剩余血量{player2['气血']}"))
                                 player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
 
                         elif user1_skill_type == 4:  # 封印类技能
@@ -114,37 +142,41 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                 user2_buff_turn = False
 
                     else:  # 没放技能，打一拳
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg1 = "{}发起攻击，造成了{}伤害\n"
-                        play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                         player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                        play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
 
 
                 else:  # 持续性技能判断,不是第一次
                     if user1_skill_type == 2:  # 持续性伤害技能
                         player1_turn_cost = player1_turn_cost - 1
                         skill_msg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
-                                                            player1_turn_cost)
+                                                             player1_turn_cost)
                         play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg1 = "{}发起攻击，造成了{}伤害\n"
-                        play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                         # 玩家1的伤害 * 玩家2的减伤,持续性伤害不影响普攻
                         player2['气血'] = player2['气血'] - int((user1_skill_sh + player1_sh) * player2_js)
-                        play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
 
 
                     elif user1_skill_type == 3:  # buff类技能
                         user1_buff_type = user1_skill_date['bufftype']
                         if user1_buff_type == 1:  # 攻击类buff
-                            isCrit, player1_sh = get_turnatk(player1, user1_skill_sh)  # 判定是否暴击
+                            isCrit, player1_sh = get_turnatk(player1, user1_skill_sh,user1_battle_buff_date)  # 判定是否暴击
 
                             if isCrit:
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
@@ -152,40 +184,48 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                 msg1 = "{}发起攻击，造成了{}伤害\n"
 
                             player1_turn_cost = player1_turn_cost - 1
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{user1_skill_date['name']}增伤剩余:{player1_turn_cost}回合"))
-                            play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                            play_list.append(get_msg_dict(player1, player1_init_hp,
+                                                          f"{user1_skill_date['name']}增伤剩余:{player1_turn_cost}回合"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                             player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
 
 
                         elif user1_buff_type == 2:  # 减伤类buff,需要在player2处判断
-                            isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                            isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                             if isCrit:
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
                             else:
                                 msg1 = "{}发起攻击，造成了{}伤害\n"
 
                             player1_turn_cost = player1_turn_cost - 1
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{user1_skill_date['name']}减伤剩余{player1_turn_cost}回合"))
-                            play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                            play_list.append(get_msg_dict(player1, player1_init_hp,
+                                                          f"{user1_skill_date['name']}减伤剩余{player1_turn_cost}回合"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
                             player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                            play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
                             player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
 
                     elif user1_skill_type == 4:  # 封印类技能
                         player1_turn_cost = player1_turn_cost - 1
                         skill_msg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
-                                                            player1_turn_cost)
+                                                             player1_turn_cost)
                         play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg1 = "{}发起攻击，造成了{}伤害\n"
-                        play_list.append(get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, msg1.format(player1['道号'], player1_sh)))
 
                         player2['气血'] = player2['气血'] - int(player1_sh * player2_js)  # 玩家1的伤害 * 玩家2的减伤
-                        play_list.append(get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player1, player1_init_hp, f"{player2['道号']}剩余血量{player2['气血']}"))
                         if player1_turn_cost == 0:  # 封印时间到
                             user2_turn_skip = True
                             user2_buff_turn = True
@@ -201,7 +241,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
         else:  # 没有技能的derB
             if user1_turn_skip:
                 play_list.append(get_msg_dict(player1, player1_init_hp, f"☆------{player1['道号']}的回合------☆"))
-                isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                 if isCrit:
                     msg1 = "{}发起会心一击，造成了{}伤害\n"
                 else:
@@ -213,8 +253,13 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
             else:
                 play_list.append(get_msg_dict(player1, player1_init_hp, f"☆------{player1['道号']}动弹不得！------☆"))
 
+        ## 自己回合结束 处理
+        player1, boss, msg = after_atk_sub_buff_handle(player1_sub_open,player1, user1_main_buff_data, user1_sub_buff_date, player2_health_temp-player2['气血'], player2)
+        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
+
         if player2['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
+            play_list.append({"type": "node",
+                              "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
             suc = f"{player1['道号']}"
             if isSql:
                 XiuxianDateManage().update_user_hp_mp(player1['user_id'], int(player1['气血'] / (1 + user1_hp_buff)),
@@ -226,54 +271,62 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
             user1_turn_skip = False
             player1_turn_cost += 1
 
+        player1_health_temp = player1['气血']
         if player2_skil_open:  # 有技能
             if user2_turn_skip:  # 玩家2无需跳过回合
                 play_list.append(get_msg_dict(player2, player2_init_hp, f"☆------{player2['道号']}的回合------☆"))
-                user2_hp_cost, user2_mp_cost, user2_skill_type, skill_rate = get_skill_hp_mp_data(player2, user2_skill_date)
+                user2_hp_cost, user2_mp_cost, user2_skill_type, skill_rate = get_skill_hp_mp_data(player2,
+                                                                                                  user2_skill_date)
                 if player2_turn_cost == 0:  # 没有持续性技能生效
                     player2_js = player2_f_js
                     if isEnableUserSikll(player2, user2_hp_cost, user2_mp_cost, player2_turn_cost,
                                          skill_rate):  # 满足技能要求，#此处为技能的第一次释放
-                        skill_msg, user2_skill_sh, player2_turn_cost = get_skill_sh_data(player2, user2_skill_date)
+                        skill_msg, user2_skill_sh, player2_turn_cost = get_skill_sh_data(player2, user2_skill_date, user2_battle_buff_date)
                         if user2_skill_type == 1:  # 直接伤害类技能
                             play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
                             player1['气血'] = player1['气血'] - int(user2_skill_sh * player1_js)  # 玩家2的伤害 * 玩家1的减伤
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
                             player2 = calculate_skill_cost(player2, user2_hp_cost, user2_mp_cost)
 
 
                         elif user2_skill_type == 2:  # 持续性伤害技能
                             play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
                             player1['气血'] = player1['气血'] - int(user2_skill_sh * player1_js)  # 玩家2的伤害 * 玩家1的减伤
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
                             player2 = calculate_skill_cost(player2, user2_hp_cost, user2_mp_cost)
 
 
                         elif user2_skill_type == 3:  # buff类技能
                             user2_buff_type = user2_skill_date['bufftype']
                             if user2_buff_type == 1:  # 攻击类buff
-                                isCrit, player2_sh = get_turnatk(player2, user2_skill_sh)  # 判定是否暴击
+                                isCrit, player2_sh = get_turnatk(player2, user2_skill_sh, user2_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg2 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
                                     msg2 = "{}发起攻击，造成了{}伤害\n"
 
                                 play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
-                                play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                                play_list.append(
+                                    get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                                 player1['气血'] = player1['气血'] - int(player2_sh * player1_js)
-                                play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                                play_list.append(get_msg_dict(player2, player2_init_hp,
+                                                              f"{player1['道号']}剩余血量{player1['气血']}"))
                                 player2 = calculate_skill_cost(player2, user2_hp_cost, user2_mp_cost)
 
                             elif user2_buff_type == 2:  # 减伤类buff,需要在player2处判断
-                                isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                                isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg2 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
                                     msg2 = "{}发起攻击，造成了{}伤害\n"
                                 play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
-                                play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                                play_list.append(
+                                    get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                                 player1['气血'] = player1['气血'] - int(player2_sh * player1_js)
-                                play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                                play_list.append(get_msg_dict(player2, player2_init_hp,
+                                                              f"{player1['道号']}剩余血量{player1['气血']}"))
                                 player2_js = player2_f_js - user2_skill_sh if player2_f_js - user2_skill_sh > 0.1 else 0.1
                                 player2 = calculate_skill_cost(player2, user2_hp_cost, user2_mp_cost)
 
@@ -287,78 +340,90 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                 user1_buff_turn = False
 
                     else:  # 没放技能
-                        isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                        isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg2 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg2 = "{}发起攻击，造成了{}伤害\n"
-                        play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                         player1['气血'] = player1['气血'] - int(player2_sh * player1_js)  # 玩家2的伤害 * 玩家1的减伤
-                        play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
 
                 else:  # 持续性技能判断,不是第一次
                     if user2_skill_type == 2:  # 持续性伤害技能
                         player2_turn_cost = player2_turn_cost - 1
                         skill_msg = get_persistent_skill_msg(player2['道号'], user2_skill_date['name'], user2_skill_sh,
-                                                            player2_turn_cost)
+                                                             player2_turn_cost)
                         play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
 
-                        isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                        isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg2 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg2 = "{}发起攻击，造成了{}伤害\n"
 
-                        play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                         player1['气血'] = player1['气血'] - int((user2_skill_sh + player2_sh) * player1_js)
-                        play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
 
                     elif user2_skill_type == 3:  # buff类技能
                         user2_buff_type = user2_skill_date['bufftype']
                         if user2_buff_type == 1:  # 攻击类buff
-                            isCrit, player2_sh = get_turnatk(player2, user2_skill_sh)  # 判定是否暴击
+                            isCrit, player2_sh = get_turnatk(player2, user2_skill_sh, user2_battle_buff_date)  # 判定是否暴击
 
                             if isCrit:
                                 msg2 = "{}发起会心一击，造成了{}伤害\n"
                             else:
                                 msg2 = "{}发起攻击，造成了{}伤害\n"
                             player2_turn_cost = player2_turn_cost - 1
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{user2_skill_date['name']}增伤剩余{player2_turn_cost}回合"))
-                            play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                            play_list.append(get_msg_dict(player2, player2_init_hp,
+                                                          f"{user2_skill_date['name']}增伤剩余{player2_turn_cost}回合"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                             player1['气血'] = player1['气血'] - int(player2_sh * player1_js)  # 玩家2的伤害 * 玩家1的减伤
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
                         elif user2_buff_type == 2:  # 减伤类buff,需要在player2处判断
-                            isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                            isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                             if isCrit:
                                 msg2 = "{}发起会心一击，造成了{}伤害\n"
                             else:
                                 msg2 = "{}发起攻击，造成了{}伤害\n"
 
                             player2_turn_cost = player2_turn_cost - 1
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{user2_skill_date['name']}减伤剩余{player2_turn_cost}回合！"))
-                            play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                            play_list.append(get_msg_dict(player2, player2_init_hp,
+                                                          f"{user2_skill_date['name']}减伤剩余{player2_turn_cost}回合！"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                             player1['气血'] = player1['气血'] - int(player2_sh * player1_js)  # 玩家1的伤害 * 玩家2的减伤
-                            play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                            play_list.append(
+                                get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
-                            player2_js = player2_f_js - user2_skill_sh  if player2_f_js - user2_skill_sh > 0.1 else 0.1
+                            player2_js = player2_f_js - user2_skill_sh if player2_f_js - user2_skill_sh > 0.1 else 0.1
 
                     elif user2_skill_type == 4:  # 封印类技能
                         player2_turn_cost = player2_turn_cost - 1
                         skill_msg = get_persistent_skill_msg(player2['道号'], user2_skill_date['name'], user2_skill_sh,
-                                                            player2_turn_cost)
+                                                             player2_turn_cost)
                         play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
 
-                        isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                        isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg2 = "{}发起会心一击，造成了{}伤害\n"
                         else:
                             msg2 = "{}发起攻击，造成了{}伤害\n"
-                        play_list.append(get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, msg2.format(player2['道号'], player2_sh)))
                         player1['气血'] = player1['气血'] - int(player2_sh * player1_js)  # 玩家1的伤害 * 玩家2的减伤
-                        play_list.append(get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
+                        play_list.append(
+                            get_msg_dict(player2, player2_init_hp, f"{player1['道号']}剩余血量{player1['气血']}"))
 
                         if player2_turn_cost == 0:  # 封印时间到
                             user1_turn_skip = True
@@ -373,7 +438,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
         else:  # 没有技能的derB
             if user2_turn_skip:
                 play_list.append(get_msg_dict(player2, player2_init_hp, f"☆------{player2['道号']}的回合------☆"))
-                isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
+                isCrit, player2_sh = get_turnatk(player2, 0, user2_battle_buff_date)  # 判定是否暴击
                 if isCrit:
                     msg2 = "{}发起会心一击，造成了{}伤害\n"
                 else:
@@ -385,8 +450,14 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
             else:
                 play_list.append(get_msg_dict(player2, player2_init_hp, f"☆------{player2['道号']}动弹不得！------☆"))
 
+        ## 对方回合结束 处理
+        player2, player1, msg = after_atk_sub_buff_handle(player2_sub_open,player2, user2_main_buff_data, user2_sub_buff_date,
+                                                       player1_health_temp - player1['气血'], player1)
+        play_list.append(get_msg_dict(player1, player1_init_hp, msg))
+
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player2['道号'])}})
+            play_list.append({"type": "node",
+                              "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player2['道号'])}})
             suc = f"{player2['道号']}"
             if isSql:
                 XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, int(player1['真元'] / (1 + user1_mp_buff)))
@@ -394,12 +465,14 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                                       int(player2['真元'] / (1 + user2_mp_buff)))
             break
 
+
         if player2_turn_cost < 0:  # 休息为负数，如果休息，则跳过回合，正常是0
             user2_turn_skip = False
             player2_turn_cost += 1
 
         if user1_turn_skip == False and user2_turn_skip == False:
-            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "双方都动弹不得！"}})
+            play_list.append(
+                {"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "双方都动弹不得！"}})
             user1_turn_skip = True
             user2_turn_skip = True
 
@@ -430,6 +503,13 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
         user1_skill_date = user1_buff_date.get_user_sec_buff_data()
         player1_skil_open = True
 
+    player1_sub_open = False
+    user1_sub_buff_date = {}
+    if user1_buff_date.get_user_sub_buff_data() != None:
+        user1_sub_buff_date = user1_buff_date.get_user_sub_buff_data()
+        player1_sub_open = True
+
+
     play_list = []
     player_init_hp = player1['气血']
     suc = None
@@ -454,9 +534,16 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
     boss_js = boss['减伤']
     boss['会心'] = 30
 
+    user1_battle_buff_date = UserBattleBuffDate(player1['user_id'])  # 1号的战斗buff信息
+
     while True:
         msg1 = "{}发起攻击，造成了{}伤害\n"
         msg2 = "{}发起攻击，造成了{}伤害\n"
+
+        user1_battle_buff_date, user2_battle_buff_date, msg = start_sub_buff_handle(player1_sub_open,user1_sub_buff_date,user1_battle_buff_date,False,{},{})
+        play_list.append(get_msg_dict(player1, player_init_hp, msg))
+
+        player2_health_temp = boss['气血']
         if player1_skil_open:  # 是否开启技能
             if user1_turn_skip:  # 无需跳过回合
                 turn_start_msg = f"☆------{player1['道号']}的回合------☆"
@@ -466,7 +553,8 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                     player1_js = player1_f_js  # 没有持续性技能生效,减伤恢复
                     if isEnableUserSikll(player1, user1hpconst, user1mpcost, player1_turn_cost,
                                          skillrate):  # 满足技能要求，#此处为技能的第一次释放
-                        skillmsg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date)
+                        skillmsg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date,
+                                                                                        user1_battle_buff_date)
                         if user1skill_type == 1:  # 直接伤害类技能
                             play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
                             player1 = calculate_skill_cost(player1, user1hpconst, user1mpcost)
@@ -487,7 +575,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         elif user1skill_type == 3:  # buff类技能
                             user1buff_type = user1_skill_date['bufftype']
                             if user1buff_type == 1:  # 攻击类buff
-                                isCrit, player1_sh = get_turnatk(player1, user1_skill_sh)  # 判定是否暴击
+                                isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg1 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
@@ -503,7 +591,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
 
 
                             elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
-                                isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                                isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                                 if isCrit:
                                     msg1 = "{}发起会心一击，造成了{}伤害\n"
                                 else:
@@ -528,7 +616,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                                 bossbuffturn = False
 
                     else:  # 没放技能，打一拳
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
@@ -547,7 +635,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         skillmsg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
                                                             player1_turn_cost)
                         play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
@@ -562,14 +650,15 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                     elif user1skill_type == 3:  # buff类技能
                         user1buff_type = user1_skill_date['bufftype']
                         if user1buff_type == 1:  # 攻击类buff
-                            isCrit, player1_sh = get_turnatk(player1, user1_skill_sh)  # 判定是否暴击
+                            isCrit, player1_sh = get_turnatk(player1, user1_skill_sh,user1_battle_buff_date)  # 判定是否暴击
 
                             if isCrit:
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
                             else:
                                 msg1 = "{}发起攻击，造成了{}伤害\n"
                             player1_turn_cost = player1_turn_cost - 1
-                            play_list.append(get_msg_dict(player1, player_init_hp, f"{user1_skill_date['name']}增伤剩余:{player1_turn_cost}回合"))
+                            play_list.append(get_msg_dict(player1, player_init_hp,
+                                                          f"{user1_skill_date['name']}增伤剩余:{player1_turn_cost}回合"))
                             player1_atk_msg = msg1.format(player1['道号'], player1_sh)
                             play_list.append(get_msg_dict(player1, player_init_hp, player1_atk_msg))
                             boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
@@ -578,7 +667,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             sh += player1_sh
 
                         elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
-                            isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                            isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                             if isCrit:
                                 msg1 = "{}发起会心一击，造成了{}伤害\n"
                             else:
@@ -599,7 +688,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         skillmsg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
                                                             player1_turn_cost)
                         play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
-                        isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+                        isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
                         if isCrit:
                             msg1 = "{}发起会心一击，造成了{}伤害\n"
                         else:
@@ -623,7 +712,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
 
         else:  # 没有技能的derB
             play_list.append(get_msg_dict(player1, player_init_hp, f"☆------{player1['道号']}的回合------☆"))
-            isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
+            isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
             if isCrit:
                 msg1 = "{}发起会心一击，造成了{}伤害\n"
             else:
@@ -635,8 +724,13 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
             sh += player1_sh
 
+        ## 自己回合结束 处理
+        player1,boss,msg = after_atk_sub_buff_handle(player1_sub_open,player1,user1_main_buff_data,user1_sub_buff_date,player2_health_temp - boss['气血'],boss)
+        play_list.append(get_msg_dict(player1, player_init_hp, msg))
+
         if boss['气血'] <= 0:  # boss气血小于0，结算
-            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
+            play_list.append({"type": "node",
+                              "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
             suc = "群友赢了"
             get_stone = boss_now_stone
             if isSql:
@@ -649,10 +743,11 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             user1_turn_skip = False
             player1_turn_cost += 1
 
-            # 没有技能的derB
+
+        # 没有技能的derB
         if boss_turn_skip:
             play_list.append(get_boss_dict(boss, qx, f"☆------{boss['name']}的回合------☆", bot_id))
-            isCrit, boss_sh = get_turnatk(boss)  # 判定是否暴击
+            isCrit, boss_sh = get_turnatk(boss,0,UserBattleBuffDate("9999999"))  # 判定是否暴击
             if isCrit:
                 msg2 = "{}发起会心一击，造成了{}伤害\n"
             else:
@@ -665,7 +760,8 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             play_list.append(get_boss_dict(boss, qx, f"☆------{boss['name']}动弹不得！------☆", bot_id))
 
         if player1['气血'] <= 0:  # 玩家2气血小于0，结算
-            play_list.append({"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(boss['name'])}})
+            play_list.append(
+                {"type": "node", "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(boss['name'])}})
             suc = "Boss赢了"
             get_stone = int(boss_now_stone * (sh / qx))
             boss['stone'] = boss_now_stone - get_stone
@@ -681,11 +777,17 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
 
     return play_list, suc, boss, get_stone
 
+
 def get_msg_dict(player, player_init_hp, msg):
-    return {"type": "node", "data": {"name": f"{player['道号']}，当前血量：{int(player['气血'])} / {int(player_init_hp)}", "uin": int(player['user_id']), "content": msg}}
+    return {"type": "node", "data": {"name": f"{player['道号']}，当前血量：{int(player['气血'])} / {int(player_init_hp)}",
+                                     "uin": int(player['user_id']), "content": msg}}
+
 
 def get_boss_dict(boss, boss_init_hp, msg, bot_id):
-    return {"type": "node", "data": {"name": f"{boss['name']}当前血量：{int(boss['气血'])} / {int(boss_init_hp)}", "uin": int(bot_id), "content": msg}}
+    return {"type": "node",
+            "data": {"name": f"{boss['name']}当前血量：{int(boss['气血'])} / {int(boss_init_hp)}", "uin": int(bot_id),
+                     "content": msg}}
+
 
 def get_user_def_buff(user_id):
     user_armor_data = UserBuffDate(user_id).get_user_armor_buff_data()
@@ -693,14 +795,16 @@ def get_user_def_buff(user_id):
         def_buff = user_armor_data['def_buff']
     else:
         def_buff = 0
-    return round(1 - def_buff, 2)#初始减伤率
+    return round(1 - def_buff, 2)  # 初始减伤率
 
 
-def get_turnatk(player, buff=0):
+def get_turnatk(player, buff=0, user_battle_buff_date={}):
     isCrit = False
-    turnatk = int(round(random.uniform(0.95, 1.05), 2) * (player['攻击'] * (buff + 1)))  # 攻击波动,buff是攻击buff
-    if random.randint(0, 100) <= player['会心']:  # 会心判断
-        turnatk = int(turnatk * 1.5)
+    turnatk = int(round(random.uniform(0.95, 1.05), 2) * (player['攻击'] * (buff + 1)
+                                                          * int(int(user_battle_buff_date.atk_buff) / 100 + 1)
+                                                          ))  # 攻击波动,buff是攻击buff
+    if random.randint(0, 100) <= player['会心'] + int(user_battle_buff_date.crit_buff):  # 会心判断
+        turnatk = int(turnatk * (1.5 + int(user_battle_buff_date.crit_dmg_buff) / 100))
         isCrit = True
     return isCrit, turnatk
 
@@ -735,11 +839,11 @@ def get_persistent_skill_msg(username, skillname, sh, turn):
     return f"{username}的持续性技能：{skillname}，造成{sh}伤害，剩余回合：{turn}！"
 
 
-def get_skill_sh_data(player, secbuffdata):
+def get_skill_sh_data(player, secbuffdata, user1_battle_buff_date):
     skillmsg = ''
     if secbuffdata['skill_type'] == 1:  # 连续攻击类型
         turncost = -secbuffdata['turncost']
-        isCrit, turnatk = get_turnatk(player)
+        isCrit, turnatk = get_turnatk(player, 0, user1_battle_buff_date)
         atkvalue = secbuffdata['atkvalue']  # 列表
         skillsh = 0
         atkmsg = ''
@@ -761,7 +865,7 @@ def get_skill_sh_data(player, secbuffdata):
 
     elif secbuffdata['skill_type'] == 2:  # 持续伤害类型
         turncost = secbuffdata['turncost']
-        isCrit, turnatk = get_turnatk(player)
+        isCrit, turnatk = get_turnatk(player, 0, user1_battle_buff_date)
         skillsh = int(secbuffdata['atkvalue'] * player['攻击'])  # 改动
         atkmsg = ''
         if isCrit:
@@ -792,3 +896,115 @@ def get_skill_sh_data(player, secbuffdata):
             skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}但是被对手躲避！"
 
         return skillmsg, skillsh, turncost
+
+
+# 处理开局的辅修功法效果
+def apply_buff(user_battle_buff, subbuffdata, is_opponent=False):
+    buff_type_to_attr = {
+        '1': ('atk_buff', "攻击力"),
+        '2': ('crit_buff', "暴击率"),
+        '3': ('crit_dmg_buff', "暴击伤害"),
+        '4': ('health_restore_buff', "气血回复"),
+        '5': ('mana_restore_buff', "真元回复"),
+        '6': ('health_stolen_buff', "气血吸取"),
+        '7': ('mana_stolen_buff', "真元吸取"),
+        '8': ('thorns_buff', "中毒")
+    }
+    attr, desc = buff_type_to_attr[subbuffdata['buff_type']]
+    setattr(user_battle_buff, attr, subbuffdata['buff'])
+    prefix = "。对手" if is_opponent else ""
+    return f"{prefix}使用功法{subbuffdata['name']}, 提升{subbuffdata['buff']}%{desc}"
+
+
+def start_sub_buff_handle(player1_sub_open, subbuffdata1, user1_battle_buff_date,
+                          player2_sub_open, subbuffdata2, user2_battle_buff_date):
+    msg1 = apply_buff(user1_battle_buff_date, subbuffdata1) if player1_sub_open else ""
+    msg2 = apply_buff(user2_battle_buff_date, subbuffdata2, is_opponent=True) if player2_sub_open else ""
+
+    return user1_battle_buff_date, user2_battle_buff_date, msg1 + msg2
+
+
+def before_atk_sub_buff_handle(player, subbuffdata):
+    print("123")
+
+
+# 处理攻击后辅修功法效果
+def after_atk_sub_buff_handle(player1_sub_open, player1, user1_main_buff_data, subbuffdata1, damage1, player2):
+    msg = ""
+
+    if not player1_sub_open:
+        return player1, player2, msg
+
+    buff_value = int(subbuffdata1['buff'])
+    buff_type = subbuffdata1['buff_type']
+    exp = int(player1['exp'])
+    max_hp = int(exp/2) * (1 + user1_main_buff_data['hpbuff'])
+    max_mp = exp * (1 + user1_main_buff_data['mpbuff'])
+
+    if buff_type == '4':
+        restore_health = int(exp/2) * (1 + user1_main_buff_data['hpbuff']) * buff_value // 100
+        player1['气血'] += restore_health
+        player1['气血'] = min(player1['气血'], max_hp)
+        msg = "回复气血:" + str(restore_health)
+    elif buff_type == '5':
+        restore_mana = exp * (1 + user1_main_buff_data['mpbuff']) * buff_value // 100
+        player1['真元'] += restore_mana
+        player1['真元'] = min(player1['真元'], max_mp)
+        msg = "回复真元:" + str(restore_mana)
+    elif buff_type == '6':
+        health_stolen = damage1 * buff_value // 100
+        player1['气血'] += health_stolen
+        player1['气血'] = min(player1['气血'], max_hp)
+        msg = "吸取气血:" + str(health_stolen)
+    elif buff_type == '7':
+        mana_stolen = damage1 * buff_value // 100
+        player1['真元'] += mana_stolen
+        player1['真元'] = min(player1['真元'], max_mp)
+        msg = "吸取真元:" + str(mana_stolen)
+    elif buff_type == '8':
+        poison_damage = player2['气血'] * buff_value // 100
+        player2['气血'] -= poison_damage
+        msg = "对手中毒消耗血量:" + str(poison_damage)
+
+    return player1, player2, msg
+
+
+class UserBattleBuffDate:
+    def __init__(self, user_id):
+        """用户战斗Buff数据"""
+        self.user_id = user_id
+        # 攻击buff
+        self.atk_buff = 0
+        # 攻击buff
+        self.atk_buff_time = -1
+
+        # 暴击率buff
+        self.crit_buff = 0
+        # 暴击率buff
+        self.crit_buff_time = -1
+
+        # 暴击伤害buff
+        self.crit_dmg_buff = 0
+        # 暴击伤害buff
+        self.crit_dmg__buff_time = -1
+
+        # 回血buff
+        self.health_restore_buff = 0
+        self.health_restore_buff_time = -1
+        # 回蓝buff
+        self.mana_restore_buff = 0
+        self.mana_restore_buff_time = -1
+
+        # 吸血buff
+        self.health_stolen_buff = 0
+        self.health_stolen_buff_time = -1
+        # 吸蓝buff
+        self.mana_stolen_buff = 0
+        self.mana_stolen_buff_time = -1
+        # 反伤buff
+        self.thorns_buff = 0
+        self.thorns_buff_time = -1
+
+        # 破甲buff
+        self.armor_break_buff = 0
+        self.armor_break_buff_time = -1

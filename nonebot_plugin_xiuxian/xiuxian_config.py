@@ -40,7 +40,7 @@ class XiuConfig:
         self.sql_user_xiuxian = ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
                            "sect_task", "sect_contribution", "sect_elixir_get", "blessed_spot_flag", "blessed_spot_name"]  # 数据库字段校验
         self.sql_sects = ["sect_materials", "mainbuff", "secbuff", "elixir_room_level"]
-        self.sql_buff = ["armor_buff", "atk_buff", "blessed_spot"]
+        self.sql_buff = ["armor_buff", "atk_buff", "blessed_spot", "sub_buff"]
         self.sql_back = ["bind_num"]
         self.img = True #是否全部转为简单图片发送
 

@@ -25,7 +25,7 @@ SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland",
                        "sect_materials", "mainbuff", "secbuff", "elixir_room_level"])
 BuffInfo = namedtuple("BuffInfo",
-                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff", "atk_buff", "blessed_spot"])
+                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff", "atk_buff", "blessed_spot", "sub_buff"])
 
 back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
                            "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
@@ -929,6 +929,13 @@ class XiuxianDateManage:
     def updata_user_main_buff(self, user_id, id):
         """更新用户主功法信息"""
         sql = f"UPDATE BuffInfo SET main_buff = ? where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id,))
+        self.conn.commit()
+
+    def updata_user_sub_buff(self, user_id, id):
+        """更新用户辅修功法信息"""
+        sql = f"UPDATE BuffInfo SET sub_buff = ? where user_id = ?"
         cur = self.conn.cursor()
         cur.execute(sql, (id, user_id,))
         self.conn.commit()

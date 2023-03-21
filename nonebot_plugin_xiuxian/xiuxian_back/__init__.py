@@ -23,7 +23,7 @@ from .back_util import get_user_back_msg, check_equipment_can_use, get_use_equip
 from .backconfig import get_config, savef
 import random
 from datetime import datetime
-from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg, UserBuffDate
+from ..read_buff import get_weapon_info_msg, get_armor_info_msg, get_sec_msg, get_main_info_msg, get_sub_info_msg, UserBuffDate
 from ..xiuxian_config import XiuConfig
 
 items = Items()
@@ -842,6 +842,13 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
                 sql_message.update_back_j(user_id, goods_id)
                 sql_message.updata_user_main_buff(user_id, goods_id)
                 msg = f"恭喜道友学会功法：{skill_info['name']}！"
+        elif skill_type == "辅修功法":
+            if int(user_buff_info.sub_buff) == int(goods_id):
+                msg = f"道友已学会该辅修功法：{skill_info['name']}，请勿重复学习！"
+            else:#学习sql
+                sql_message.update_back_j(user_id, goods_id)
+                sql_message.updata_user_sub_buff(user_id, goods_id)
+                msg = f"恭喜道友学会辅修功法：{skill_info['name']}！"
         else:
             msg = "发生未知错误！"
             
@@ -1241,6 +1248,9 @@ def get_auction_msg(auction_id):
         if item_info['item_type'] == '功法':
             msg = f"{item_info['level']}功法-"
             msg += get_main_info_msg(auction_id)[1]
+        if item_info['item_type'] == '辅修功法':
+            msg = f"{item_info['level']}辅修功法-"
+            msg += get_sub_info_msg(auction_id)[1]
     
     if _type == "丹药":
         msg = f"名字：{item_info['name']}\n"

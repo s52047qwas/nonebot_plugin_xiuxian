@@ -10,6 +10,12 @@ def workmake(work_level, exp, user_level):
     else:
         work_level = work_level[:3]#取境界前3位，补全初期、中期、圆满任务可不取
 
+    work_award_level = ""
+    if work_level == '江湖好手':
+        work_award_level = USERRANK[work_level]
+    else:
+        work_award_level = USERRANK[work_level+"圆满"]
+
     jsondata = reward()
     item_s = Items()
     yaocai_data = jsondata.reward_yaocai_data()
@@ -31,7 +37,7 @@ def workmake(work_level, exp, user_level):
         success_msg = work_info['succeed']
         fail_msg = work_info['fail']
         item_type = get_random_item_type()
-        item_id = item_s.get_random_id_list_by_rank_and_item_type(USERRANK[user_level], item_type)
+        item_id = item_s.get_random_id_list_by_rank_and_item_type(USERRANK[user_level], work_award_level, item_type)
         if item_id == []:
             item_id = 0
         else:
@@ -44,14 +50,17 @@ def workmake(work_level, exp, user_level):
 
 def get_random_item_type():
     type_rate = {
-        "功法":{
-            "type_rate":100,
+        "功法": {
+            "type_rate": 100,
         },
-        "神通":{
-            "type_rate":100,
+        "辅修功法": {
+            "type_rate": 200,
         },
-        "药材":{
-            "type_rate":1000,
+        "神通": {
+            "type_rate": 100,
+        },
+        "药材": {
+            "type_rate": 800,
         }
     }
     temp_dict = {}

@@ -14,7 +14,7 @@ from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate, OtherSet
 from ..xiuxian_config import XiuConfig, JsonConfig
 from ..utils import check_user
 from ..data_source import jsondata
-from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_msg
+from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_msg, get_sub_info_msg
 from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
@@ -538,11 +538,21 @@ async def _(bot: Bot, event: GroupMessageEvent):
         s, mainbuffmsg = get_main_info_msg(str(get_user_buff(user_id).main_buff))
     else:
         mainbuffmsg = ''
+
+    # 辅修功法
+    subbuffdata = UserBuffDate(user_id).get_user_sub_buff_data()
+    if subbuffdata != None:
+        sub, subbuffmsg = get_sub_info_msg(str(get_user_buff(user_id).sub_buff))
+    else:
+        subbuffmsg = ''
+
     secbuffdata = UserBuffDate(user_id).get_user_sec_buff_data()
     secbuffmsg = get_sec_msg(secbuffdata) if get_sec_msg(secbuffdata) != '无' else ''
     msg = f"""
 道友的主功法：{mainbuffdata["name"] if mainbuffdata != None else '无'}
 {mainbuffmsg}
+道友的辅修功法：{subbuffdata["name"] if subbuffdata != None else '无'}
+{subbuffmsg}
 道友的神通：{secbuffdata["name"] if secbuffdata != None else '无'}
 {secbuffmsg}
 """
