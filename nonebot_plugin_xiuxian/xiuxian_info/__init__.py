@@ -101,15 +101,19 @@ async def _(bot: Bot, event: GroupMessageEvent):
     
     user_buff_data = UserBuffDate(user_id)
     user_main_buff_date = user_buff_data.get_user_main_buff_data()
+    user_sub_buff_date = user_buff_data.get_user_sub_buff_data()
     user_sec_buff_date = user_buff_data.get_user_sec_buff_data()
     user_weapon_data = user_buff_data.get_user_weapon_data()
     user_armor_data = user_buff_data.get_user_armor_buff_data()
     main_buff_name = '无'
+    sub_buff_name = '无'
     sec_buff_name = '无'
     weapon_name = '无'
     armor_name = '无'
     if user_main_buff_date != None:
         main_buff_name = f"{user_main_buff_date['name']}({user_main_buff_date['level']})"
+    if user_sub_buff_date != None:
+        sub_buff_name = f"{user_sub_buff_date['name']}({user_sub_buff_date['level']})"
     if user_sec_buff_date != None:
         sec_buff_name = f"{user_sec_buff_date['name']}({user_sec_buff_date['level']})"
     if user_weapon_data != None:
@@ -129,7 +133,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '所在宗门':sectmsg,
     '宗门职位':sectzw,
     '主修功法':main_buff_name,
-    '副修神通':sec_buff_name,
+    '辅修功法': sub_buff_name,
+    '神通':sec_buff_name,
     "法器":weapon_name,
     "防具":armor_name,
     '注册位数': f'道友是踏入修仙世界的第{int(user_num)}人',
@@ -147,7 +152,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
 当前灵石：{format_number(mess.stone)}
 当前修为：{format_number(mess.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
 当前主修功法为：{user_main_buff_date['name']}({user_main_buff_date['level']})
-当前副修神通为：{user_sec_buff_date['name']}({user_sec_buff_date['level']})
+当前辅修功法为：{user_main_buff_date['name']}({user_main_buff_date['level']})
+当前神通为：{user_sec_buff_date['name']}({user_sec_buff_date['level']})
 你的战力为：{format_number(int(mess.exp * level_rate * realm_rate))}
 你的攻击力为{format_number(mess.atk)}，攻修等级{mess.atkpractice}级
 你是踏入修仙世界的第{int(user_num)}人

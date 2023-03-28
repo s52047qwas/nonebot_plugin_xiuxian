@@ -561,7 +561,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             boss['气血'] = boss['气血'] - int(user1_skill_sh * boss_js)  # 玩家1的伤害 * boss的减伤
                             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                            sh += user1_skill_sh
+                            #sh += user1_skill_sh
 
                         elif user1skill_type == 2:  # 持续性伤害技能
                             play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
@@ -569,7 +569,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             boss['气血'] = boss['气血'] - int(user1_skill_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                            sh += user1_skill_sh
+                            #sh += user1_skill_sh
 
 
                         elif user1skill_type == 3:  # buff类技能
@@ -587,7 +587,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                                 boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                                 boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                                 play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                                sh += player1_sh
+                                #sh += player1_sh
 
 
                             elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
@@ -605,7 +605,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                                 boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                                 play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
                                 player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
-                                sh += player1_sh
+                                #sh += player1_sh
 
                         elif user1skill_type == 4:  # 封印类技能
                             play_list.append(get_msg_dict(player1, player_init_hp, skillmsg))
@@ -626,7 +626,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                         boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                         play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                        sh += player1_sh
+                        #sh += player1_sh
 
 
                 else:  # 持续性技能判断,不是第一次
@@ -645,7 +645,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         boss['气血'] = boss['气血'] - int((user1_skill_sh + player1_sh) * boss_js)
                         boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                         play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                        sh += player1_sh + user1_skill_sh
+                        #sh += player1_sh + user1_skill_sh
 
                     elif user1skill_type == 3:  # buff类技能
                         user1buff_type = user1_skill_date['bufftype']
@@ -664,7 +664,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                            sh += player1_sh
+                            #sh += player1_sh
 
                         elif user1buff_type == 2:  # 减伤类buff,需要在player2处判断
                             isCrit, player1_sh = get_turnatk(player1, 0, user1_battle_buff_date)  # 判定是否暴击
@@ -681,7 +681,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
                             player1_js = player1_f_js - user1_skill_sh if player1_f_js - user1_skill_sh > 0.1 else 0.1
-                            sh += player1_sh
+                            #sh += player1_sh
 
                     elif user1skill_type == 4:  # 封印类技能
                         player1_turn_cost = player1_turn_cost - 1
@@ -698,7 +698,7 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                         boss['气血'] = boss['气血'] - int(player1_sh * boss_js)  # 玩家1的伤害 * 玩家2的减伤
                         boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
                         play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-                        sh += player1_sh
+                        #sh += player1_sh
                         if player1_turn_cost == 0:  # 封印时间到
                             boss_turn_skip = True
                             bossbuffturn = True
@@ -722,11 +722,12 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
             boss['气血'] = boss['气血'] - player1_sh
             boss_hp_msg = f"{boss['name']}剩余血量{boss['气血']}"
             play_list.append(get_msg_dict(player1, player_init_hp, boss_hp_msg))
-            sh += player1_sh
+            #sh += player1_sh
 
         ## 自己回合结束 处理
         player1,boss,msg = after_atk_sub_buff_handle(player1_sub_open,player1,user1_main_buff_data,user1_sub_buff_date,player2_health_temp - boss['气血'],boss)
         play_list.append(get_msg_dict(player1, player_init_hp, msg))
+        sh += player2_health_temp - boss['气血']
 
         if boss['气血'] <= 0:  # boss气血小于0，结算
             play_list.append({"type": "node",
@@ -800,9 +801,8 @@ def get_user_def_buff(user_id):
 
 def get_turnatk(player, buff=0, user_battle_buff_date={}):
     isCrit = False
-    turnatk = int(round(random.uniform(0.95, 1.05), 2) * (player['攻击'] * (buff + 1)
-                                                          * int(int(user_battle_buff_date.atk_buff) / 100 + 1)
-                                                          ))  # 攻击波动,buff是攻击buff
+    turnatk = int(round(random.uniform(0.95, 1.05), 2)
+                  * (player['攻击'] * (buff + int(user_battle_buff_date.atk_buff) / 100 + 1)))  # 攻击波动,buff是攻击buff
     if random.randint(0, 100) <= player['会心'] + int(user_battle_buff_date.crit_buff):  # 会心判断
         turnatk = int(turnatk * (1.5 + int(user_battle_buff_date.crit_dmg_buff) / 100))
         isCrit = True
