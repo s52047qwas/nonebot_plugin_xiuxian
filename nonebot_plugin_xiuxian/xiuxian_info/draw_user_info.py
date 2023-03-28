@@ -28,7 +28,7 @@ font_24 = font_origin(24)
 
 async def draw_user_info_img(user_id, DETAIL_MAP):
     based_w = 1100
-    based_h = 2250
+    based_h = 2450
     #获取背景图
     img = Image.open(TEXT_PATH / 'back.png').resize((based_w, based_h)).convert("RGBA")
     #获取用户头像圆框
@@ -52,7 +52,8 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     DETAIL_baseinfo["灵根"] = DETAIL_MAP["灵根"]
     DETAIL_baseinfo["突破状态"] = DETAIL_MAP["突破状态"]
     DETAIL_baseinfo['主修功法'] = DETAIL_MAP['主修功法']
-    DETAIL_baseinfo['副修神通'] = DETAIL_MAP['副修神通']
+    DETAIL_baseinfo['辅修功法'] = DETAIL_MAP['辅修功法']
+    DETAIL_baseinfo['神通'] = DETAIL_MAP['神通']
     DETAIL_baseinfo["攻击力"] = DETAIL_MAP["攻击力"]
     DETAIL_baseinfo["法器"] = DETAIL_MAP["法器"]
     DETAIL_baseinfo["防具"] = DETAIL_MAP["防具"]
@@ -86,7 +87,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     w, h = await linewh(sectinfo, sectword)
     sectinfo_draw = ImageDraw.Draw(sectinfo)
     sectinfo_draw.text((w, h), sectword, first_color, font_40, 'lm')
-    img.paste(sectinfo, (100, 1442), sectinfo)
+    img.paste(sectinfo, (100, 1542), sectinfo)
     
     DETAIL_sectinfo = {}
     DETAIL_sectinfo['所在宗门'] = DETAIL_MAP['所在宗门']
@@ -102,7 +103,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     w, h = await linewh(paihang, paihangword)
     paihang_draw = ImageDraw.Draw(paihang)
     paihang_draw.text((w, h), paihangword, first_color, font_40, 'lm')
-    img.paste(paihang, (100, 1773), paihang)
+    img.paste(paihang, (100, 1873), paihang)
 
     DETAIL_paihang = {}
     DETAIL_paihang['注册位数'] = DETAIL_MAP['注册位数']
@@ -144,7 +145,7 @@ async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
     w, h = await linewh(line, word)
     
     line_draw.text((100, h), word, first_color, font_36, 'lm')
-    img.paste(line, (100, 1547 + list(DETAIL_MAP.keys()).index(key) * 103), line)
+    img.paste(line, (100, 1647 + list(DETAIL_MAP.keys()).index(key) * 103), line)
     
 async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
 
@@ -154,7 +155,7 @@ async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
     w, h = await linewh(line, word)
 
     line_draw.text((100, h), word, first_color, font_36, 'lm')
-    img.paste(line, (100, 1878 + list(DETAIL_MAP.keys()).index(key) * 103), line)
+    img.paste(line, (100, 1978 + list(DETAIL_MAP.keys()).index(key) * 103), line)
 
 async def img_author(img, bg):
     
