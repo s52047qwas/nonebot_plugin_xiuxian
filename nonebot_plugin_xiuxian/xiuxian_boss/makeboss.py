@@ -24,6 +24,8 @@ sql_message = XiuxianDateManage()  # sql类
 def createboss():
     top_user_info = sql_message.get_top1_user()
     top_user_level = top_user_info.level
+    if top_user_level.startswith("化圣境"):
+        top_user_level = "太乙境圆满"
     now_jinjie_index = jinjie_list.index(top_user_level) + 1
     if now_jinjie_index <= MINJINJIE:
         boss_jj = random.choice(jinjie_list[:now_jinjie_index])
