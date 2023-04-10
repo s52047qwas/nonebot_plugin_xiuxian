@@ -1017,6 +1017,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     await sect_task_complete.finish(msg, at_sender=True)
             
             get_exp = int(userinfo.exp * userstask[user_id]['任务内容']['give'])
+            if get_exp > 600000:
+                get_exp = 600000
             sect_stone = int(userstask[user_id]['任务内容']['sect'])
             sql_message.update_user_hp_mp(user_id, userinfo.hp - costhp, userinfo.mp)
             sql_message.update_exp(user_id, get_exp)
@@ -1047,6 +1049,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     await sect_task_complete.finish(msg, at_sender=True)
 
             get_exp = int(userinfo.exp * userstask[user_id]['任务内容']['give'])
+            if get_exp > 600000:
+                get_exp = 600000
             sect_stone = int(userstask[user_id]['任务内容']['sect'])
             sql_message.update_ls(user_id, costls, 2)
             sql_message.update_exp(user_id, get_exp)

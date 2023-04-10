@@ -650,7 +650,9 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
             msg = ""
             msg += f"{user_1.user_name}与{user_2.user_name}情投意合，神魂交融，于某地一起修炼了一晚。"
             if random.randint(1, 100) in [13, 14, 52, 10, 66]:
-                exp = int((exp_1 + exp_2) * 0.0045)
+                exp = int((exp_1 + exp_2) * 0.004)
+                if exp > 500000:
+                    exp = 500000
                 if exp >= user_get_exp_max_1:
                     sql_message.update_exp(user_1.user_id, user_get_exp_max_1)
                     msg += f"{user_1.user_name}修为到达上限，增加修为{user_get_exp_max_1}。"
@@ -678,7 +680,9 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
                     await bot.send_group_msg(group_id=int(send_group_id), message=msg)
                 await two_exp.finish()
             else:
-                exp = int((exp_1 + exp_2) * 0.0045)
+                exp = int((exp_1 + exp_2) * 0.004)
+                if exp > 500000:
+                    exp = 500000
                 if exp >= user_get_exp_max_1:
                     sql_message.update_exp(user_1.user_id, user_get_exp_max_1)
                     msg += f"{user_1.user_name}修为到达上限，增加修为{user_get_exp_max_1}。"
