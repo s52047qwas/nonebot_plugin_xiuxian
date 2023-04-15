@@ -1,4 +1,4 @@
-from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from nonebot import get_bot, on_command, on_regex, require
 from nonebot.log import logger
 from nonebot.adapters.onebot.v11 import (
@@ -1017,8 +1017,16 @@ async def _(bot: Bot, event: GroupMessageEvent):
                     await sect_task_complete.finish(msg, at_sender=True)
             
             get_exp = int(userinfo.exp * userstask[user_id]['任务内容']['give'])
+            max_exp = (
+                    int(OtherSet().set_closing_type(userinfo.level)) * XiuConfig().closing_exp_upper_limit
+            )  # 获取下个境界需要的修为 * 1.25为闭关上限
+            user_get_exp_max = int(max_exp) - userinfo.exp
+            if user_get_exp_max < 0:
+                user_get_exp_max = 0
             if get_exp > 600000:
                 get_exp = 600000
+            if get_exp >= user_get_exp_max:
+                get_exp = user_get_exp_max
             sect_stone = int(userstask[user_id]['任务内容']['sect'])
             sql_message.update_user_hp_mp(user_id, userinfo.hp - costhp, userinfo.mp)
             sql_message.update_exp(user_id, get_exp)

@@ -305,3 +305,20 @@ async def pic_msg_format(msg, event):
     )
     result = "@" + user_name + "\n" + msg
     return result
+
+
+async def cal_max_hp(user_msg,hp_buff):
+    if user_msg.level.startswith("化圣境"):
+        exp = XiuxianDateManage().get_level_power(user_msg.level) * JsonConfig().closing_exp_upper_limit
+    else:
+        exp = user_msg.exp
+    max_hp = int(exp/2) * (1 + hp_buff)
+    return max_hp
+
+async def cal_max_mp(user_msg,mp_buff):
+    if user_msg.level.startswith("化圣境"):
+        exp = XiuxianDateManage().get_level_power(user_msg.level) * JsonConfig().closing_exp_upper_limit
+    else:
+        exp = user_msg.exp
+    max_mp = exp * (1 + mp_buff)
+    return max_mp

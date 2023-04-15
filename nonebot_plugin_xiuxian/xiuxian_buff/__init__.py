@@ -19,7 +19,7 @@ from nonebot.permission import SUPERUSER
 from nonebot.params import CommandArg, RegexGroup
 from ..player_fight import Player_fight
 from .two_exp_cd import two_exp_cd
-from ..utils import send_forward_msg_list, data_check_conf, check_user_type, get_msg_pic, pic_msg_format
+from ..utils import send_forward_msg_list, data_check_conf, check_user_type, get_msg_pic, pic_msg_format, cal_max_hp, cal_max_mp
 from ..cd_manager import add_cd, check_cd, cd_msg
 from ..read_buff import get_player_info, save_player_info
 import random
@@ -395,6 +395,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
             (exp_time * XiuConfig().closing_exp) * ((level_rate * realm_rate * (1 + mainbuffratebuff)) + int(user_buff_data.BuffInfo.blessed_spot))#洞天福地为加法
         )  # 本次闭关获取的修为
 
+
         if exp >= user_get_exp_max:
             # 用户获取的修为到达上限
             sql_message.in_closing(user_id, user_type)
@@ -483,7 +484,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
         sql_message.update_user_hp(user_id)
     user_msg = sql_message.get_user_real_info(user_id)
-    
+
     level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
     realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
     user_buff_data = UserBuffDate(user_id)
@@ -503,9 +504,13 @@ async def _(bot: Bot, event: GroupMessageEvent):
     main_buff_rate_buff = main_buff_data['ratebuff'] if main_buff_data != None else 0
     main_hp_buff = main_buff_data['hpbuff'] if main_buff_data != None else 0
     main_mp_buff = main_buff_data['mpbuff'] if main_buff_data != None else 0
+
+    max_hp = cal_max_hp(user_msg, main_hp_buff)
+    max_mp = cal_max_mp(user_msg, main_mp_buff)
+
     user = f"""道号：{user_msg.user_name}
-气血：{user_msg.hp}/{int((user_msg.exp/2) * (1 + main_hp_buff))}
-真元：{user_msg.mp}/{int((user_msg.exp) * (1 + main_mp_buff))}
+气血：{user_msg.hp}/{max_hp}
+真元：{user_msg.mp}/{max_mp}
 攻击：{user_msg.atk}
 攻击修炼：{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 4}%)
 修炼效率：{int(((level_rate * realm_rate) * (1 + main_buff_rate_buff) + int(user_buff_data.BuffInfo.blessed_spot))  * 100)}%
@@ -636,7 +641,7 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
                 await two_exp.finish()
             max_exp_1 = (
                     int(OtherSet().set_closing_type(user_1.level)) * XiuConfig().closing_exp_upper_limit
-            )  # 获取下个境界需要的修为 * 1.5为闭关上限
+            )  # 获取下个境界需要的修为 * 1.1为闭关上限
             max_exp_2 = (
                     int(OtherSet().set_closing_type(user_2.level)) * XiuConfig().closing_exp_upper_limit
             )

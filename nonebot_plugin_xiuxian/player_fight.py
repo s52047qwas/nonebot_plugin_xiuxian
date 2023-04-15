@@ -2,6 +2,7 @@ import random
 
 from .read_buff import UserBuffDate
 from .xiuxian2_handle import XiuxianDateManage
+from .utils import cal_max_hp, cal_max_mp
 
 
 def Player_fight(player1: dict, player2: dict, type_in, bot_id):
@@ -938,8 +939,14 @@ def after_atk_sub_buff_handle(player1_sub_open, player1, user1_main_buff_data, s
     buff_value = int(subbuffdata1['buff'])
     buff_type = subbuffdata1['buff_type']
     exp = int(player1['exp'])
-    max_hp = int(exp/2) * (1 + user1_main_buff_data['hpbuff'])
-    max_mp = exp * (1 + user1_main_buff_data['mpbuff'])
+
+
+    user1_hp_buff = user1_main_buff_data['hpbuff'] if user1_main_buff_data != None else 0
+    user1_mp_buff = user1_main_buff_data['mpbuff'] if user1_main_buff_data != None else 0
+
+    max_hp = cal_max_hp(player1, user1_hp_buff)
+    max_mp = cal_max_mp(player1, user1_mp_buff)
+
 
     if buff_type == '4':
         restore_health = int(exp/2) * (1 + user1_main_buff_data['hpbuff']) * buff_value // 100

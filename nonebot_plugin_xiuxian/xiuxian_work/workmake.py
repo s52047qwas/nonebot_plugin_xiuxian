@@ -13,6 +13,8 @@ def workmake(work_level, exp, user_level):
     work_award_level = ""
     if work_level == '江湖好手':
         work_award_level = USERRANK[work_level]
+    elif work_level.startswith("化圣境"):
+        work_award_level = USERRANK["太乙境圆满"]
     else:
         work_award_level = USERRANK[work_level+"圆满"]
 

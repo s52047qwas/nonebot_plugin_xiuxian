@@ -249,7 +249,13 @@ def get_id_by_rank(dict_data, user_level, rift_rank=0):
     for k, v in dict_data.items():
         if v["rank"] >= final_rank and (v["rank"] - final_rank) <= pass_rank:
             l_temp.append(k)
-            
+    if len(l_temp) == 0:
+        # 对字典根据rank值进行排序
+        sorted_dict = sorted(dict_data.items(), key=lambda x: x[1]['rank'])
+        # 获取前6个元素
+        top_6_items = sorted_dict[:6]
+        # 将前6个元素的键放入数组中
+        l_temp = [item[0] for item in top_6_items]
     return random.choice(l_temp)
 
 def get_weapon(user_info, rift_rank=0):

@@ -259,8 +259,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
 @command.rank.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     """
-
-
+    排行榜
     """
     await data_check_conf(bot, event)
 
@@ -408,6 +407,58 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     user_msg = sql_message.get_user_message(user_id)  # 用户信息
     user_leveluprate = int(user_msg.level_up_rate)  # 用户失败次数加成
 
+    user_backs = sql_message.get_back_msg(user_id) #list(back)
+    items = Items()
+    pause_flag = False
+
+    level_name = user_msg.level  # 用户境界
+    next_level_name = OtherSet().get_next_level(level_name)
+    exp = user_msg.exp  # 用户修为
+    stone = user_msg.stone  # 灵石
+    if next_level_name.startswith("化圣境"):
+        need_exp = XiuxianDateManage().get_level_power(next_level_name)
+        # 这里你需要编写获取用户修为和灵石的逻辑，以下仅作示例
+        cost_exp, cost_stone = XiuxianDateManage().get_level_cost(next_level_name)
+        # 判断修为是否足够突破
+        logger.info("1234")
+        if exp >= need_exp:
+            pass
+        else:
+            msg = "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}。" \
+                  "需要消耗 {} 修为，{} 灵石和 10个渡厄丹"\
+                .format(need_exp - exp, next_level_name, OtherSet.format_number(cost_exp), OtherSet.format_number(cost_stone))
+            if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
+                pic = await get_msg_pic(msg)
+                await level_up.finish(MessageSegment.image(pic))
+            else:
+                await level_up.finish(msg, at_sender=True)
+        logger.info("123")
+        if can_breakthrough(exp, stone, cost_exp, cost_stone, user_backs):
+            logger.info("1111")
+            msg = f"突破到{next_level_name}，需要" \
+                  f"消耗 {OtherSet.format_number(cost_exp)} 修为，{OtherSet.format_number(cost_stone)} 灵石 " \
+                  f" 和 10个渡厄丹，" \
+                  f"成功率为100%，确定要突破吗？请回复“确定”进行突破。"
+            if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
+                pic = await get_msg_pic(msg)
+                await level_up.pause(prompt=MessageSegment.image(pic))
+            else:
+                await level_up.pause(prompt=msg)
+        else:
+            logger.info("2222")
+            msg = f"很遗憾，您的修为或灵石或渡厄丹不足以突破。需要" \
+                  f"消耗 {OtherSet.format_number(cost_exp)} 修为，{OtherSet.format_number(cost_stone)} 灵石 " \
+                  f" 和 10个渡厄丹，"
+            if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
+                pic = await get_msg_pic(msg)
+                await level_up.finish(MessageSegment.image(pic))
+            else:
+                await level_up.finish(msg, at_sender=True)
+        logger.info("4444")
+
     level_cd = user_msg.level_up_cd
     if level_cd:
         # 校验是否存在CD
@@ -425,27 +476,9 @@ async def update_level(bot: Bot, event: GroupMessageEvent):
     else:
         pass
 
-    level_name = user_msg.level  # 用户境界
-    next_level_name = OtherSet().get_type(level_name)
-    exp = user_msg.exp  # 用户修为
-    stone = user_msg.stone  # 灵石
-    if next_level_name.startswith("化圣境"):
-
-        # 这里你需要编写获取用户修为和灵石的逻辑，以下仅作示例
-        need_exp, need_stone = XiuxianDateManage().get_level_cost(next_level_name)
-        if can_breakthrough(need_exp, need_stone, exp, stone):
-
-            confirm_message = f"突破到{next_level_name}，需要消耗 {need_exp} 修为和 {need_stone} 灵石，确定要突破吗？请回复“确定”进行突破。"
-            await level_up.pause(confirm_message)
-        else:
-            await level_up.finish("很遗憾，您的修为或灵石不足以突破。")
-
-
     level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
 
-    user_backs = sql_message.get_back_msg(user_id) #list(back)
-    items = Items()
-    pause_flag = False
+
     if user_backs != None:
         for back in user_backs:
             if int(back.goods_id) == 1999:#检测到有对应丹药
@@ -525,26 +558,40 @@ async def update_level_end(bot: Bot, event: GroupMessageEvent, mode : str = Even
     user_id, group_id, user_msg = await data_check(bot, event)
 
     level_name = user_msg.level  # 用户境界
-    next_level_name = OtherSet().get_type(level_name)
+    next_level_name = OtherSet().get_next_level(level_name)
 
     if not isUser:
         await level_up.finish()
 
-    if next_level_name.startswith("化圣境") and mode == "确定":
-        need_exp, need_stone = XiuxianDateManage().get_level_cost(next_level_name)
+    if next_level_name.startswith("化圣境"):
+        if mode == "确定":
+            need_exp, need_stone = XiuxianDateManage().get_level_cost(next_level_name)
 
-        sql_message.update_j_exp(user_id, need_exp)
-        sql_message.update_ls(user_id, need_stone, 2)
+            sql_message.update_j_exp(user_id, need_exp)
+            sql_message.update_ls(user_id, need_stone, 2)
+            sql_message.update_back_j(user_id, 1999, num=10, use_key=1)
 
-        sql_message.updata_level(user_id, next_level_name)  # 更新境界
-        sql_message.update_power2(user_id)  # 更新战力
-        sql_message.updata_level_cd(user_id)  # 更新CD
-        # sql_message.update_user_attribute(user_id, )
-        sql_message.update_levelrate(user_id, 0)
-        sql_message.update_user_hp(user_id)  # 重置用户HP，mp，atk状态
-        await level_up.finish(f"恭喜你成功突破到{next_level_name}！，消耗{need_exp}修为和{need_stone}灵石")
-    else:
-        await level_up.finish("已取消突破。")
+            sql_message.updata_level(user_id, next_level_name)  # 更新境界
+            sql_message.update_power2(user_id)  # 更新战力
+            sql_message.updata_level_cd(user_id)  # 更新CD
+            # sql_message.update_user_attribute(user_id, )
+            sql_message.update_levelrate(user_id, 100)
+            sql_message.update_user_hp(user_id)  # 重置用户HP，mp，atk状态
+            msg = f"恭喜你成功突破到{next_level_name}！，消耗{need_exp}修为和{need_stone}灵石"
+            if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
+                pic = await get_msg_pic(msg)
+                await level_up.finish(MessageSegment.image(pic))
+            else:
+                await level_up.finish(msg, at_sender=True)
+        else:
+            msg = "本次突破取消！"
+            if XiuConfig().img:
+                msg = await pic_msg_format(msg, event)
+                pic = await get_msg_pic(msg)
+                await level_up.finish(MessageSegment.image(pic))
+            else:
+                await level_up.finish(msg, at_sender=True)
 
 
     if mode not in ['使用', '不使用', '取消']:
@@ -681,10 +728,15 @@ def get_user_resources(user_id: str):
     return 1000, 50
 
 
-def can_breakthrough(exp: int, stone: int, need_exp: int, need_stone: int,):
+def can_breakthrough(exp: int, stone: int, need_exp: int, need_stone: int, user_backs):
     # 在这里设置突破所需的修为和灵石，以下为示例
-
-    return exp >= need_exp and stone >= need_stone
+    pause_flag = False
+    if user_backs != None:
+        for back in user_backs:
+            if int(back.goods_id) == 1999 and back.goods_num >= 10:  # 检测到有对应丹药
+                pause_flag = True
+                break
+    return exp >= need_exp and stone >= need_stone and pause_flag
 
 
 def perform_breakthrough(user_id: str, exp: int, stone: int,need_exp: int, need_stone: int,):

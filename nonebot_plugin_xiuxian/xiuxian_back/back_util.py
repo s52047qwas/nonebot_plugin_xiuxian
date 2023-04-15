@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from ..xiuxian_config import USERRANK
 from ..read_buff import get_player_info, save_player_info
+from ..utils import cal_max_hp, cal_max_mp
 
 items = Items()
 sql_message = XiuxianDateManage()
@@ -329,8 +330,8 @@ def check_use_elixir(user_id, goods_id, use_num=1):
             msg = f"道友使用的丹药：{goods_name}已经达到丹药的耐药性上限！已经无法使用该丹药了！"
         else:
             use_num = bulk_use_check(goods_info=goods_info, use_num=use_num, goods_day_num=goods_day_num, goods_all_num=goods_all_num)
-            user_max_hp = int(user_info.exp / 2)
-            user_max_mp = int(user_info.exp)
+            user_max_hp = cal_max_hp(user_info, 0)
+            user_max_mp = cal_max_mp(user_info, 0)
             if user_info.hp == user_max_hp and user_info.mp == user_max_mp:
                 msg = f"道友的状态是满的，用不了哦！"
             else:

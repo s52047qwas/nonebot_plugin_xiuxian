@@ -30,7 +30,7 @@ items = Items()
 config = get_config()
 groups = config['open'] #list，群交流会使用
 auction = {}
-AUCTIONSLEEPTIME = 120#交友初始等待时间（秒）
+AUCTIONSLEEPTIME = 600#交友初始等待时间（秒）
 
 auction_offer_flag = False #交友标志
 AUCTIONOFFERSLEEPTIME = 10#每次交友增加交友剩余的时间（秒）
