@@ -311,6 +311,7 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player1['攻击'] = user1.atk
         player1['真元'] = user1.mp
         player1['exp'] = user1.exp
+        player1['level'] = user1.level
 
         player2['user_id'] = user2.user_id
         player2['道号'] = user2.user_name
@@ -318,7 +319,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
         player2['攻击'] = user2.atk
         player2['真元'] = user2.mp
         player2['exp'] = user2.exp
-        
+        player2['level'] = user2.level
+
         result, victor = Player_fight(player1, player2, 1, bot.self_id)
         add_cd(event, 300, '切磋')
         # await send_forward_msg(bot, event, '决斗场', bot.self_id, result)
@@ -507,6 +509,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
 
     max_hp = cal_max_hp(user_msg, main_hp_buff)
     max_mp = cal_max_mp(user_msg, main_mp_buff)
+
+    logger.info(max_hp)
 
     user = f"""道号：{user_msg.user_name}
 气血：{user_msg.hp}/{max_hp}

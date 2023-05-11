@@ -358,7 +358,8 @@ async def _(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
     player['攻击'] = userinfo.atk
     player['真元'] = userinfo.mp
     player['exp'] = userinfo.exp
-    
+    player['level'] = userinfo.level
+
     bossinfo = group_boss[group_id][boss_num - 1]
     boss_rank = USERRANK[bossinfo['jj']]
     user_rank = USERRANK[userinfo.level]

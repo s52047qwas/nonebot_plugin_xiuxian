@@ -1,3 +1,5 @@
+from nonebot.log import logger
+
 from .xiuxian2_handle import XiuxianDateManage
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -13,7 +15,7 @@ from wcwidth import wcwidth
 import re
 
 from .data_source import jsondata
-from .xiuxian_config import JsonConfig
+from .xiuxian_config import JsonConfig, XiuConfig
 
 def check_user_type(user_id, need_type):
     """
@@ -307,18 +309,20 @@ async def pic_msg_format(msg, event):
     return result
 
 
-async def cal_max_hp(user_msg,hp_buff):
+def cal_max_hp(user_msg, hp_buff):
     if user_msg.level.startswith("化圣境"):
-        exp = XiuxianDateManage().get_level_power(user_msg.level) * JsonConfig().closing_exp_upper_limit
+        exp = XiuxianDateManage().get_level_power(user_msg.level) * XiuConfig().closing_exp_upper_limit
     else:
         exp = user_msg.exp
-    max_hp = int(exp/2) * (1 + hp_buff)
+    logger.info( f"hp_buff:{hp_buff}！")
+    max_hp = int( exp/2 * (1 + hp_buff) )
     return max_hp
 
-async def cal_max_mp(user_msg,mp_buff):
+def cal_max_mp(user_msg, mp_buff):
     if user_msg.level.startswith("化圣境"):
-        exp = XiuxianDateManage().get_level_power(user_msg.level) * JsonConfig().closing_exp_upper_limit
+        exp = XiuxianDateManage().get_level_power(user_msg.level) * XiuConfig().closing_exp_upper_limit
     else:
         exp = user_msg.exp
-    max_mp = exp * (1 + mp_buff)
+    logger.info(f"mp_buff:{mp_buff}！")
+    max_mp = int(exp * (1 + mp_buff))
     return max_mp

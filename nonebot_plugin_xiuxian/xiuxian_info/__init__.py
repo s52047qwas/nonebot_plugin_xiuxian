@@ -98,6 +98,11 @@ async def _(bot: Bot, event: GroupMessageEvent):
                 exp_meg = "还需{}修为可突破！".format(get_exp)
         else:
             exp_meg = "可突破！"
+
+        if is_updata_level.startswith("化圣境"):
+            rate = "100%"
+        else:
+            rate = jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)
     
     user_buff_data = UserBuffDate(user_id)
     user_main_buff_date = user_buff_data.get_user_main_buff_data()
@@ -121,6 +126,8 @@ async def _(bot: Bot, event: GroupMessageEvent):
     if user_armor_data != None:
         armor_name = f"{user_armor_data['name']}({user_armor_data['level']})"
 
+
+
     DETAIL_MAP = {
     '道号': f'{user_name}',
     '境界': f'{mess.level}',
@@ -128,7 +135,7 @@ async def _(bot: Bot, event: GroupMessageEvent):
     '灵石': f'{format_number(mess.stone)}',
     '战力': f'{format_number(int(mess.exp * level_rate * realm_rate))}',
     '灵根': f'{mess.root}({mess.root_type}+{int(level_rate * 100)}%)',
-    '突破状态': f'{exp_meg}概率：{jsondata.level_rate_data()[mess.level] + int(mess.level_up_rate)}%',
+    '突破状态': f'{exp_meg}概率：{rate}%',
     '攻击力': f'{format_number(mess.atk)}，攻修等级{mess.atkpractice}级',
     '所在宗门':sectmsg,
     '宗门职位':sectzw,

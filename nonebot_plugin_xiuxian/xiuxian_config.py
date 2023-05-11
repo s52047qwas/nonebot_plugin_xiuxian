@@ -36,7 +36,7 @@ class XiuConfig:
         self.battle_boss_cd = config_data['battle_boss_cd']  # 讨伐bossCD
         # self.ggg = config_data['ggg']
 
-        self.sql_table = ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo"]  # 数据库表校验
+        self.sql_table = ["user_xiuxian", "user_cd", "sects", "back", "BuffInfo", "ExercisesInfo"]  # 数据库表校验
         self.sql_user_xiuxian = ["level_up_rate", "sect_id", "sect_position", "hp", "mp", "atk", "atkpractice",
                            "sect_task", "sect_contribution", "sect_elixir_get", "blessed_spot_flag", "blessed_spot_name"]  # 数据库字段校验
         self.sql_sects = ["sect_materials", "mainbuff", "secbuff", "elixir_room_level"]
@@ -139,6 +139,15 @@ USERRANK = {
     '太乙境初期':15,
     '太乙境中期':14,
     '太乙境圆满':13,
+    '化圣境一层':12,
+    '化圣境二层':11,
+    '化圣境三层':10,
+    '化圣境四层':9,
+    '化圣境五层':8,
+    '化圣境六层':7,
+    '化圣境七层':6,
+    '化圣境八层':5,
+    '化圣境九层':4,
 }
 
 if __name__ == '__main__':

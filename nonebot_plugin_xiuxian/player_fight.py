@@ -944,8 +944,10 @@ def after_atk_sub_buff_handle(player1_sub_open, player1, user1_main_buff_data, s
     user1_hp_buff = user1_main_buff_data['hpbuff'] if user1_main_buff_data != None else 0
     user1_mp_buff = user1_main_buff_data['mpbuff'] if user1_main_buff_data != None else 0
 
-    max_hp = cal_max_hp(player1, user1_hp_buff)
-    max_mp = cal_max_mp(player1, user1_mp_buff)
+    user_info = XiuxianDateManage().get_user_message(player1['user_id'])
+
+    max_hp = cal_max_hp(user_info, user1_hp_buff)
+    max_mp = cal_max_mp(user_info, user1_mp_buff)
 
 
     if buff_type == '4':

@@ -30,6 +30,10 @@ BuffInfo = namedtuple("BuffInfo",
 back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
                            "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
 
+ExercisesInfo = namedtuple("ExercisesInfo",
+                      ["user_id","exercises_level", "atk_buff","def_buff","crit_buff","crit_dmg_buff"])
+
+
 num = '578043031'
 
 
@@ -154,7 +158,20 @@ class XiuxianDateManage:
   "faqi_buff" integer DEFAULT 0,
   "fabao_weapon" integer DEFAULT 0
 );""")
-                    
+
+            elif i == "ExercisesInfo":
+                try:
+                    c.execute(f"select count(1) from {i}")
+                except sqlite3.OperationalError:
+                    c.execute("""CREATE TABLE "ExercisesInfo" (
+                  "user_id" INTEGER NOT NULL PRIMARY KEY,
+                  "exercises_level" integer DEFAULT 0,
+                  "atk_buff" integer DEFAULT 0,
+                  "def_buff" integer DEFAULT 0,
+                  "crit_buff" integer DEFAULT 0,
+                  "crit_dmg_buff" integer DEFAULT 0,
+                  "update_time" TEXT
+                );""")
 
         for i in XiuConfig().sql_user_xiuxian:
             try:
@@ -308,6 +325,11 @@ class XiuxianDateManage:
         """获取境界倍率"""
         data = jsondata.level_data()
         return data[name]['power']
+
+    def get_level_cost(self, name):
+        """获取境界倍率"""
+        data = jsondata.level_data()
+        return data[name]['cost_exp'], data[name]['cost_stone']
 
     def update_power2(self, user_id) -> None:
         """更新战力"""
@@ -544,6 +566,15 @@ class XiuxianDateManage:
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
+        WHEN level = '化圣境九层' THEN '02'
+        WHEN level = '化圣境八层' THEN '03'
+        WHEN level = '化圣境七层' THEN '04'
+        WHEN level = '化圣境六层' THEN '05'
+        WHEN level = '化圣境五层' THEN '06'
+        WHEN level = '化圣境四层' THEN '07'
+        WHEN level = '化圣境三层' THEN '08'
+        WHEN level = '化圣境二层' THEN '09'
+        WHEN level = '化圣境一层' THEN '10'
         WHEN level = '太乙境圆满' THEN '11'
         WHEN level = '太乙境中期' THEN '12'
         WHEN level = '太乙境初期' THEN '13'
@@ -1097,6 +1128,33 @@ class XiuxianDateManage:
         cur.execute(sql_str)
         self.conn.commit()
 
+    def initialize_exercises_info(self, user_id):
+        """初始化炼体信息"""
+        sql = f"INSERT INTO ExercisesInfo (user_id,exercises_level,atk_buff,def_buff,crit_buff,crit_dmg_buff) VALUES (?,0,0,0,0,0)"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        self.conn.commit()
+
+    def get_exercises_info(self, user_id):
+        """获取炼体信息"""
+        sql = f"select * from ExercisesInfo where user_id =?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (user_id,))
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return BuffInfo(*result)
+
+    def updata_exercises(self, user_id, exercises_level, atk_buff, def_buff, crit_buff, crit_dmg_buff):
+        """更新炼体信息"""
+        sql = f"UPDATE ExercisesInfo SET exercises_level = ? , atk_buff = ? , def_buff = ? ," \
+              f" crit_buff = ? , crit_dmg_buff = ? " \
+              f" where user_id = ?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (id, user_id, exercises_level, atk_buff, def_buff, crit_buff, crit_dmg_buff))
+        self.conn.commit()
+
 class XiuxianJsonDate:
     def __init__(self):
         self.root_jsonpath = DATABASE / "灵根.json"
@@ -1148,8 +1206,6 @@ class XiuxianJsonDate:
         #     a = e.read()
         #     data = json.loads(a)
         data = jsondata.reward_that_data()
-        print("111", data)
-        print(type(data))
         if key == 0:  # 如果没有获取过，则返回悬赏令
             get_work_list = []
             for i in data:
@@ -1187,7 +1243,8 @@ class OtherSet(XiuConfig):
         list_all = len(self.level) - 1
         now_index = self.level.index(user_level)
         if list_all == now_index:
-            return "道友已是最高境界，无法修炼了！"
+            logger.info("道友已是最高境界，无法修炼了！")
+            return 0
         is_updata_level = self.level[now_index + 1]
         need_exp = XiuxianDateManage().get_level_power(is_updata_level)
         return need_exp
@@ -1205,7 +1262,7 @@ class OtherSet(XiuConfig):
         if user_exp >= need_exp:
             pass
         else:
-            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp - user_exp, is_updata_level)
+            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(OtherSet.format_number(need_exp - user_exp), is_updata_level)
 
         success_rate = True if random.randint(0, 100) < rate else False
 
@@ -1214,6 +1271,15 @@ class OtherSet(XiuConfig):
             return [self.level[now_index + 1]]
         else:
             return '失败'
+
+    def get_next_level(self, user_level):
+        list_all = len(self.level) - 1
+        now_index = self.level.index(user_level)
+        if list_all == now_index:
+            return "道友已是最高境界，无法突破！"
+
+        is_updata_level = self.level[now_index + 1]
+        return is_updata_level
 
     def calculated(self, rate: dict) -> str:
         """
@@ -1365,8 +1431,14 @@ class OtherSet(XiuConfig):
 
     def send_hp_mp(self, user_id, hp, mp):
         user_msg = XiuxianDateManage().get_user_message(user_id)
-        max_hp = int(user_msg.exp/2)
-        max_mp = int(user_msg.exp)
+        level = user_msg.level
+        if level.startswith("化圣境"):
+            power = XiuxianDateManage().get_level_power(level) * XiuConfig().closing_exp_upper_limit
+            max_hp = int(power / 2)
+            max_mp = int(power)
+        else:
+            max_hp = int(user_msg.exp/2)
+            max_mp = int(user_msg.exp)
 
         msg = []
         hp_mp = []
@@ -1395,9 +1467,30 @@ class OtherSet(XiuConfig):
 
         hp_mp.append(new_hp)
         hp_mp.append(new_mp)
-        hp_mp.append(user_msg.exp)
+        if level.startswith("化圣境"):
+            power = XiuxianDateManage().get_level_power(level) * XiuConfig().closing_exp_upper_limit
+            hp_mp.append(power)
+        else:
+            hp_mp.append(user_msg.exp)
 
         return msg, hp_mp
+
+    def format_number(number: int) -> str:
+        if number >= 1000000000000:
+            return str(round(number / 1000000000000, 2)) + "万亿"
+        elif number >= 100000000:
+            return str(round(number / 100000000, 2)) + "亿"
+        elif number >= 10000:
+            return str(round(number / 10000, 2)) + "万"
+        elif number <= -1000000000000:
+            return str(round(number / 1000000000000, 2)) + "万亿"
+        elif number <= -100000000:
+            return str(round(number / 100000000, 2)) + "亿"
+        elif number <= -10000:
+            return str(round(number / 10000, 2)) + "万"
+        else:
+            return str(number)
+
 
 from .read_buff import UserBuffDate
 from .item_json import Items

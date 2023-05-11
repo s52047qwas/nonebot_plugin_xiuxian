@@ -107,6 +107,9 @@ class Items:
         :param item_type：type：list，物品类型，可以为空，枚举值：法器、防具、神通、功法、丹药
         :return 获得的ID列表，type：list
         """
+        if fanil_rank < 13:
+            fanil_rank = 13
+
         l_id = []
         for k, v in self.items.items():
             if item_type != None:

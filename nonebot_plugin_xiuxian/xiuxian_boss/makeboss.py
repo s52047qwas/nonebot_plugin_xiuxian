@@ -17,7 +17,7 @@ def get_boss_jinjie_dict():
     return temp_dict
 
 JINGJIEEXP = get_boss_jinjie_dict()
-MINJINJIE = 24 #向下取12个小境界(3个大境界)
+MINJINJIE = 30 #向下取12个小境界(3个大境界)
 jinjie_list = [k for k, v in JINGJIEEXP.items()]
 sql_message = XiuxianDateManage()  # sql类
 

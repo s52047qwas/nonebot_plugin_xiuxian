@@ -108,7 +108,8 @@ async def get_boss_battle_info(user_info, rift_rank, bot_id):
     player['攻击'] = userinfo.atk
     player['真元'] = userinfo.mp
     player['exp'] = userinfo.exp
-    
+    player['level'] = userinfo.level
+
     base_exp = userinfo.exp
     boss_info = {"name": None, "气血": None, "攻击": None, "真元": None, 'stone':1}
     boss_info["name"] = random.choice(boss_data["name"])
